@@ -8,6 +8,9 @@ export type Guest = {
 };
 export type Invitation = {
   id: string;
+  kind?: "individual" | "group";
+  personalTokens?: Record<string, string>;
+  personalResponses?: Record<string, {message: string; dietaryRestrictions: string; respondedAt: string}>;
   label: string;
   token: string;
   active: boolean;

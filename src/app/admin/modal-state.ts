@@ -1,10 +1,10 @@
 "use client";
 import { createParser, parseAsStringEnum, useQueryStates } from "nuqs";
 export const modalNames = [
-  "novo-convite",
-  "editar-convite",
-  "configuracoes",
-  "excluir-convite",
+  "new-invitation",
+  "edit-invitation",
+  "settings",
+  "delete-invitation",
 ] as const;
 export type AdminModalName = (typeof modalNames)[number];
 const invitationId = createParser({
@@ -17,6 +17,6 @@ export function useAdminModal() {
       modal: parseAsStringEnum<AdminModalName>([...modalNames]),
       convite: invitationId,
     },
-    { history: "push", shallow: true, scroll: false },
+    { history: "push", shallow: true, scroll: false, urlKeys: {modal: "action", convite: "invitation"} },
   );
 }

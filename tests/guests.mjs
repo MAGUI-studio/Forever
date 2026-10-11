@@ -314,6 +314,39 @@ async function check(title, work) {
       404,
     );
   });
+  await check("individual usa o nome e exige uma pessoa", async () => {
+    assert.equal((await admin.POST(request("POST", {...invitation,kind:"individual"}))).status,400);
+    assert.equal((await admin.POST(request("POST", {...invitation,kind:"individual",label:"",guests:[guests[0]]}))).status,201);
+    const list = await (await admin.GET(request("GET"))).json(); assert.equal(list.invitations[0].label,guests[0].name);
+  });
+  await check("acesso pessoal limita leitura e escrita e rejeita adulteração e remoção", async () => {
+    store.clear(); await admin.POST(request("POST",invitation));
+    const list = await (await admin.GET(request("GET"))).json(); const group = list.invitations[0];
+    const token = group.personalTokens[guests[0].id]; const groupKey = 'invitations/'+group.id;
+    const view = await (await lookup.POST(request("POST",{token}))).json();
+    assert.deepEqual(view.invitation.guests.map(g=>g.id),[guests[0].id]);
+    const payload = {...answer,token,revision:1};
+    assert.equal((await rsvp.POST(request("POST",payload))).status,400);
+    const forged = token.replace(guests[0].id,guests[1].id);
+    assert.equal((await lookup.POST(request("POST",{token:forged}))).status,404);
+    assert.equal((await rsvp.POST(request("POST",{...payload,token:forged}))).status,404);
+    assert.equal((await rsvp.POST(request("POST",{...payload,responses:[answer.responses[0]]}))).status,200);
+    assert.equal(store.get(groupKey).guests[1].status,'pendente'); assert.equal(store.get(groupKey).message,'');
+    assert.equal(store.get(groupKey).personalResponses[guests[0].id].message,answer.message);
+    const familyView = await (await lookup.POST(request("POST",{token:group.token}))).json();
+    assert.equal(familyView.invitation.guests[0].message,answer.message);
+    const familyResponses = familyView.invitation.guests.map((g,index) => ({id:g.id,status:"confirmado",message:index ? "Recado de Bruno" : g.message,dietaryRestrictions:index ? "Vegetariano" : "Alergia a amendoim"}));
+    assert.equal((await rsvp.POST(request("POST",{token:group.token,revision:2,responses:familyResponses}))).status,200);
+    const personalView = await (await lookup.POST(request("POST",{token}))).json();
+    assert.equal(personalView.invitation.guests[0].dietaryRestrictions,"Alergia a amendoim");
+    assert.equal(personalView.invitation.guests[0].message,answer.message);
+    assert.equal(personalView.invitation.guests.length,1);
+    const otherView = await (await lookup.POST(request("POST",{token:group.personalTokens[guests[1].id]}))).json();
+    assert.equal(otherView.invitation.guests[0].message,"Recado de Bruno");
+    assert.equal(otherView.invitation.guests[0].dietaryRestrictions,"Vegetariano");
+    store.set(groupKey,{...store.get(groupKey),guests:[guests[1]]});
+    assert.equal((await lookup.POST(request("POST",{token}))).status,404);
+  });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,
   );

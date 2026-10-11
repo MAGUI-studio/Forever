@@ -57,7 +57,7 @@ Referências: https://firebase.google.com/pricing ; https://firebase.google.com/
 
 ## Modais do dashboard
 
-Adicionar e editar convites, configurar confirmações e excluir convites abrem em modais. O Nuqs sincroniza a URL: `?modal=novo-convite`, `?modal=editar-convite&convite=ID`, `?modal=configuracoes` ou `?modal=excluir-convite&convite=ID`. A recarga reabre o modal para a conta autenticada; voltar e avançar acompanham a navegação. Apenas o tipo do modal e o ID do convite ficam na URL: nomes, mensagens, códigos secretos e campos do rascunho não são incluídos. Alterações do formulário só são gravadas ao salvar. Escape, fechar, cancelar ou clicar no fundo fecham o modal; durante uma gravação, esses controles ficam bloqueados.
+Adicionar e editar convites, configurar confirmações e excluir convites abrem em modais. O Nuqs sincroniza a URL: `?action=new-invitation`, `?action=edit-invitation&invitation=ID`, `?action=settings` ou `?action=delete-invitation&invitation=ID`. A recarga reabre o modal para a conta autenticada; voltar e avançar acompanham a navegação. Apenas o tipo do modal e o ID do convite ficam na URL: nomes, mensagens, códigos secretos e campos do rascunho não são incluídos. Alterações do formulário só são gravadas ao salvar. Escape, fechar, cancelar ou clicar no fundo fecham o modal; durante uma gravação, esses controles ficam bloqueados.
 
 ### Acompanhar o envio dos convites
 
@@ -67,4 +67,14 @@ O link de confirmação abre o convite automaticamente. Cada pessoa escolhe sua 
 
 ### Baixar um convite em PDF
 
-Clique em **Baixar convite** no cartão da família. O navegador baixa um PDF A5 com o nome da família, mensagem, local, data, horário e QR Code exclusivo. O QR Code e o texto abaixo dele são clicáveis e abrem a confirmação no domínio de produção. A fonte Cormorant Garamond fica incorporada no arquivo, junto com os ornamentos do site. A geração acontece no navegador, gratuitamente, sem salvar arquivos no Firebase. Baixar o PDF não marca o convite como enviado: use **Marcar enviado** depois de encaminhá-lo. Convites inativos não podem ser baixados.
+Clique em **Baixar convite** no cartão da família. O navegador baixa um PDF A5 com o nome da família, mensagem, local, data, horário e QR Code exclusivo. O QR Code e o texto abaixo dele são clicáveis e abrem a confirmação na URL configurada em `NEXT_PUBLIC_SITE_URL`. A fonte Cormorant Garamond fica incorporada no arquivo, junto com os ornamentos do site. A geração acontece no navegador, gratuitamente, sem salvar arquivos no Firebase. Baixar o PDF não marca o convite como enviado: use **Marcar enviado** depois de encaminhá-lo. Convites inativos não podem ser baixados.
+
+
+### Convites individuais e de família/grupo
+
+Ao criar um convite, escolha Individual para uma pessoa (o nome dela identifica o convite) ou Família ou grupo para organizar uma ou mais pessoas sob um nome como Família Oliveira, Amigos do Edson ou Pessoal do Fitdance.
+
+No cartão, Copiar link do grupo e PDF do grupo permitem responder por todos. Ao lado de cada participante, Link pessoal e PDF pessoal permitem consultar e responder somente por aquela pessoa. Essa restrição é validada no servidor; remover a pessoa ou desativar o convite também bloqueia seu acesso pessoal. Recados e restrições alimentares pessoais ficam separados dos dados do grupo e aparecem no painel. Não envie o código do grupo a quem deve responder apenas por si.
+
+
+A origem dos links e QR Codes é definida por `NEXT_PUBLIC_SITE_URL` no `.env`. No desenvolvimento local, use `http://localhost:3000`; em produção, configure `https://giovannaeedson.magui.studio` antes do build. Reinicie o servidor após alterar essa variável.

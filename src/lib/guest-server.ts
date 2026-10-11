@@ -1,5 +1,5 @@
 import "server-only";
-import { createHash } from "node:crypto";
+import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { services } from "./firebase/admin";
 export class HttpError extends Error {
@@ -28,7 +28,7 @@ export function failure(error: unknown) {
 }
 export async function body(request: Request) {
   const text = await request.text();
-  if (text.length > 32000) throw new HttpError(413, "Dados muito extensos.");
+  if (text.length > 64000) throw new HttpError(413, "Dados muito extensos.");
   return JSON.parse(text);
 }
 export function sameOrigin(request: Request) {
@@ -57,7 +57,21 @@ export async function requireAdmin(request: Request) {
     throw new HttpError(403, "Esta conta não tem acesso ao painel.");
   return db;
 }
-export const tokenSchema = z.string().regex(/^[a-f0-9]{48}$/);
+export const tokenSchema = z.string().regex(/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/);
+export const invitationDocumentId = (token: string) => token.includes('.') ? token.split('.')[0] : tokenId(token);
+export function personalToken(id: string, secret: string, guestId: string) {
+ const payload = id + '.' + guestId;
+ return payload + '.' + createHmac('sha256', secret).update(payload).digest('hex');
+}
+export function authorizedGuests(token: string, invitation: {token: string; guests: import('@/types/guests').Guest[]}) {
+ if (!token.includes('.')) return invitation.guests;
+ const [id, guestId] = token.split('.');
+ const expected = personalToken(id, invitation.token, guestId);
+ if (token.length !== expected.length || !timingSafeEqual(Buffer.from(token), Buffer.from(expected))) throw new HttpError(404, 'Convite não encontrado.');
+ const guests = invitation.guests.filter(g => g.id === guestId);
+ if (!guests.length) throw new HttpError(404, 'Convite não encontrado.');
+ return guests;
+}
 export const tokenId = (token: string) =>
   createHash("sha256").update(token).digest("hex");
 export const guestSchema = z
@@ -75,7 +89,8 @@ export const guestSchema = z
   );
 export const inviteSchema = z
   .object({
-    label: z.string().trim().min(2).max(100),
+    kind: z.enum(["individual", "group"]).optional(),
+    label: z.string().trim().max(100),
     active: z.boolean(),
     guests: z.array(guestSchema).min(1).max(40),
   })
@@ -83,7 +98,8 @@ export const inviteSchema = z
   .refine(
     (i) => new Set(i.guests.map((g) => g.id)).size === i.guests.length,
     "Convidados duplicados.",
-  );
+  ).refine(i => i.kind === 'individual' ? i.guests.length === 1 : i.label.length >= 2)
+  .transform(i => ({...i, label: i.kind === 'individual' ? i.guests[0].name : i.label}));
 export const settingsSchema = z
   .object({
     enabled: z.boolean(),

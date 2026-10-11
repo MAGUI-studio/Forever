@@ -8,6 +8,7 @@ import {
   reply,
   requireAdmin,
   tokenId,
+  personalToken,
 } from "@/lib/guest-server";
 export const runtime = "nodejs";
 export async function GET(request: Request) {
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
       .orderBy("updatedAt", "desc")
       .get();
     return reply({
-      invitations: snap.docs.map((d) => ({ sentAt: null, ...d.data(), id: d.id })),
+      invitations: snap.docs.map((d) => ({ sentAt: null, ...d.data(), id: d.id, personalTokens: Object.fromEntries((d.data().guests ?? []).map((g: {id: string}) => [g.id, personalToken(d.id, d.data().token, g.id)])) })),
     });
   } catch (e) {
     return failure(e);

@@ -6,7 +6,8 @@ import {
   HttpError,
   reply,
   sameOrigin,
-  tokenId,
+  invitationDocumentId,
+  authorizedGuests,
   tokenSchema,
 } from "@/lib/guest-server";
 import type { Guest } from "@/types/guests";
@@ -21,13 +22,15 @@ const schema = z
           .object({
             id: z.string().uuid(),
             status: z.enum(["confirmado", "recusado"]),
+            message: z.string().trim().max(500).optional(),
+            dietaryRestrictions: z.string().trim().max(500).optional(),
           })
           .strict(),
       )
       .min(1)
       .max(40),
-    message: z.string().trim().max(500),
-    dietaryRestrictions: z.string().trim().max(500),
+    message: z.string().trim().max(500).optional(),
+    dietaryRestrictions: z.string().trim().max(500).optional(),
   })
   .strict();
 export async function POST(request: Request) {
@@ -35,7 +38,7 @@ export async function POST(request: Request) {
     sameOrigin(request);
     const data = schema.parse(await body(request));
     const { db } = services();
-    const ref = db.collection("invitations").doc(tokenId(data.token));
+    const ref = db.collection("invitations").doc(invitationDocumentId(data.token));
     await db.runTransaction(async (t) => {
       const snap = await t.get(ref);
       const configSnap = await t.get(db.doc("settings/rsvp"));
@@ -57,11 +60,12 @@ export async function POST(request: Request) {
           "Este convite foi atualizado. Consulte o código novamente antes de responder.",
         );
       const guests = current.guests as Guest[];
+      const allowed = authorizedGuests(data.token, current as {token: string; guests: Guest[]});
       const responses = new Map(data.responses.map((r) => [r.id, r.status]));
       if (
-        responses.size !== guests.length ||
-        data.responses.length !== guests.length ||
-        guests.some((g) => !responses.has(g.id))
+        responses.size !== allowed.length ||
+        data.responses.length !== allowed.length ||
+        allowed.some((g) => !responses.has(g.id))
       )
         throw new HttpError(
           400,
@@ -69,16 +73,24 @@ export async function POST(request: Request) {
         );
       const now = new Date().toISOString();
       t.update(ref, {
-        guests: guests.map((g) => ({
+        guests: guests.map((g) => responses.has(g.id) ? ({
           ...g,
           status: responses.get(g.id),
           checkedIn: responses.get(g.id) === "confirmado" && g.checkedIn,
-        })),
+        }) : g),
         revision: current.revision + 1,
         updatedAt: now,
         respondedAt: now,
-        message: data.message,
-        dietaryRestrictions: data.dietaryRestrictions,
+        personalResponses: {
+          ...(current.personalResponses ?? {}),
+          ...Object.fromEntries(data.responses.map(r => [r.id, {
+            message: r.message ?? (data.token.includes('.') ? data.message : undefined) ?? current.personalResponses?.[r.id]?.message ?? "",
+            dietaryRestrictions: r.dietaryRestrictions ?? (data.token.includes('.') ? data.dietaryRestrictions : undefined) ?? current.personalResponses?.[r.id]?.dietaryRestrictions ?? "",
+            respondedAt: now,
+          }])),
+        },
+        ...(!data.token.includes('.') && data.message !== undefined ? {message: data.message} : {}),
+        ...(!data.token.includes('.') && data.dietaryRestrictions !== undefined ? {dietaryRestrictions: data.dietaryRestrictions} : {}),
       });
     });
     return reply({ success: true, revision: data.revision + 1 });

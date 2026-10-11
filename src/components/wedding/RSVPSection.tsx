@@ -1,13 +1,15 @@
 "use client";
+import { AttendanceBadge } from "@/components/ui/AttendanceBadge";
 import { useEffect, useState } from "react";
-import { EnvelopeOpenIcon, CheckCircleIcon, PaperPlaneTiltIcon, UsersIcon } from "@phosphor-icons/react";
+import { EnvelopeOpenIcon, CheckCircleIcon, PaperPlaneTiltIcon, UsersIcon, CaretDownIcon } from "@phosphor-icons/react";
 import { WeddingSelect } from "@/components/ui/WeddingSelect";
 import confetti from "canvas-confetti";
 import { WeddingOrnaments } from "./WeddingOrnaments";
 import type { Attendance, RSVPSettings } from "@/types/guests";
 type PublicInvite = {
+  personal?: boolean;
   label: string;
-  guests: { id: string; name: string; status: Attendance }[];
+  guests: { id: string; name: string; status: Attendance; message: string; dietaryRestrictions: string }[];
   revision: number;
   respondedAt: string | null;
   message: string;
@@ -28,7 +30,7 @@ export function RSVPSection() {
     let active = true;
     const syncHash = () => {
       const value = window.location.hash.slice(1);
-      if (/^[a-f0-9]{48}$/.test(value)) {
+      if (/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(value)) {
         setCode(value); setBusy(true); setError("");
         fetch("/api/rsvp/lookup", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:value})}).then(async response => { const result = await response.json(); if (!response.ok) throw new Error(result.error); if (!active) return; setInvite(result.invitation);setSettings(result.settings);setClosed(!result.settings.enabled || (!!result.settings.deadline && Date.now() > Date.parse(result.settings.deadline))); }).catch(e => {if(active) setError(e.message || "Não foi possível consultar o convite.");}).finally(() => {if(active) setBusy(false);});
       }
@@ -41,7 +43,7 @@ export function RSVPSection() {
   async function lookup(event: React.FormEvent) {
     event.preventDefault();
     const token = code.trim().toLowerCase();
-    if (!/^[a-f0-9]{48}$/.test(token)) {setError("Esse código parece incompleto ou inválido. Copie os 48 caracteres do convite enviado por Giovanna e Edson, sem espaços, ou abra o link que você recebeu."); return;}
+    if (!/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(token)) {setError("Esse código parece incompleto ou inválido. Copie o código completo do convite enviado por Giovanna e Edson, sem espaços, ou abra o link que você recebeu."); return;}
     setBusy(true);
     setError("");
     setSaved(false);
@@ -73,6 +75,10 @@ export function RSVPSection() {
       setBusy(false);
     }
   }
+  function updateGuest(id: string, patch: Partial<PublicInvite["guests"][number]>) {
+    setSaved(false);
+    setInvite(current => current ? {...current, guests: current.guests.map(g => g.id === id ? {...g, ...patch} : g)} : current);
+  }
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!invite) return;
@@ -87,9 +93,7 @@ export function RSVPSection() {
         body: JSON.stringify({
           token: code.trim().toLowerCase(),
           revision: invite.revision,
-          responses: invite.guests.map((g) => ({ id: g.id, status: g.status })),
-          message: invite.message,
-          dietaryRestrictions: invite.dietaryRestrictions,
+          responses: invite.guests.map((g) => ({ id: g.id, status: g.status, message: g.message, dietaryRestrictions: g.dietaryRestrictions })),
         }),
       });
       const result = await response.json();
@@ -129,8 +133,12 @@ export function RSVPSection() {
             Confirmação de <em className="text-[#5D613C]">presença</em>
           </h2>
           <p className="mt-5 text-[#80654E]">
-            Abra seu link exclusivo ou informe o código enviado com o convite.
+            Que alegria ter você fazendo parte da nossa história! Estamos
+            preparando esse dia com muito carinho e esperamos celebrar ao seu lado.
           </p>
+          {!invite && !busy && <p className="mt-5 text-[#80654E]">
+            Informe o código enviado com o convite.
+          </p>}
         </div>
         <div className="rsvp-card">
           {!invite && <form onSubmit={lookup} className="space-y-4">
@@ -143,7 +151,7 @@ export function RSVPSection() {
               aria-describedby={error ? "rsvp-error" : undefined}
               autoComplete="off"
               required
-              maxLength={48}
+              maxLength={166}
               value={code}
               onChange={(e) => {
                 setCode(e.target.value);
@@ -171,7 +179,7 @@ export function RSVPSection() {
           {saved && (
             <p
               role="status"
-              className="mt-5 rounded-xl bg-green-50 p-4 text-green-800"
+              className="mt-5 mb-6 rounded-xl bg-green-50 p-4 text-green-800"
             >
               <CheckCircleIcon size={22} className="inline mr-2" aria-hidden="true" />Resposta salva! Obrigado pelo carinho. Você pode revisar sua
               resposta até o encerramento das confirmações.
@@ -180,13 +188,7 @@ export function RSVPSection() {
           {invite && (
             <form onSubmit={submit} className="rsvp-response space-y-6">
               <div>
-                <button type="button" className="rsvp-change" disabled={busy} onClick={() => {setInvite(null);setCode("");setSaved(false);setError("");if (/^[a-f0-9]{48}$/.test(window.location.hash.slice(1))) window.history.replaceState(null,"",window.location.pathname + window.location.search);}}>Consultar outro convite</button><p className="rsvp-card-eyebrow"><UsersIcon size={16} aria-hidden="true" /> Seu convite</p><h3 className="font-serif text-3xl">{invite.label}</h3><p className="rsvp-instruction">Conte para nós quem estará presente nesse dia tão especial.</p>
-                {invite.respondedAt && (
-                  <p className="mt-2 text-sm">
-                    Já recebemos uma resposta deste convite. Confira abaixo e
-                    altere se precisar.
-                  </p>
-                )}
+                <button type="button" className="rsvp-change" disabled={busy} onClick={() => {setInvite(null);setCode("");setSaved(false);setError("");if (/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(window.location.hash.slice(1))) window.history.replaceState(null,"",window.location.pathname + window.location.search);}}>Consultar outro convite</button><p className="rsvp-card-eyebrow"><UsersIcon size={16} aria-hidden="true" /> Seu convite</p><h3 className="font-serif text-3xl">{invite.label}</h3>
                 {settings.deadline && (
                   <p className="mt-2 text-sm">
                     Prazo:{" "}
@@ -205,38 +207,25 @@ export function RSVPSection() {
               ) : (
                 <fieldset disabled={busy} className="space-y-5">
                   {invite.guests.map((g) => (
-                    <label key={g.id} className="rsvp-person block space-y-2">
-                      <span className="rsvp-person-heading"><span className="rsvp-person-avatar" aria-hidden="true">{g.name.slice(0,1)}</span>{g.name}</span>
-                      <WeddingSelect label={"Presença de " + g.name} disabled={busy} placeholder="Selecione uma resposta" value={g.status === "pendente" ? "" : g.status} onValueChange={value => {setSaved(false);setInvite({...invite,guests:invite.guests.map(p => p.id === g.id ? {...p,status:value as Attendance} : p)});}} options={[{value:"confirmado",label:"Vou comparecer"},{value:"recusado",label:"Não poderei comparecer"}]} />
-                    </label>
+                    <details key={g.id} className="rsvp-guest-accordion" open={invite.guests.length === 1 ? true : undefined}>
+                      <summary><span>{g.name}</span><span className="rsvp-guest-summary-status"><AttendanceBadge status={g.status} label={g.status === "confirmado" ? "Presença confirmada" : g.status === "recusado" ? "Não comparecerá" : "Aguardando resposta"} /><CaretDownIcon className="rsvp-accordion-caret" size={18} aria-hidden="true" /></span></summary>
+                      <div className="rsvp-guest-accordion-fields">
+                        <label className="flex flex-col gap-3">
+                          <span>Confirmação de presença</span>
+                          <WeddingSelect label={"Presença de " + g.name} disabled={busy} placeholder="Selecione uma resposta" value={g.status === "pendente" ? "" : g.status} onValueChange={value => updateGuest(g.id, {status: value as Attendance})} options={[{value:"confirmado",label:"Vou comparecer"},{value:"recusado",label:"Não poderei comparecer"}]} />
+                        </label>
+                        <label className="flex flex-col gap-3">
+                          <span>Restrições alimentares (opcional)</span>
+                          <textarea className="guest-input" maxLength={500} rows={3} placeholder="Ex.: alergia a amendoim, intolerância à lactose ou alimentação vegetariana." value={g.dietaryRestrictions} onChange={e => updateGuest(g.id, {dietaryRestrictions: e.target.value})} />
+                        </label>
+                        <label className="flex flex-col gap-3">
+                          <span>Recado aos noivos (opcional)</span>
+                          <textarea className="guest-input" maxLength={500} rows={3} placeholder="Deixe uma mensagem carinhosa para Giovanna e Edson…" value={g.message} onChange={e => updateGuest(g.id, {message: e.target.value})} />
+                        </label>
+                      </div>
+                    </details>
                   ))}
-                  <label className="block space-y-2">
-                    <span>Restrições alimentares (opcional)</span>
-                    <textarea
-                      className="guest-input"
-                      maxLength={500}
-                      value={invite.dietaryRestrictions}
-                      onChange={(e) => {
-                        setSaved(false); setInvite({
-                          ...invite,
-                          dietaryRestrictions: e.target.value,
-                        }); }
-                      }
-                    />
-                  </label>
-                  <label className="block space-y-2">
-                    <span>Recado aos noivos (opcional)</span>
-                    <textarea
-                      className="guest-input"
-                      maxLength={500}
-                      value={invite.message}
-                      onChange={(e) => {setSaved(false); setInvite({ ...invite, message: e.target.value });}}
-                    />
-                  </label>
-                  <p className="text-sm text-[#80654E]">
-                    Cada pessoa deve estar incluída no convite. Para ajustar a
-                    lista, fale com Giovanna ou Edson.
-                  </p>
+                  {(!invite.personal && (invite.message || invite.dietaryRestrictions)) && <div className="text-sm space-y-2"><p>Informações anteriores do grupo</p>{invite.dietaryRestrictions && <p>Restrições: {invite.dietaryRestrictions}</p>}{invite.message && <p>Recado: {invite.message}</p>}</div>}
                   <button className="guest-button w-full" disabled={busy}>
                     <PaperPlaneTiltIcon size={18} aria-hidden="true" />{busy ? "Salvando…" : "Salvar respostas"}
                   </button>

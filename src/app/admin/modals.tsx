@@ -1,11 +1,12 @@
 "use client";
+import { WeddingOrnaments } from "@/components/wedding/WeddingOrnaments";
 import { WeddingSelect } from "@/components/ui/WeddingSelect";
 import { useRef, useState, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
+  Baby,
   CalendarDays,
   Check,
-  Flower2,
   LoaderCircle,
   Plus,
   Save,
@@ -15,7 +16,7 @@ import {
 } from "lucide-react";
 import type { Guest, Invitation, RSVPSettings } from "@/types/guests";
 import type { AdminModalName } from "./modal-state";
-export type InviteDraft = Pick<Invitation, "label" | "active" | "guests">;
+export type InviteDraft = Pick<Invitation, "kind" | "label" | "active" | "guests">;
 const labels = {
   pendente: "Pendente",
   confirmado: "Confirmado",
@@ -57,7 +58,7 @@ function Modal({
         <Dialog.Content
           ref={content}
           className={
-            "admin-wedding admin-modal" +
+            "admin-wedding admin-modal isolate overflow-hidden! [&>form]:relative [&>form]:z-10" +
             (danger ? " admin-modal--compact" : "")
           }
           onEscapeKeyDown={(event) => {
@@ -86,20 +87,9 @@ function Modal({
             target?.focus();
           }}
         >
-          <header className="admin-modal-heading">
-            <span
-              className={
-                "admin-modal-emblem" +
-                (danger ? " admin-modal-emblem--danger" : "")
-              }
-              aria-hidden="true"
-            >
-              {danger ? (
-                <Trash2 size={22} strokeWidth={1.2} />
-              ) : (
-                <Flower2 size={27} strokeWidth={1} />
-              )}
-            </span>
+          <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden opacity-40" aria-hidden="true"><WeddingOrnaments variant="floral" tone="paper" /></div>
+          <header className="admin-modal-heading z-10">
+
             <div>
               <p className="admin-eyebrow">
                 {danger
@@ -127,6 +117,10 @@ function Modal({
     </Dialog.Root>
   );
 }
+function RequiredMark() {
+  return <span className="inline! text-red-600!" aria-hidden="true">*</span>;
+}
+
 function ErrorMessage({ error }: { error: string }) {
   return error ? (
     <p role="alert" className="admin-alert admin-alert--error">
@@ -149,6 +143,7 @@ function InviteForm({
 }) {
   // Capture the revision with the draft so a concurrent update cannot silently overwrite it.
   const [original] = useState(initial);
+  const [kind, setKind] = useState<"individual" | "group">(initial?.kind ?? (initial?.guests.length === 1 ? "individual" : "group"));
   const [label, setLabel] = useState(initial?.label ?? "");
   const [active, setActive] = useState(initial?.active ?? true);
   const [guests, setGuests] = useState<Guest[]>(() =>
@@ -175,17 +170,20 @@ function InviteForm({
       className="admin-modal-form"
       onSubmit={(event) => {
         event.preventDefault();
-        onSave({ label, active, guests }, original);
+        onSave({ kind, label: kind === "individual" ? guests[0].name : label, active, guests }, original);
       }}
     >
       <div className="admin-modal-body">
         <fieldset disabled={busy} className="admin-modal-fields">
           <ErrorMessage error={error} />
+          <p className="text-xs text-[#80654E]">Todos os campos marcados com <RequiredMark /> são obrigatórios.</p>
           <section className="admin-form-section">
             <p className="admin-form-kicker">01 · O convite</p>
-            <label className="admin-modal-field">
+<label className="admin-modal-field"><span>Tipo de convite <RequiredMark /></span><WeddingSelect label="Tipo de convite" value={kind} onValueChange={value => setKind(value as "individual" | "group")} options={[{value:"individual",label:"Individual — uma pessoa"},{value:"group",label:"Família ou grupo"}]} /></label>
+<p className="admin-form-help">Individual: informe apenas o nome da pessoa. Família ou grupo: organize familiares, amigos ou colegas de trabalho. {kind === "individual" && guests.length > 1 ? "Selecione Família ou grupo e remova as outras pessoas antes de mudar para individual." : ""}</p>
+            {kind === "group" && <label className="admin-modal-field">
               <span>
-                Nome do convite / família <small>Obrigatório</small>
+                Nome da família ou grupo <RequiredMark />
               </span>
               <input
                 data-modal-autofocus
@@ -196,14 +194,14 @@ function InviteForm({
                 className="guest-input"
                 value={label}
                 onChange={(event) => setLabel(event.target.value)}
-                placeholder="Ex.: Família Oliveira"
+                placeholder="Ex.: Família Oliveira ou Amigos do trabalho"
               />
-            </label>
+            </label>}
             <label className="admin-invitation-toggle">
               <span>
                 <strong>Convite ativo</strong>
                 <small>
-                  Permite que a família consulte e responda ao convite.
+                  Permite que os convidados consultem e respondam ao convite.
                 </small>
               </span>
               <input
@@ -237,18 +235,12 @@ function InviteForm({
                       <i>{String(index + 1).padStart(2, "0")}</i>{" "}
                       {guest.name.trim() || "Nova pessoa"}
                     </span>
-                    <button
+                    {kind === "group" && guests.length > 1 && <button
                       type="button"
                       className="admin-remove-person"
-                      disabled={guests.length === 1}
                       aria-label={
                         "Remover " +
                         (guest.name.trim() || "pessoa " + (index + 1))
-                      }
-                      title={
-                        guests.length === 1
-                          ? "O convite precisa ter pelo menos uma pessoa"
-                          : "Remover pessoa deste rascunho"
                       }
                       onClick={() =>
                         setGuests((current) =>
@@ -258,11 +250,11 @@ function InviteForm({
                     >
                       <Trash2 size={15} strokeWidth={1.4} />
                       <span>Remover</span>
-                    </button>
+                    </button>}
                   </div>
                   <div className="admin-guest-fields">
                     <label className="admin-modal-field">
-                      <span>Nome completo</span>
+                      <span>Nome completo <RequiredMark /></span>
                       <input
                         className="guest-input"
                         required
@@ -278,45 +270,22 @@ function InviteForm({
                     </label>
                     <label className="admin-modal-field">
                       <span>Confirmação de presença</span>
-                      <WeddingSelect label="Confirmação de presença" disabled={busy} value={guest.status} onValueChange={(value) => change(guest.id, {status: value as Guest["status"]})} options={Object.entries(labels).map(([value,label]) => ({value,label}))} />
+                      <WeddingSelect label="Confirmação de presença" disabled={busy} value={guest.status} onValueChange={(value) => change(guest.id, {status: value as Guest["status"]})} options={Object.entries(labels).filter(([value]) => initial || value !== "recusado").map(([value,label]) => ({value,label}))} />
                     </label>
                   </div>
                   <div className="admin-guest-options">
-                    <label className="admin-option-chip">
-                      <input
-                        type="checkbox"
-                        checked={guest.child}
-                        onChange={(event) =>
-                          change(guest.id, { child: event.target.checked })
-                        }
-                      />
-                      <span className="admin-option-check" aria-hidden="true">
-                        <Check size={11} />
-                      </span>
-                      Criança
+                    <label className="relative flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa]/70 px-4 py-3 text-[#5D613C] transition-colors hover:bg-[#fffdfa] has-[:checked]:border-[#5d613c55] has-[:checked]:bg-[#edf0e3] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#5D613C]">
+                      <Baby size={22} strokeWidth={1.5} className="shrink-0" aria-hidden="true" />
+                      <span className="flex-1 text-xs font-medium">Este convidado é uma criança</span>
+                      <input type="checkbox" role="switch" className="peer sr-only!" checked={guest.child} onChange={event => change(guest.id, {child:event.target.checked})} />
+                      <span aria-hidden="true" className="relative h-6 w-10 shrink-0 rounded-full bg-[#bcb7ab] transition-colors duration-200 after:absolute after:top-1 after:left-1 after:size-4 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-200 peer-checked:bg-[#5D613C] peer-checked:after:translate-x-4" />
                     </label>
-                    <label className="admin-option-chip">
-                      <input
-                        type="checkbox"
-                        disabled={guest.status !== "confirmado"}
-                        checked={guest.checkedIn}
-                        onChange={(event) =>
-                          change(guest.id, { checkedIn: event.target.checked })
-                        }
-                      />
-                      <span className="admin-option-check" aria-hidden="true">
-                        <Check size={11} />
-                      </span>
-                      Chegou ao evento
-                    </label>
-                    {guest.status !== "confirmado" && (
-                      <small>Chegada disponível após confirmar.</small>
-                    )}
+
                   </div>
                 </div>
               ))}
             </div>
-            <button
+            {kind === "group" && <button
               type="button"
               className="admin-add-person"
               disabled={guests.length >= 40}
@@ -324,7 +293,7 @@ function InviteForm({
             >
               <Plus size={17} aria-hidden="true" />
               Adicionar pessoa ao convite<span>{guests.length}/40</span>
-            </button>
+            </button>}
           </section>
         </fieldset>
       </div>
@@ -470,30 +439,30 @@ export function AdminModals({
   onDelete: (invite: Invitation) => void;
 }) {
   const missing =
-    (modal === "editar-convite" || modal === "excluir-convite") && !selected;
+    (modal === "edit-invitation" || modal === "delete-invitation") && !selected;
   const title = missing
     ? "Convite indisponível"
-    : modal === "novo-convite"
+    : modal === "new-invitation"
       ? "Novo convite"
-      : modal === "editar-convite"
+      : modal === "edit-invitation"
         ? "Editar convite"
-        : modal === "configuracoes"
+        : modal === "settings"
           ? "Confirmações de presença"
           : "Excluir convite?";
   const description = missing
     ? "O convite deste link não existe mais ou o endereço está incompleto."
-    : modal === "configuracoes"
+    : modal === "settings"
       ? "Defina quando as pessoas podem responder ao nosso convite."
-      : modal === "excluir-convite"
+      : modal === "delete-invitation"
         ? "Esta ação remove o convite e todas as respostas da família."
-        : "Uma família, um convite. Organize as pessoas e acompanhe cada resposta.";
+        : "Crie um convite individual ou organize uma família ou grupo.";
   return (
     <Modal
       title={title}
       description={description}
       busy={busy}
       onClose={onClose}
-      danger={modal === "excluir-convite"}
+      danger={modal === "delete-invitation"}
     >
       {missing ? (
         <div className="admin-modal-body">
@@ -504,7 +473,7 @@ export function AdminModals({
             Voltar à lista
           </button>
         </div>
-      ) : modal === "configuracoes" ? (
+      ) : modal === "settings" ? (
         <SettingsForm
           initial={settings}
           busy={busy}
@@ -512,7 +481,7 @@ export function AdminModals({
           onClose={onClose}
           onSave={onSettings}
         />
-      ) : modal === "excluir-convite" && selected ? (
+      ) : modal === "delete-invitation" && selected ? (
         <>
           <div className="admin-modal-body">
             <ErrorMessage error={error} />

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./admin.css";
 export const metadata: Metadata = {
-  title: "Convidados | Giovanna e Edson",
+  title: "Painel administrativo",
   robots: { index: false, follow: false },
 };
 export default function AdminLayout({

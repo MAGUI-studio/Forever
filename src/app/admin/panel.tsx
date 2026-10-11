@@ -1,8 +1,15 @@
 "use client";
+import { AdminContainer } from "./AdminContainer";
+import { SectionDivider } from "@/components/ui/SectionDivider";
+import { AttendanceBadge } from "@/components/ui/AttendanceBadge";
+import { ExpandingIconButton, ExpandingIconButtonGroup } from "@/components/ui/ExpandingIconButton";
 import { useEffect, useRef, useState } from "react";
-import { FilePdfIcon, CopyIcon, CheckIcon, KeyIcon, CaretDownIcon, ClockIcon, UserMinusIcon, DoorOpenIcon, PencilSimpleIcon, PaperPlaneTiltIcon, TrashIcon, UsersIcon } from "@phosphor-icons/react";
+import { EnvelopeSimpleIcon, CopyIcon, CheckIcon, CaretDownIcon, PencilSimpleIcon, PaperPlaneTiltIcon, TrashIcon, UsersIcon, WarningCircleIcon, ChatTextIcon } from "@phosphor-icons/react";
 import { WeddingSelect } from "@/components/ui/WeddingSelect";
-import { DashboardSkeleton } from "./skeleton";
+import { CheckInList } from "./CheckInList";
+import { MobileAdminMenu } from "./MobileAdminMenu";
+import { GuestStats } from "./GuestStats";
+import { DashboardSkeleton, GuestStatsSkeleton } from "./skeleton";
 import { invitationUrl } from "@/config/site";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import Link from "next/link";
@@ -11,7 +18,6 @@ import { AdminModals, type InviteDraft } from "./modals";
 import { useAdminModal, type AdminModalName } from "./modal-state";
 import { weddingConfig } from "@/config/wedding.config";
 import {
-  ArrowLeft,
   ArrowUpRight,
   CalendarDays,
   Flower2,
@@ -22,6 +28,7 @@ import {
   Mail,
   Plus,
   RefreshCw,
+  Search,
   Users,
 } from "lucide-react";
 import {
@@ -36,15 +43,12 @@ import {
 } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase/client";
 import type { Invitation, RSVPSettings } from "@/types/guests";
-const labels = {
-  pendente: "Pendente",
-  confirmado: "Confirmado",
-  recusado: "Não comparecerá",
-};
 export function AdminPanel({
   view,
+  section = "overview",
 }: {
   view: "entry" | "login" | "dashboard";
+  section?: "overview" | "guests" | "check-in";
 }) {
   const router = useRouter();
   const [modalState, setModalState] = useAdminModal();
@@ -58,7 +62,6 @@ export function AdminPanel({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
   const [invites, setInvites] = useState<Invitation[]>([]);
@@ -152,29 +155,43 @@ export function AdminPanel({
       };
     }
   }, [user, view]);
-  async function action(work: () => Promise<void>) {
-    setBusy(true);
+  async function copyInvitationLink(token: string, key: string) {
+    try {
+      await navigator.clipboard.writeText(invitationUrl(token));
+      setCopiedId(key);
+      if (copyTimer.current) clearTimeout(copyTimer.current);
+      copyTimer.current = setTimeout(() => setCopiedId(null), 3000);
+    } catch {setError("Não foi possível copiar o link. Tente novamente.");}
+  }
+  async function action(work: () => Promise<void>, local = false) {
+    if (!local) setBusy(true);
     setError("");
-    setNotice("");
+    if (!local) 
     try {
       await work();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Não foi possível concluir.");
     } finally {
-      setBusy(false);
+      if (!local) setBusy(false);
     }
   }
   function openModal(modal: AdminModalName, convite: string | null = null) {
     setError("");
-    setNotice("");
+    
     void setModalState({ modal, convite });
   }
   function open(invite?: Invitation) {
-    openModal(invite ? "editar-convite" : "novo-convite", invite?.id ?? null);
+    openModal(invite ? "edit-invitation" : "new-invitation", invite?.id ?? null);
   }
   function closeModal() {
     setError("");
     void setModalState(null, { history: "replace" });
+  }
+  async function downloadPdf(invitation: {label: string; token: string}, key: string) {
+    setGeneratingPdf(key); setError("");
+    try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf"); await downloadInvitationPdf(invitation);}
+    catch {setError("Não foi possível gerar o convite. Tente novamente.");}
+    finally {setGeneratingPdf(null);}
   }
   function saveInvitation(draft: InviteDraft, original?: Invitation) {
     void action(async () => {
@@ -187,7 +204,7 @@ export function AdminPanel({
       );
       closeModal();
       await load();
-      setNotice("Convite salvo.");
+      
     });
   }
   const allGuests = invites.filter((i) => i.active).flatMap((i) => i.guests);
@@ -205,9 +222,13 @@ export function AdminPanel({
           ? !i.active
           : i.active &&
             i.guests.some((g) =>
-              filter === "chegou" ? g.checkedIn : g.status === filter,
+              g.status === filter,
             ))),
   );
+  const invitationSections = [
+    {id:"groups", title:"Famílias e grupos", invitations:visible.filter(i => i.kind === "group" || (!i.kind && i.guests.length > 1))},
+    {id:"individuals", title:"Convites individuais", invitations:visible.filter(i => i.kind === "individual" || (!i.kind && i.guests.length === 1))},
+  ];
   return (
     <main className={"admin-wedding " + (!user ? "admin-wedding--login" : "")}>
       <div className="admin-background" aria-hidden="true">
@@ -216,30 +237,35 @@ export function AdminPanel({
         </div>
         <div className="admin-background-wash" />
       </div>
-      <div className="admin-shell">
+      <AdminContainer centered={!user}>
         {user && view === "dashboard" && (
-          <nav className="admin-nav" aria-label="Navegação da administração">
-            <Link href="/" className="admin-wordmark">
-              Giovanna <em>&</em> Edson<span>O nosso grande dia</span>
+          <nav className="admin-nav flex-nowrap! gap-3! lg:flex-wrap! lg:gap-6!" aria-label="Navegação da administração">
+            <Link href="/admin/dashboard" className="admin-wordmark">
+              {weddingConfig.couple.partner1} <em>&</em> {weddingConfig.couple.partner2}<span>O nosso grande dia</span>
             </Link>
-            <Link href="/" className="admin-back">
-              <ArrowLeft size={14} aria-hidden="true" /> Site do casamento
-            </Link>
+            <div className="hidden! lg:flex! order-last flex w-full items-center justify-center gap-2 lg:order-none lg:w-auto lg:flex-1" aria-label="Seções do painel">
+              <Link href="/admin/guests" aria-current={section === "guests" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "guests" ? "bg-[#5d613c10] font-semibold text-[#5D613C]" : "text-[#80654E]")}><Users size={16} aria-hidden="true" />Lista de convidados</Link>
+              <Link href="/admin/check-in" aria-current={section === "check-in" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "check-in" ? "bg-[#5d613c10] font-semibold text-[#5D613C]" : "text-[#80654E]")}><CheckIcon size={16} aria-hidden="true" />Controle de chegada</Link>
+            </div>
+            <div className="hidden lg:block">
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild><button type="button" className="admin-profile-trigger" aria-label="Abrir menu da conta"><span className="admin-account-avatar" aria-hidden="true">{user.email?.slice(0,1).toUpperCase() || "G"}</span><span className="admin-profile-name">{user.displayName || user.email}</span><CaretDownIcon size={13} aria-hidden="true" /></button></DropdownMenu.Trigger>
               <DropdownMenu.Portal><DropdownMenu.Content className="admin-profile-menu" align="end" sideOffset={10} collisionPadding={16}>
                 <DropdownMenu.Label className="admin-profile-label">Espaço dos noivos<span>{user.email}</span></DropdownMenu.Label>
                 <DropdownMenu.Separator className="admin-profile-separator" />
+                <DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-[var(--wedding-radius)] px-2.5 py-3 text-xs text-[#5D613C] outline-none data-highlighted:bg-[#edf0e3] data-disabled:opacity-40" disabled={busy || !authorized} onSelect={() => openModal("settings")}><CalendarDays size={16} aria-hidden="true" />Configurações</DropdownMenu.Item>
                 <DropdownMenu.Item className="admin-profile-item" disabled={busy} onSelect={() => void action(async () => {await signOut(clientAuth());})}><LogOut size={16} aria-hidden="true" /> Sair</DropdownMenu.Item>
               </DropdownMenu.Content></DropdownMenu.Portal>
             </DropdownMenu.Root>
+            </div>
+            <MobileAdminMenu section={section} email={user.email} busy={busy} authorized={authorized} onSettings={() => openModal("settings")} onSignOut={() => void action(async () => {await signOut(clientAuth());})} />
           </nav>
         )}
-        {user && view === "dashboard" && (
-          <header className="admin-page-heading">
+        {user && view === "dashboard" && section === "overview" && (
+          <AdminContainer variant="content" className="admin-page-heading px-0! pb-9! grid! grid-cols-1! items-center! gap-8! lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]! lg:gap-12!">
             <div>
               <p className="admin-eyebrow">Com carinho, cada detalhe</p>
-              <h1>
+              <h1 className="text-[clamp(44px,5vw,80px)]!">
                 Quem faz parte da
                 <br />
                 nossa <em>história.</em>
@@ -249,16 +275,12 @@ export function AdminPanel({
                 lado.
               </p>
             </div>
-          </header>
+            {authorized ? <GuestStats guests={allGuests} /> : loading ? <GuestStatsSkeleton /> : null}
+          </AdminContainer>
         )}
         {error && !(authorized && modalState.modal) && (
           <p role="alert" className="admin-alert admin-alert--error">
             {error}
-          </p>
-        )}
-        {notice && (
-          <p role="status" className="admin-alert admin-alert--success">
-            {notice}
           </p>
         )}
         {!ready || view !== (user ? "dashboard" : "login") ? (
@@ -374,121 +396,53 @@ export function AdminPanel({
           </div>
         ) : (
           <>
-            {!authorized && loading && <DashboardSkeleton />}
-            {authorized && (
+            
+            {(authorized || loading) && section !== "overview" && (section === "check-in" ? <CheckInList loading={!authorized && loading} invitations={invites} busy={busy} onRefresh={() => void action(async () => {await load();})} onToggle={(invitation, guestId, checkedIn) => void action(async () => {
+              await api("/api/admin/invites", "PATCH", {id:invitation.id, revision:invitation.revision, invitation:{kind:invitation.kind, label:invitation.label, active:invitation.active, guests:invitation.guests.map(guest => guest.id === guestId ? {...guest, checkedIn} : guest)}});
+              await load();
+            })} /> :
               <>
-                <div
-                  className="admin-stats"
-                  aria-label="Resumo da lista de convidados"
-                >
-                  {[
-                    ["Convidados ativos", allGuests.length],
-                    [
-                      "Confirmados",
-                      allGuests.filter((g) => g.status === "confirmado").length,
-                    ],
-                    [
-                      "Pendentes",
-                      allGuests.filter((g) => g.status === "pendente").length,
-                    ],
-                    [
-                      "Não comparecerão",
-                      allGuests.filter((g) => g.status === "recusado").length,
-                    ],
-                    ["Chegaram", allGuests.filter((g) => g.checkedIn).length],
-                  ].map(([title, count]) => (
-                    <div key={title} className="admin-stat">
-                      <div className="admin-stat-top">
-                        <p>{title}</p>
-                        <span aria-hidden="true">
-                          {title === "Convidados ativos" ? (
-                            <Users size={16} strokeWidth={1.3} />
-                          ) : title === "Confirmados" ? (
-                            <Heart size={16} strokeWidth={1.3} />
-                          ) : (
-                            title === "Pendentes" ? <ClockIcon size={17} /> : title === "Não comparecerão" ? <UserMinusIcon size={17} /> : <DoorOpenIcon size={17} />
-                          )}
-                        </span>
-                      </div>
-                      <strong>{count}</strong>
-                      <span className="admin-stat-caption">
-                        {title === "Chegaram"
-                          ? "presenças no grande dia"
-                          : "pessoas na nossa lista"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  className="admin-settings admin-settings-trigger"
-                  disabled={busy}
-                  onClick={() => openModal("configuracoes")}
-                >
-                  <CalendarDays
-                    size={18}
-                    strokeWidth={1.3}
-                    aria-hidden="true"
-                  />
-                  <span>
-                    <strong>Prazo e abertura das confirmações</strong>
-                    <small>Ajuste o período de respostas dos convidados.</small>
-                  </span>
-                  <span className="admin-settings-edit">Configurar</span>
-                </button>
-                <div className="admin-list-heading">
+                <AdminContainer variant="content" className="admin-list-heading">
                   <div>
                     <p className="admin-eyebrow">Pessoas que amamos</p>
                     <h2>
                       Lista de <em>convidados</em>
                     </h2>
                     <p>
-                      {visible.length}{" "}
+                      {loading && !authorized ? <span className="inline-block h-3 w-32 animate-pulse rounded bg-[#5d613c15]" aria-label="Carregando quantidade" /> : <>{visible.length}{" "}
                       {visible.length === 1
                         ? "convite encontrado"
-                        : "convites encontrados"}
+                        : "convites encontrados"}</> }
                     </p>
                   </div>
                   <span className="admin-heading-branch" aria-hidden="true">
                     <WeddingBranch />
                   </span>
+                </AdminContainer>
+                <div className="flex flex-col gap-5 py-5 lg:flex-row lg:items-center lg:justify-between">
+                  <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(220px,340px)_220px] sm:items-center sm:gap-6">
+                    <label className="flex min-h-12 min-w-0 items-center gap-3 rounded-[var(--wedding-radius)] border border-[#5d613c30] bg-[#fffdfa] px-3 text-[#5D613C] transition-[border-color,box-shadow] focus-within:border-[#5d613c70] focus-within:ring-2 focus-within:ring-[#5d613c20]">
+                      <Search size={19} className="shrink-0" aria-hidden="true" />
+                      <input aria-label="Buscar convidados" className="h-12 w-full min-w-0 rounded-lg bg-transparent text-sm text-[#3D2501] border-0! outline-none! ring-0! shadow-none! placeholder:text-[#8a887b] focus:outline-none! focus-visible:outline-none!" placeholder="Buscar nome, família ou grupo" value={query} onChange={event => setQuery(event.target.value)} />
+                    </label>
+                    <WeddingSelect label="Filtrar situação" className="h-12! min-h-12! border! border-[#5d613c30]! bg-[#fffdfa]! px-3! text-sm! shadow-none! focus-visible:border-[#5d613c70]!" value={filter} onValueChange={setFilter} options={[{value:"todos",label:"Todos os convites"},{value:"pendente",label:"Com pendentes"},{value:"confirmado",label:"Com confirmados"},{value:"recusado",label:"Com recusas"},{value:"enviados",label:"Convites enviados"},{value:"nao-enviados",label:"Ainda não enviados"},{value:"inativos",label:"Inativos"}]} />
+                  </div>
+                  <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
+                    <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[#5D613C] transition-colors hover:bg-[#5d613c0d] disabled:opacity-50" disabled={busy} onClick={() => void action(async () => {await load();})}>
+                      <RefreshCw size={16} aria-hidden="true" className={busy ? "animate-spin" : ""} />Atualizar
+                    </button>
+                    <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--wedding-radius)] bg-[#5D613C] px-5 text-xs font-medium text-white transition-colors hover:bg-[#4b4f30] disabled:opacity-50" disabled={busy} onClick={() => open()}><Plus size={17} aria-hidden="true" />Adicionar convite</button>
+                  </div>
                 </div>
-                <div className="admin-toolbar">
-                  <button
-                    className="guest-button"
-                    disabled={busy}
-                    onClick={() => open()}
-                  >
-                    <Plus size={16} aria-hidden="true" /> Adicionar convite /
-                    família
-                  </button>
-<input
-                    aria-label="Buscar convidados"
-                    className="guest-input sm:max-w-xs"
-                    placeholder="Buscar nome ou família"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                  />
-                  <WeddingSelect label="Filtrar situação" className="admin-filter" value={filter} onValueChange={setFilter} options={[{value:"todos",label:"Todos os convites"},{value:"pendente",label:"Com pendentes"},{value:"confirmado",label:"Com confirmados"},{value:"recusado",label:"Com recusas"},{value:"chegou",label:"Com chegada registrada"},{value:"enviados",label:"Convites enviados"},{value:"nao-enviados",label:"Ainda não enviados"},{value:"inativos",label:"Inativos"}]} />
-
-              <button
-                className="guest-secondary admin-toolbar-refresh"
-                disabled={busy}
-                onClick={() =>
-                  void action(async () => {
-                    await load();
-                    setNotice("Lista atualizada.");
-                  })
-                }
-              >
-                <RefreshCw
-                  size={14}
-                  aria-hidden="true"
-                  className={busy ? "admin-refresh-busy" : ""}
-                />{" "}
-                Atualizar lista
-              </button>                </div>
+                <aside className="admin-guest-legend" aria-label="Legenda dos alertas de convidados confirmados">
+                  <strong>Legenda</strong>
+                  <div className="admin-guest-legend-items">
+                    <span><WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" aria-hidden="true" />Restrição alimentar</span>
+                    <span><ChatTextIcon size={19} weight="fill" className="admin-message-alert" aria-hidden="true" />Recado aos noivos</span>
+                  </div>
+                </aside>
                 <div className="mt-8 space-y-5">
-                  {visible.length === 0 && (
+                  {!authorized && loading ? <DashboardSkeleton /> : visible.length === 0 && (
                     <div className="admin-empty">
                       <span className="admin-empty-icon">
                         <Flower2
@@ -519,7 +473,18 @@ export function AdminPanel({
                       )}
                     </div>
                   )}
-                  {visible.map((i) => (
+                  {invitationSections.filter(section => section.invitations.length > 0).map(section => (
+                    <section key={section.id} className="space-y-5">
+                      <SectionDivider title={section.title} count={section.invitations.length} actions={
+                        <button type="button" className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--wedding-radius)] px-2 text-xs transition-colors hover:bg-[#5d613c10] focus-visible:outline-2 focus-visible:outline-[#5D613C]" onClick={() => setCollapsed(current => {
+                          const allExpanded = section.invitations.every(invite => !current[invite.id]);
+                          return {...current, ...Object.fromEntries(section.invitations.map(invite => [invite.id, allExpanded]))};
+                        })}>
+                          <CaretDownIcon size={14} className={section.invitations.every(invite => !collapsed[invite.id]) ? "rotate-180 transition-transform" : "transition-transform"} aria-hidden="true" />
+                          {section.invitations.every(invite => !collapsed[invite.id]) ? "Recolher todos" : "Expandir todos"}
+                        </button>
+                      } />
+                      {section.invitations.map((i) => (
                     <article
                       key={i.id}
                       className={
@@ -530,89 +495,50 @@ export function AdminPanel({
                       <div className="admin-invite-header">
                         <div><h2 className="font-serif text-3xl"><button type="button" className="admin-invite-toggle" aria-expanded={!collapsed[i.id]} aria-controls={"invite-body-" + i.id} aria-label={(collapsed[i.id] ? "Expandir convite " : "Recolher convite ") + i.label} onClick={() => setCollapsed(current => ({...current,[i.id]:!current[i.id]}))}>{i.label}<CaretDownIcon size={20} className={collapsed[i.id] ? "" : "is-expanded"} aria-hidden="true" /></button>{!i.active && <span className="ml-3 font-sans text-sm">Inativo</span>}</h2>
                         <p className="admin-invite-meta"><UsersIcon size={15} aria-hidden="true" /> {i.guests.length} {i.guests.length === 1 ? "pessoa" : "pessoas"}<span>·</span>{i.sentAt ? "Enviado em " + new Date(i.sentAt).toLocaleDateString("pt-BR") : "Envio ainda não registrado"}</p></div>
-                        <div className="admin-invite-actions">
-                          <button className="admin-action" disabled={busy} onClick={() => open(i)}><PencilSimpleIcon size={17} aria-hidden="true" />Editar</button>
-                          <button className={"admin-action admin-action-copy " + (copiedId === i.id ? "is-success" : "")} disabled={busy || !i.active} onClick={() => void action(async () => {
+                        <ExpandingIconButtonGroup className="admin-invite-actions">
+
+                          <ExpandingIconButton disabled={busy} onClick={() => open(i)} icon={<PencilSimpleIcon size={17} aria-hidden="true" />} label={"Editar"} />
+                          <ExpandingIconButton disabled={busy || !i.active} onClick={() => void action(async () => {
                             await navigator.clipboard.writeText(invitationUrl(i.token));
                             setCopiedId(i.id); if (copyTimer.current) clearTimeout(copyTimer.current);
                             copyTimer.current = setTimeout(() => setCopiedId(null), 3000);
-                          })}>{copiedId === i.id ? <CheckIcon size={17} weight="bold" aria-hidden="true" /> : <CopyIcon size={17} aria-hidden="true" />}{copiedId === i.id ? "Copiado" : "Copiar link"}</button>
-                          <button className={"admin-action " + (i.sentAt ? "is-success" : "")} aria-pressed={!!i.sentAt} title={i.sentAt ? "Desmarcar envio do convite" : "Registrar que este convite já foi enviado"} disabled={busy} onClick={() => void action(async () => {
+                          })} icon={copiedId === i.id ? <CheckIcon size={17} weight="bold" aria-hidden="true" /> : <CopyIcon size={17} aria-hidden="true" />} label={copiedId === i.id ? "Copiado" : (i.guests.length > 1 ? "Copiar link do grupo" : "Copiar link")} />
+                          <ExpandingIconButton aria-pressed={!!i.sentAt} disabled={busy} onClick={() => void action(async () => {
                             const result = await api("/api/admin/invites/sent", "POST", {id:i.id,sent:!i.sentAt});
                             setInvites(current => current.map(item => item.id === i.id ? {...item,sentAt:result.sentAt} : item));
-                            setNotice(i.sentAt ? "Marcação de envio removida." : "Convite marcado como enviado.");
-                          })}><PaperPlaneTiltIcon size={17} weight={i.sentAt ? "fill" : "regular"} aria-hidden="true" />{i.sentAt ? "Enviado" : "Marcar enviado"}</button>
-                          <button className="admin-action" disabled={busy || !!generatingPdf || !i.active} onClick={async () => {setGeneratingPdf(i.id);setError("");try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf");await downloadInvitationPdf(i);}catch {setError("Não foi possível gerar o PDF. Tente novamente.");}finally {setGeneratingPdf(null);}}}><FilePdfIcon size={17} aria-hidden="true" />{generatingPdf === i.id ? "Gerando PDF…" : "Baixar convite"}</button>
-                          <button className="admin-action admin-action-danger" disabled={busy} onClick={() => openModal("excluir-convite",i.id)}><TrashIcon size={17} aria-hidden="true" />Excluir</button>
-                        </div>
+                            
+                          })} icon={<PaperPlaneTiltIcon size={17} weight={i.sentAt ? "fill" : "regular"} aria-hidden="true" />} label={i.sentAt ? "Enviado" : "Marcar enviado"} />
+                          <ExpandingIconButton disabled={busy || !!generatingPdf || !i.active} onClick={async () => {setGeneratingPdf(i.id);setError("");try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf");await downloadInvitationPdf(i);}catch {setError("Não foi possível gerar o convite. Tente novamente.");}finally {setGeneratingPdf(null);}}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={generatingPdf === i.id ? "Gerando convite…" : (i.guests.length > 1 ? "Convite do grupo" : "Baixar convite")} />
+                          <ExpandingIconButton disabled={busy} onClick={() => openModal("delete-invitation",i.id)} icon={<TrashIcon size={17} aria-hidden="true" />} label={"Excluir"} />
+                        </ExpandingIconButtonGroup>
                       </div>
                       <div id={"invite-body-" + i.id} className="admin-invite-collapse" data-open={!collapsed[i.id]} aria-hidden={!!collapsed[i.id]} inert={!!collapsed[i.id]}><div className="admin-invite-collapse-inner">
-                      <ul className="my-5 divide-y divide-[#C7B79D]/30">
+                      <p className="admin-form-help">O link e o convite do grupo permitem responder por todos. Os botões de cada pessoa geram um convite pessoal, que permite responder somente por ela.</p><div className={i.respondedAt || i.dietaryRestrictions || i.message ? "mt-5 mb-5" : "mt-5"}>
                         {i.guests.map((g) => (
-                          <li
-                            key={g.id}
-                            className="flex flex-wrap items-center justify-between gap-3 py-3"
-                          >
-                            <span className="admin-person-name">
-                              <span
-                                className="admin-person-initial"
-                                aria-hidden="true"
-                              >
-                                {g.name.slice(0, 1).toUpperCase()}
+                          <details key={g.id} className="rsvp-guest-accordion admin-guest-accordion last:border-b-0! [&:last-child>summary]:pb-0! [&:last-child[open]>summary]:pb-[18px]!">
+                            <summary>
+                              <span className="admin-guest-name-alerts">{g.name}{g.child ? " · Criança" : ""}
+                                {g.status === "confirmado" && i.personalResponses?.[g.id]?.dietaryRestrictions?.trim() && <WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" role="img" aria-label="Restrição alimentar informada" />}
+                                {g.status === "confirmado" && i.personalResponses?.[g.id]?.message?.trim() && <ChatTextIcon size={19} weight="fill" className="admin-message-alert" role="img" aria-label="Recado aos noivos" />}
                               </span>
-                              <span>
-                                {g.name}
-                                {g.child ? " · Criança" : ""}
+                              <span className="rsvp-guest-summary-status">
+                                <ExpandingIconButtonGroup as="span" className="admin-guest-quick-actions">
+                                  <ExpandingIconButton type="button" aria-label={"Baixar convite de " + g.name} disabled={busy || generatingPdf === g.id || !i.active} onClick={event => {event.preventDefault(); event.stopPropagation(); void downloadPdf({label:g.name, token:i.personalTokens?.[g.id] ?? i.token},g.id);}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={"Convite pessoal"} />
+                                  <ExpandingIconButton type="button" aria-label={copiedId === g.id ? "Link copiado" : "Copiar link de " + g.name} disabled={busy || !i.active} onClick={event => {event.preventDefault(); event.stopPropagation(); void copyInvitationLink(i.personalTokens?.[g.id] ?? i.token, g.id);}} icon={copiedId === g.id ? <CheckIcon size={17} weight="bold" aria-hidden="true" /> : <CopyIcon size={17} aria-hidden="true" />} label={copiedId === g.id ? "Copiado" : "Copiar link"} />
+                                </ExpandingIconButtonGroup>
+                                <AttendanceBadge status={g.status} className="max-[600px]:col-start-2 max-[600px]:row-start-1 max-[600px]:w-[140px] max-[600px]:text-[11px] max-[380px]:w-[125px] max-[380px]:text-[10px]" />
+                                <CaretDownIcon className="rsvp-accordion-caret" size={18} aria-hidden="true" />
                               </span>
-                            </span>
-                            <div className="admin-person-actions">
-                              <span
-                                className={
-                                  "admin-status admin-status--" + g.status
-                                }
-                              >
-                                {labels[g.status]}
-                              </span>
-                              {g.status === "confirmado" && (
-                                <label className="flex gap-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={g.checkedIn}
-                                    disabled={busy || !i.active}
-                                    onChange={(e) =>
-                                      void action(async () => {
-                                        await api(
-                                          "/api/admin/invites",
-                                          "PATCH",
-                                          {
-                                            id: i.id,
-                                            revision: i.revision,
-                                            invitation: {
-                                              label: i.label,
-                                              active: i.active,
-                                              guests: i.guests.map((p) =>
-                                                p.id === g.id
-                                                  ? {
-                                                      ...p,
-                                                      checkedIn:
-                                                        e.target.checked,
-                                                    }
-                                                  : p,
-                                              ),
-                                            },
-                                          },
-                                        );
-                                        await load();
-                                      })
-                                    }
-                                  />{" "}
-                                  Chegou
-                                </label>
-                              )}
+                            </summary>
+                            <div className="rsvp-guest-accordion-fields">
+                              <div className="admin-guest-notes">
+                                <div><p><WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" aria-hidden="true" />Restrições alimentares</p><span>{i.personalResponses?.[g.id]?.dietaryRestrictions || "Nenhuma restrição informada."}</span></div>
+                                <div><p><ChatTextIcon size={19} weight="fill" className="admin-message-alert" aria-hidden="true" />Recado aos noivos</p><span>{i.personalResponses?.[g.id]?.message || "Nenhum recado enviado."}</span></div>
+                              </div>
                             </div>
-                          </li>
+                          </details>
                         ))}
-                      </ul>
+                      </div>
                       {i.respondedAt && (
                         <p className="text-sm text-[#80654E]">
                           Última resposta do convite:{" "}
@@ -629,26 +555,24 @@ export function AdminPanel({
                           Recado: {i.message}
                         </p>
                       )}
-                      <details className="admin-invite-code">
-                        <summary><span><KeyIcon size={17} aria-hidden="true" /> Ver código do convite</span><CaretDownIcon size={15} className="admin-code-caret" aria-hidden="true" /></summary>
-                        <div className="admin-code-content"><p>Um código exclusivo para esta família. Compartilhe somente com as pessoas deste convite.</p><div className="admin-code-value"><code>{i.token}</code><button type="button" className={"admin-action admin-action-copy " + (copiedId === "code:" + i.id ? "is-success" : "")} disabled={busy} onClick={() => void action(async () => {await navigator.clipboard.writeText(i.token);setCopiedId("code:" + i.id);if(copyTimer.current) clearTimeout(copyTimer.current);copyTimer.current=setTimeout(() => setCopiedId(null),3000);})}>{copiedId === "code:" + i.id ? <CheckIcon size={17} weight="bold" aria-hidden="true" /> : <CopyIcon size={17} aria-hidden="true" />}{copiedId === "code:" + i.id ? "Copiado" : "Copiar código"}</button></div></div>
-                      </details>
                       </div></div>
                     </article>
+                      ))}
+                    </section>
                   ))}
                 </div>
               </>
             )}
           </>
         )}
-      </div>
+      </AdminContainer>
       {authorized && view === "dashboard" && modalState.modal && (
         <AdminModals
           key={modalState.modal + ":" + (modalState.convite ?? "")}
           modal={modalState.modal}
           selected={
-            modalState.modal === "novo-convite" ||
-            modalState.modal === "configuracoes"
+            modalState.modal === "new-invitation" ||
+            modalState.modal === "settings"
               ? undefined
               : invites.find((i) => i.id === modalState.convite)
           }
@@ -662,7 +586,7 @@ export function AdminPanel({
               await api("/api/admin/settings", "PUT", value);
               setSettings(value);
               closeModal();
-              setNotice("Configurações salvas.");
+              
             });
           }}
           onDelete={(invite) => {
@@ -673,7 +597,7 @@ export function AdminPanel({
               });
               closeModal();
               await load();
-              setNotice("Convite excluído.");
+              
             });
           }}
         />

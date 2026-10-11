@@ -28,10 +28,6 @@
     radial-gradient(ellipse at 8% 12%, #c7b79d24, transparent 46%),
     radial-gradient(ellipse at 100% 70%, #5d613c0b, transparent 45%);
 }
-.admin-shell {
-  width: min(1240px, calc(100% - 96px));
-  margin-inline: auto;
-}
 .admin-nav {
   min-height: 112px;
   display: flex;
@@ -385,7 +381,7 @@
 }
 .admin-stats {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   margin-block: 28px;
 }
@@ -706,20 +702,12 @@
   }
 }
 @media (min-width: 900px) {
-  .admin-wedding--login .admin-shell {
-    display: flex;
-    min-height: 100svh;
-    flex-direction: column;
-  }
-  .admin-wedding--login .admin-login-grid {
+    .admin-wedding--login .admin-login-grid {
     width: 100%;
   }
 }
 @media (max-width: 1000px) {
-  .admin-shell {
-    width: calc(100% - 56px);
-  }
-  .admin-login-card {
+    .admin-login-card {
     padding: 40px 30px;
   }
   .admin-stats {
@@ -736,10 +724,7 @@
   }
 }
 @media (max-width: 700px) {
-  .admin-shell {
-    width: calc(100% - 36px);
-  }
-  .admin-nav {
+    .admin-nav {
     min-height: 94px;
     gap: 12px;
   }
@@ -903,22 +888,11 @@
 }
 
 /* Login sem cabeçalho, centralizado nos dois eixos. */
-.admin-wedding--login .admin-shell {
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding-block: 32px;
-}
 .admin-wedding--login .admin-login-grid {
   width: 100%;
   margin: 0 auto;
 }
 
-/* Respiro no fim do painel e ornamentos sem coração no fundo. */
-.admin-wedding:not(.admin-wedding--login) .admin-shell {
-  padding-bottom: clamp(48px, 7vw, 96px);
-}
 .admin-floral-layer .lucide-heart {
   display: none;
 }
@@ -1574,3 +1548,89 @@
 .admin-profile-trigger{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:#697046;border-radius:var(--wedding-radius);padding:5px;background:#f8f7ef;border:1px solid #d9d7c6;flex-shrink:0}.admin-profile-trigger .admin-account-avatar{width:34px;height:34px;font-size:22px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:#eaeddc}.admin-profile-trigger:focus-visible{outline:2px solid #858b65;outline-offset:3px}.admin-profile-menu{z-index:260;min-width:240px;max-width:calc(100vw - 32px);padding:7px;border-radius:var(--wedding-radius);background:#fffdf9;border:1px solid #e3dccf;box-shadow:0 14px 45px #3d25011c;animation:admin-modal-fade .16s ease-out}.admin-profile-label{padding:12px 10px;color:#6c724c;font-size:11px}.admin-profile-label span{display:block;margin-top:7px;color:#80654e;overflow-wrap:anywhere;font-size:12px}.admin-profile-separator{height:1px;background:#e9e2d5;margin:4px 0}.admin-profile-item{display:flex;gap:9px;align-items:center;padding:12px 10px;color:#8c4a4c;font-size:12px;border-radius:var(--wedding-radius);cursor:pointer;outline:none}.admin-profile-item[data-highlighted]{background:#f9eded}.admin-profile-item[data-disabled]{opacity:.4;cursor:not-allowed}.admin-toolbar .admin-toolbar-refresh{flex-shrink:0;white-space:nowrap;min-height:48px;padding:12px 14px;font-size:11px}@media(max-width:600px){.admin-toolbar .admin-toolbar-refresh{width:100%}}
 
 .admin-profile-trigger{background:transparent;border:0;padding:0;gap:10px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:transparent;color:#3d2501}.admin-profile-name{font-size:11px;color:#66563e;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:480px){.admin-profile-name{max-width:150px}.admin-nav .admin-back{margin-left:0}.admin-profile-trigger{margin-left:auto}}
+
+.admin-guest-accordion summary { font-size:15px; }
+.admin-guest-accordion .admin-person-actions { justify-content:flex-start; flex-wrap:wrap; }
+.admin-guest-notes { display:grid; gap:18px; font-size:14px; }
+.admin-guest-notes p { color:#80654E; margin-bottom:8px; }
+.admin-guest-notes span { white-space:pre-wrap; overflow-wrap:anywhere; }
+
+.admin-guest-quick-actions { display:inline-flex; align-items:center; gap:8px; }
+
+.admin-guest-quick-actions .admin-action-icon { width:36px; height:36px; min-height:36px; padding:0; justify-content:center; }
+.admin-status { width:160px; min-height:32px; justify-content:center; white-space:nowrap; }
+@media (max-width:540px) {
+  .admin-guest-accordion summary { flex-wrap:wrap; }
+  .admin-guest-accordion .rsvp-guest-summary-status { margin-left:auto; }
+}
+
+.admin-guest-quick-actions .admin-action-icon,
+.admin-guest-quick-actions .admin-action-icon:hover,
+.admin-guest-quick-actions .admin-action-icon:active {
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+
+
+.admin-guest-name-alerts { display:inline-flex; align-items:center; gap:9px; flex-wrap:wrap; }
+.admin-dietary-alert { color:#e07b00; flex-shrink:0; }
+.admin-message-alert { color:#23864b; flex-shrink:0; }
+.admin-guest-legend { display:flex; align-items:center; flex-wrap:wrap; gap:12px 24px; margin-top:16px; color:#80654E; font-size:12px; }
+.admin-guest-legend>span { display:inline-flex; align-items:center; gap:7px; }
+.admin-guest-legend small { font-size:12px; }
+
+.admin-guest-legend { display:flex; align-items:center; gap:20px; padding:16px 20px; margin-top:16px; background:#fffdfa; border-radius:12px; color:#5c584d; }
+.admin-guest-legend>strong { font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#5D613C; }
+.admin-guest-legend-items { display:flex; flex-wrap:wrap; gap:12px 24px; }
+.admin-guest-legend-items>span { display:inline-flex; align-items:center; gap:8px; font-size:12px; }
+.admin-guest-accordion .admin-person-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; width:100%; }
+.admin-guest-accordion .admin-person-actions .admin-action { width:100%; justify-content:center; border:1px solid #5d613c30; background:transparent; box-shadow:none; color:#5D613C; transition:background-color .2s,color .2s; }
+.admin-guest-accordion .admin-person-actions .admin-action:hover:not(:disabled),
+.admin-guest-quick-actions .admin-action-icon:hover:not(:disabled) { background:#edf0e3; color:#3f5628; }
+@media(max-width:540px) {
+  .admin-guest-legend { align-items:flex-start; flex-direction:column; gap:12px; }
+  .admin-guest-accordion .admin-person-actions { grid-template-columns:1fr; }
+}
+
+.admin-invite-actions .admin-action,
+.admin-invite-actions .admin-action.is-success,
+.admin-invite-actions .admin-action-danger {
+  background:transparent;
+  border:1px solid #5d613c30;
+  color:#5D613C;
+  box-shadow:none;
+}
+.admin-invite-actions .admin-action:hover:not(:disabled),
+.admin-guest-accordion .admin-person-actions .admin-action:hover:not(:disabled) {
+  background:#edf0e3;
+  border-color:#5d613c60;
+  color:#5D613C;
+}
+
+.admin-invite-actions .admin-action { min-width:42px; height:42px; padding:10px 12px; gap:0; }
+.admin-guest-notes p { display:flex; align-items:center; gap:8px; }
+@media(max-width:600px) { .admin-invite-actions { display:flex; width:auto; } }
+
+
+
+.admin-invite-actions { display:flex; flex-wrap:nowrap; gap:8px; width:auto; }
+.admin-invite-actions .admin-action { flex-shrink:0; min-width:42px; }
+@media(max-width:600px) { .admin-invite-actions { max-width:100%; flex-wrap:wrap; } }
+
+.admin-guest-quick-actions .admin-action-icon { width:auto; min-width:42px; height:42px; padding:10px 12px; border:1px solid #5d613c30; background:transparent; gap:0; }
+.admin-guest-quick-actions .admin-action-icon:hover,
+.admin-guest-quick-actions .admin-action-icon:active { border:1px solid #5d613c60; background:#edf0e3; }
+.admin-guest-quick-actions .admin-action-icon>svg { flex-shrink:0; }
+@media(max-width:600px) {
+  .admin-guest-accordion summary { display:grid; grid-template-columns:minmax(0,1fr) auto 18px; gap:14px 10px; padding:20px 0; }
+  .admin-guest-accordion .admin-guest-name-alerts { grid-column:1; grid-row:1; font-size:14px; gap:6px; overflow-wrap:anywhere; }
+  .admin-guest-accordion .rsvp-guest-summary-status { display:contents; }
+  .admin-guest-accordion .rsvp-attendance-badge { grid-column:2; grid-row:1; width:140px; min-height:32px; padding:6px 8px; font-size:11px; }
+  .admin-guest-accordion .rsvp-accordion-caret { grid-column:3; grid-row:1; }
+  .admin-guest-quick-actions { grid-column:1 / -1; grid-row:2; justify-self:start; flex-wrap:wrap; max-width:100%; }
+  .admin-invite-header { gap:18px; }
+  .admin-invite .admin-form-help { font-size:12px; line-height:1.7; }
+  .admin-guest-accordion-fields { padding:4px 0 20px; }
+}
+@media(max-width:380px) { .admin-guest-accordion .rsvp-attendance-badge { width:125px; font-size:10px; } }

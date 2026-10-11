@@ -157,7 +157,8 @@ html { scrollbar-gutter: stable; }
 .guest-input { width: 100%; border: 1px solid #C7B79D; border-radius: var(--wedding-radius); padding: .8rem 1rem; background: #fff; color: #3D2501; min-height: 44px; }
 .guest-input:focus-visible { outline: 2px solid #5D613C; outline-offset: 2px; }
 .guest-button, .guest-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; border-radius: var(--wedding-radius); padding: .75rem 1.25rem; cursor: pointer; }
-.guest-button { background: #3D2501; color: #F5F5DA; }
+.guest-button { background: #5D613C; color: #F5F5DA; transition: background-color .2s; }
+.guest-button:hover:not(:disabled) { background: #4B4F30; }
 .guest-secondary { border: 1px solid #C7B79D; color: #3D2501; background: transparent; }
 .guest-button:disabled, .guest-secondary:disabled { opacity: .5; cursor: wait; }
 .guest-button:focus-visible, .guest-secondary:focus-visible { outline: 2px solid #5D613C; outline-offset: 3px; }
@@ -185,3 +186,20 @@ input[type=checkbox]{appearance:none;width:19px;height:19px;flex-shrink:0;border
 
 .admin-invite-collapse{display:grid;grid-template-rows:1fr;opacity:1;visibility:visible;transition:grid-template-rows .42s cubic-bezier(.22,1,.36,1),opacity .28s ease,visibility 0s}.admin-invite-collapse-inner{min-height:0;overflow:hidden}.admin-invite-collapse[data-open="false"]{grid-template-rows:0fr;opacity:0;visibility:hidden;transition:grid-template-rows .42s cubic-bezier(.22,1,.36,1),opacity .2s ease,visibility 0s .42s}.admin-invite-toggle svg{transition:transform .42s cubic-bezier(.22,1,.36,1)}@media(prefers-reduced-motion:reduce){.admin-invite-collapse,.admin-invite-collapse[data-open="false"],.admin-invite-toggle svg{transition:none}}
 
+
+.rsvp-guest-accordion { border-bottom: 1px solid #e3dccf; }
+.rsvp-guest-accordion summary { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 0; cursor:pointer; list-style:none; color:#5D613C; }
+.rsvp-guest-accordion summary::-webkit-details-marker { display:none; }
+.rsvp-guest-accordion summary:focus-visible { outline:2px solid #5D613C; outline-offset:4px; }
+.rsvp-guest-summary-status { display:flex; align-items:center; gap:10px; font-size:12px; }
+.rsvp-guest-summary-status svg { flex-shrink:0; transition:transform .2s; }
+.rsvp-guest-accordion[open] .rsvp-accordion-caret { transform:rotate(180deg); }
+.rsvp-guest-accordion-fields { display:flex; flex-direction:column; gap:24px; padding:8px 0 24px; }
+.rsvp-guest-accordion-fields label>span { font-size:14px; color:#705c44; }
+
+.rsvp-attendance-badge { width:180px; min-height:32px; flex-shrink:0; justify-content:center; white-space:nowrap; display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; line-height:1.4; }
+.rsvp-attendance-badge--confirmado { color:#40532d; background:#edf3e6; }
+.rsvp-attendance-badge--pendente { color:#885c1e; background:#faf0df; }
+.rsvp-attendance-badge--recusado { color:#994452; background:#faecef; }
+
+.wedding-tooltip { position:fixed; z-index:10000; transform:translateX(-50%); max-width:min(260px, calc(100vw - 24px)); padding:8px 12px; border-radius:8px; background:#5D613C; color:#fff; font-family:var(--font-sans); font-size:12px; line-height:1.5; text-align:center; pointer-events:none; box-shadow:0 4px 16px #0002; }
