@@ -6,7 +6,8 @@ import {AnimatePresence, motion, useReducedMotion} from "framer-motion";
 import {Menu, X, Users, Check, LayoutDashboard, Settings, LogOut} from "lucide-react";
 
 type MobileAdminMenuProps = {
-  section: "overview" | "guests" | "check-in";
+  section: "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
+  role: "admin" | "reception";
   email: string | null;
   busy: boolean;
   authorized: boolean;
@@ -14,13 +15,14 @@ type MobileAdminMenuProps = {
   onSignOut: () => void;
 };
 
-export function MobileAdminMenu({section,email,busy,authorized,onSettings,onSignOut}:MobileAdminMenuProps) {
+export function MobileAdminMenu({role,section,email,busy,authorized,onSettings,onSignOut}:MobileAdminMenuProps) {
   const [open,setOpen] = useState(false);
   const reducedMotion = useReducedMotion();
   const links = [
     {href:"/admin/dashboard",label:"Visão geral",key:"overview",icon:LayoutDashboard},
     {href:"/admin/guests",label:"Lista de convidados",key:"guests",icon:Users},
     {href:"/admin/check-in",label:"Controle de chegada",key:"check-in",icon:Check},
+    ...[{key:"tables",label:"Mesas e lugares"},{key:"buffet",label:"Alimentação e buffet"},{key:"history",label:"Histórico de alterações"},{key:"team",label:"Equipe da recepção"}].map(item=>({...item,href:"/admin/"+item.key,icon:LayoutDashboard})),
   ];
   return <Dialog.Root open={open} onOpenChange={setOpen}>
     <Dialog.Trigger asChild><button type="button" aria-label="Abrir menu" className="ml-auto inline-flex size-11 shrink-0 items-center justify-center rounded-[var(--wedding-radius)] text-[#5D613C] transition-colors hover:bg-[#5d613c10] focus-visible:outline-2 focus-visible:outline-[#5D613C] lg:hidden"><Menu size={24} /></button></Dialog.Trigger>
@@ -31,8 +33,8 @@ export function MobileAdminMenu({section,email,busy,authorized,onSettings,onSign
           <div className="flex items-center justify-between gap-4"><Dialog.Title className="font-serif text-3xl">Nosso casamento</Dialog.Title><Dialog.Close asChild><button type="button" aria-label="Fechar menu" className="flex size-11 items-center justify-center rounded-[var(--wedding-radius)] hover:bg-[#5d613c10]"><X size={22} /></button></Dialog.Close></div>
           <Dialog.Description className="mt-2 text-xs text-[#80654E]">Espaço dos noivos</Dialog.Description>
           <nav aria-label="Menu mobile do painel" className="mt-8 flex flex-col gap-2">
-            {links.map(({href,label,key,icon:Icon}) => <Link key={key} href={href} onClick={()=>setOpen(false)} aria-current={section === key ? "page" : undefined} className={"flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm transition-colors hover:bg-[#5d613c10] " + (section === key ? "bg-[#5d613c10] font-semibold" : "")}><Icon size={19} />{label}</Link>)}
-            <button type="button" disabled={busy || !authorized} onClick={()=>{setOpen(false);onSettings();}} className="flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm hover:bg-[#5d613c10] disabled:opacity-40"><Settings size={19} />Configurações</button>
+            {links.filter(link=>role === "admin" || link.key === "check-in").map(({href,label,key,icon:Icon}) => <Link key={key} href={href} onClick={()=>setOpen(false)} aria-current={section === key ? "page" : undefined} className={"flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm transition-colors hover:bg-[#5d613c10] " + (section === key ? "bg-[#5d613c10] font-semibold" : "")}><Icon size={19} />{label}</Link>)}
+            <button type="button" disabled={busy || !authorized || role !== "admin"} onClick={()=>{setOpen(false);onSettings();}} className="flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm hover:bg-[#5d613c10] disabled:opacity-40"><Settings size={19} />Configurações</button>
           </nav>
           <div className="mt-auto pt-10"><p className="break-all px-4 text-xs text-[#80654E]">{email}</p><button type="button" disabled={busy} onClick={()=>{setOpen(false);onSignOut();}} className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm hover:bg-[#5d613c10] disabled:opacity-40"><LogOut size={18} />Sair da conta</button></div>
         </motion.div></Dialog.Content>

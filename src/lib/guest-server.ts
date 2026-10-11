@@ -36,26 +36,27 @@ export function sameOrigin(request: Request) {
   if (origin && origin !== new URL(request.url).origin)
     throw new HttpError(403, "Origem não permitida.");
 }
-export async function requireAdmin(request: Request) {
+export async function requireAccess(request: Request) {
   sameOrigin(request);
-  const bearer = request.headers
-    .get("authorization")
-    ?.match(/^Bearer (.+)$/)?.[1];
+  const bearer = request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
   if (!bearer) throw new HttpError(401, "Faça login para continuar.");
   const { auth, db } = services();
-  let uid: string;
-  try {
-    uid = (await auth.verifyIdToken(bearer, true)).uid;
-  } catch {
-    throw new HttpError(401, "Sua sessão expirou. Entre novamente.");
+  let identity;
+  try { identity = await auth.verifyIdToken(bearer, true); }
+  catch { throw new HttpError(401, "Sua sessão expirou. Entre novamente."); }
+  const admins = (process.env.FIREBASE_ADMIN_UIDS ?? "").split(",").map(s => s.trim());
+  if (admins.includes(identity.uid)) return {db, uid:identity.uid, email:identity.email ?? "Administrador", role:"admin" as const};
+  const email = identity.email?.toLowerCase();
+  if (email) {
+    const member = await db.collection("receptionTeam").doc(tokenId(email)).get();
+    if (member.data()?.active === true && (identity.email_verified || member.data()?.uid === identity.uid)) return {db, uid:identity.uid, email, role:"reception" as const};
   }
-  const allowed = (process.env.FIREBASE_ADMIN_UIDS ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (!allowed.includes(uid))
-    throw new HttpError(403, "Esta conta não tem acesso ao painel.");
-  return db;
+  throw new HttpError(403, "Esta conta não tem acesso ao painel.");
+}
+export async function requireAdmin(request: Request) {
+  const access = await requireAccess(request);
+  if (access.role !== "admin") throw new HttpError(403, "Esta ação é exclusiva da administração.");
+  return access.db;
 }
 export const tokenSchema = z.string().regex(/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/);
 export const invitationDocumentId = (token: string) => token.includes('.') ? token.split('.')[0] : tokenId(token);
@@ -81,6 +82,9 @@ export const guestSchema = z
     child: z.boolean(),
     status: z.enum(["pendente", "confirmado", "recusado"]),
     checkedIn: z.boolean(),
+    tableId: z.string().max(80).optional(),
+    seat: z.string().trim().max(30).optional(),
+    checkedInAt: z.string().nullable().optional(),
   })
   .strict()
   .refine(

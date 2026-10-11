@@ -1,8 +1,10 @@
+import {audit} from "@/lib/event-audit";
 import {
   body,
   failure,
   reply,
   requireAdmin,
+  requireAccess,
   settingsSchema,
 } from "@/lib/guest-server";
 export const runtime = "nodejs";
@@ -19,7 +21,8 @@ export async function PUT(request: Request) {
   try {
     const db = await requireAdmin(request);
     const data = settingsSchema.parse(await body(request));
-    await db.doc("settings/rsvp").set(data);
+    const {email} = await requireAccess(request);
+    await db.runTransaction(async t=>{t.set(db.doc("settings/rsvp"),data);audit(t,db,email,"Configurações atualizadas","Confirmações",data.enabled?"Respostas abertas":"Respostas encerradas");});
     return reply({ success: true });
   } catch (e) {
     return failure(e);

@@ -1,3 +1,4 @@
+import {audit} from "@/lib/event-audit";
 import { z } from "zod";
 import { services } from "@/lib/firebase/admin";
 import {
@@ -72,6 +73,7 @@ export async function POST(request: Request) {
           "Responda apenas pelas pessoas do convite, sem repetir nomes.",
         );
       const now = new Date().toISOString();
+      audit(t,db,"Convidado · "+(data.token.includes(".") ? allowed[0].name : current.label),"Resposta de presença",current.label,data.responses.map(r=>guests.find(g=>g.id===r.id)?.name+": "+r.status).join("; "));
       t.update(ref, {
         guests: guests.map((g) => responses.has(g.id) ? ({
           ...g,

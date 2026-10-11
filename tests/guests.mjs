@@ -25,20 +25,16 @@ const ref = (key) => ({
 });
 const db = {
   doc: ref,
-  collection: (name) => ({
-    doc: (id) => ref(`${name}/${id}`),
-    orderBy: () => ({
-      get: async () => ({
-        docs: [...store]
-          .filter(([k]) => k.startsWith(`${name}/`))
-          .map(([k, v]) => ({ id: k.split("/")[1], data: () => clone(v) })),
-      }),
-    }),
-  }),
+  collection: (name) => {
+    const query = {name, doc:(id)=>ref(name+"/"+id), orderBy:()=>query, limit:()=>query,
+      get:async()=>({docs:[...store].filter(([k])=>k.startsWith(name+"/")).map(([k,v])=>({id:k.split("/")[1],data:()=>clone(v)}))})};
+    return query;
+  },
   runTransaction: async (callback) => {
     const writes = [];
     const result = await callback({
-      get: async (r) => snapshot(r.key),
+      get: async (r) => r.name ? r.get() : snapshot(r.key),
+      set: (r,value)=>writes.push(()=>store.set(r.key,clone(value))),
       update: (r, value) =>
         writes.push(() =>
           store.set(r.key, { ...store.get(r.key), ...clone(value) }),
@@ -49,11 +45,17 @@ const db = {
     return result;
   },
 };
+const authAccounts = new Map();
 const services = () => ({
   db,
   auth: {
+    createUser: async ({email,password}) => {if(authAccounts.has(email))throw Object.assign(new Error("Exists"),{code:"auth/email-already-exists"});const user={uid:randomUUID(),email,password};authAccounts.set(email,user);return user;},
+    deleteUser: async uid => {for(const [email,user] of authAccounts)if(user.uid===uid)authAccounts.delete(email);},
     verifyIdToken: async (token) => {
+      if (token === "managed") return {...authAccounts.get("newstaff@example.com"),email_verified:false};
       if (token === "valid") return { uid: "bride" };
+      if (token === "reception") return {uid:"reception-user",email:"staff@example.com",email_verified:true};
+      if (token === "unverified") return {uid:"unverified",email:"staff@example.com",email_verified:false};
       if (token === "outsider") return { uid: "stranger" };
       throw new Error("invalid");
     },
@@ -141,7 +143,7 @@ async function check(title, work) {
   const invitation = { label: "Família teste", active: true, guests };
   await check("convite cadastrado com código aleatório", async () => {
     assert.equal((await admin.POST(request("POST", invitation))).status, 201);
-    assert.equal(store.size, 1);
+    assert.equal([...store.keys()].filter(k=>k.startsWith("invitations/")).length, 1);
   });
   const list = await (await admin.GET(request("GET"))).json();
   const invite = list.invitations[0];
@@ -346,6 +348,87 @@ async function check(title, work) {
     assert.equal(otherView.invitation.guests[0].dietaryRestrictions,"Vegetariano");
     store.set(groupKey,{...store.get(groupKey),guests:[guests[1]]});
     assert.equal((await lookup.POST(request("POST",{token}))).status,404);
+  });
+
+  const ops = load("src/app/api/admin/operations/route.ts");
+  const reception = load("src/app/api/admin/reception/route.ts");
+  await check("equipe precisa de autorização e e-mail verificado", async () => {
+    assert.equal((await reception.GET(request("GET",null,"reception"))).status,403);
+    assert.equal((await ops.POST(request("POST",{action:"team",email:"staff@example.com",active:true}))).status,200);
+    assert.equal((await reception.GET(request("GET",null,"unverified"))).status,403);
+    assert.equal((await reception.GET(request("GET",null,"reception"))).status,200);
+  });
+  await check("recepção não pode administrar convites, configurações ou equipe", async () => {
+    assert.equal((await admin.GET(request("GET",null,"reception"))).status,403);
+    assert.equal((await admin.POST(request("POST",invitation,"reception"))).status,403);
+    assert.equal((await settings.GET(request("GET",null,"reception"))).status,403);
+    assert.equal((await ops.POST(request("POST",{action:"team",email:"intruder@example.com",active:true},"reception"))).status,403);
+  });
+  let eventInvite,table;
+  await check("mesas respeitam capacidade e lugares não podem ser duplicados", async () => {
+    const group={...invitation,guests:guests.map(g=>({...g,status:"confirmado"}))};
+    await admin.POST(request("POST",group));
+    eventInvite=(await (await admin.GET(request("GET"))).json()).invitations.find(i=>i.guests.length===2);
+    assert.equal((await ops.POST(request("POST",{action:"table",name:"Mesa 01",capacity:1}))).status,200);
+    table=(await (await ops.GET(request("GET"))).json()).tables[0];
+    const assign=(guestId,seat)=>ops.POST(request("POST",{action:"assign",invitationId:eventInvite.id,guestId,tableId:table.id,seat}));
+    assert.equal((await assign(guests[0].id,"01")).status,200);
+    assert.equal((await assign(guests[1].id,"02")).status,409);
+    assert.equal((await ops.POST(request("POST",{action:"table",id:table.id,name:table.name,capacity:2}))).status,200);
+    assert.equal((await assign(guests[1].id,"01")).status,409);
+    assert.equal((await assign(guests[1].id,"02")).status,200);
+    assert.equal((await ops.POST(request("POST",{action:"table",id:table.id,name:table.name,capacity:1}))).status,400);
+    assert.equal((await ops.POST(request("POST",{action:"delete-table",id:table.id}))).status,400);
+  });
+  await check("recepção recebe mesas e nomes sem tokens nem recados", async () => {
+    const key="invitations/"+eventInvite.id;
+    store.set(key,{...store.get(key),message:"private",dietaryRestrictions:"private",personalResponses:{[guests[0].id]:{message:"private",dietaryRestrictions:"private"}}});
+    const result=await (await reception.GET(request("GET",null,"reception"))).json();
+    const item=result.invitations.find(i=>i.id===eventInvite.id);
+    assert.equal(item.token,undefined);assert.equal(item.message,undefined);assert.equal(item.personalResponses,undefined);
+    assert.equal(item.guests[0].tableId,table.id);
+  });
+  await check("chegada em grupo, desfazer e proteção contra alteração concorrente", async () => {
+    const payload={id:eventInvite.id,guestIds:guests.map(g=>g.id),checkedIn:true,expectedCheckedIn:false};
+    assert.equal((await reception.PATCH(request("PATCH",payload,"reception"))).status,200);
+    assert(store.get("invitations/"+eventInvite.id).guests.every(g=>g.checkedInAt));
+    assert.equal((await reception.PATCH(request("PATCH",payload,"reception"))).status,409);
+    assert.equal((await reception.PATCH(request("PATCH",{...payload,checkedIn:false,expectedCheckedIn:true},"reception"))).status,200);
+    assert(store.get("invitations/"+eventInvite.id).guests.every(g=>!g.checkedIn && g.checkedInAt===null));
+    assert.equal((await reception.PATCH(request("PATCH",{...payload,guestIds:[randomUUID()]},"reception"))).status,400);
+  });
+  await check("histórico é atômico e não guarda tokens privados", async () => {
+    const entries=[...store].filter(([key])=>key.startsWith("auditLog/")).map(([,value])=>value);
+    assert(entries.some(e=>e.action==="Chegada registrada"));assert(entries.some(e=>e.action==="Lugar atualizado"));
+    assert(!JSON.stringify(entries).includes(eventInvite.token));
+    const size=entries.length;
+    await reception.PATCH(request("PATCH",{id:eventInvite.id,guestIds:[randomUUID()],checkedIn:true,expectedCheckedIn:false},"reception"));
+    assert.equal([...store.keys()].filter(key=>key.startsWith("auditLog/")).length,size);
+  });
+  await check("abertura válida é registrada sem alterar revisão e links inválidos não contam", async () => {
+    const before=clone(store.get("invitations/"+eventInvite.id));
+    const token=eventInvite.personalTokens[guests[0].id];
+    assert.equal((await lookup.POST(request("POST",{token}))).status,200);
+    const after=store.get("invitations/"+eventInvite.id);assert(after.openedAt);assert(after.personalOpenedAt[guests[0].id]);assert.equal(after.revision,before.revision);
+    assert.equal((await lookup.POST(request("POST",{token:token.replace(guests[0].id,randomUUID())}))).status,404);
+  });
+  await check("revogação bloqueia imediatamente a conta da recepção", async () => {
+    await ops.POST(request("POST",{action:"team",email:"staff@example.com",active:false}));
+    assert.equal((await reception.GET(request("GET",null,"reception"))).status,403);
+  });
+  await check("criação da equipe cria conta, limita acesso e não persiste senha", async()=>{
+    const payload={action:"create-team",email:"newstaff@example.com",password:"test-password-123"};
+    assert.equal((await ops.POST(request("POST",payload,"reception"))).status,403);
+    assert.equal((await ops.POST(request("POST",{...payload,password:"short"}))).status,400);
+    assert.equal((await ops.POST(request("POST",payload))).status,200);
+    assert(authAccounts.has(payload.email));
+    assert.equal((await reception.GET(request("GET",null,"managed"))).status,200);
+    assert.equal((await ops.GET(request("GET",null,"managed"))).status,403);
+    assert(!JSON.stringify([...store.values()]).includes(payload.password));
+    assert.equal((await ops.POST(request("POST",payload))).status,409);
+    assert.equal((await ops.POST(request("POST",{action:"remove-team",email:payload.email}))).status,200);
+    assert.equal((await reception.GET(request("GET",null,"managed"))).status,403);
+    assert(authAccounts.has(payload.email));
   });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,

@@ -31,6 +31,15 @@ export async function POST(request: Request) {
     const allowed = authorizedGuests(token, data as {token: string; guests: import('@/types/guests').Guest[]});
     const personal = token.includes('.');
     const notes = personal ? data.personalResponses?.[allowed[0].id] : data;
+    // Opening a valid link tracks access without invalidating an RSVP form.
+    const invitationRef = db.collection("invitations").doc(invitationDocumentId(token));
+    await db.runTransaction(async t => {
+      const latest = await t.get(invitationRef), current = latest.data();
+      if (!current?.active) throw new HttpError(404,"Convite não encontrado.");
+      authorizedGuests(token, current as {token:string; guests:import('@/types/guests').Guest[]});
+      const now = new Date().toISOString();
+      t.update(invitationRef, {openedAt:current.openedAt ?? now, ...(personal ? {personalOpenedAt:{...(current.personalOpenedAt ?? {}),[allowed[0].id]:current.personalOpenedAt?.[allowed[0].id] ?? now}} : {})});
+    });
     const config = settings.data() ?? { enabled: true, deadline: "" };
     return reply({
       invitation: {
