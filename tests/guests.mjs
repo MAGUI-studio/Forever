@@ -547,7 +547,7 @@ async function check(title, work) {
     const {copyFields,copyDefaults,siteCopy}=load("src/config/templates/registry.ts");
     const {weddingConfigSchema}=load("src/lib/wedding-schema.ts"),{emptyWeddingConfig}=load("src/config/forever.ts");
     assert.deepEqual(copyFields.filter(field=>field.section==="rsvp").map(field=>field.key),["rsvp.text1","rsvp.text4"]);
-    for(const key of ["footer.text3","hero.text6","gifts.text14","rsvp.text38","checkout.text21"]){assert(!copyFields.some(field=>field.key===key));assert.equal(siteCopy({[key]:"Texto adulterado"},key),copyDefaults[key]);}
+    for(const key of ["footer.text3","hero.text6","gifts.text14","rsvp.text38","checkout.text21","countdown.text1","countdown.text4","countdown.text5","countdown.text6","countdown.text7"]){assert(!copyFields.some(field=>field.key===key));assert.equal(siteCopy({[key]:"Texto adulterado"},key),copyDefaults[key]);}
     const config=weddingConfigSchema.parse({...emptyWeddingConfig,copy:{"rsvp.text38":"Texto adulterado","rsvp.text1":"Boas-vindas"}});
     assert.equal(config.copy["rsvp.text38"],undefined);assert.equal(config.copy["rsvp.text1"],"Boas-vindas");
   });

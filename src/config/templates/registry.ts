@@ -6,7 +6,7 @@ export const templateIds=["botanical-classic","contemporary-romance"] as const;
 export type TemplateId=(typeof templateIds)[number];
 export const defaultTemplateId:TemplateId="botanical-classic";
 export const foreverTemplateId:TemplateId="contemporary-romance";
-export const templateCatalog=[{id:defaultTemplateId,name:"Botânico clássico",description:"Romântico e natural, com ramos, flores e tons de oliva.",image:"/detalhes/aliancas-florais.jpg"},{id:foreverTemplateId,name:"Romance contemporâneo",description:"Romântico e cinematográfico, com fotografias, corações desenhados à mão e detalhes em bordô.",image:"/forever/icon_black.svg"}] as const;
+export const templateCatalog=[{id:defaultTemplateId,name:"Botânico clássico",description:"Elegância atemporal e delicadeza floral para celebrar uma história de amor com leveza.",image:"/detalhes/aliancas-florais.jpg"},{id:foreverTemplateId,name:"Romance contemporâneo",description:"Sua história em destaque, com fotos marcantes e detalhes que unem romance e personalidade.",image:"/forever/icon_black.svg"}] as const;
 export type CopySection="gallery"|"hero"|"countdown"|"story"|"transition"|"events"|"schedule"|"dressCode"|"gifts"|"rsvp"|"checkout"|"footer";
 export const copySections:Record<CopySection,{label:string;anchor:string;module?:WeddingModule}>={gallery:{label:"Galeria do casal",anchor:"galeria"},schedule:{label:"Programação do dia",anchor:"programacao"},hero:{label:"Capa",anchor:"inicio"},countdown:{label:"Contagem regressiva",anchor:"contagem-regressiva"},story:{label:"Nossa história",anchor:"historia"},transition:{label:"O nosso para sempre",anchor:".cinema-transition"},events:{label:"Cerimônia e festa",anchor:"eventos"},dressCode:{label:"Trajes",anchor:"dress-code"},gifts:{label:"Lista de presentes",anchor:"presentes",module:"gifts"},rsvp:{label:"Confirmação de presença",anchor:"rsvp",module:"rsvp"},checkout:{label:"Pagamento dos presentes",anchor:"pagamento-presente",module:"gifts"},footer:{label:"Rodapé",anchor:".cinema-footer"}};
 const allCopyFields=[...fields,...romanceFields,...galleryCopyFields] as {key:string;section:CopySection;label:string;defaultValue:string;module?:WeddingModule}[];
@@ -19,13 +19,14 @@ export const fixedCopyKeys = new Set(allCopyFields.filter(field=>
   field.section === "checkout" ||
   (field.section === "rsvp" && !editableRsvpKeys.has(field.key)) ||
   field.label === "Texto do botão" || field.label === "Descrição acessível" ||
+  field.label === "Unidade do contador" || field.key === "countdown.text1" ||
   fixedActionKeys.has(field.key) || unusedGiftKeys.has(field.key)
 ).map(field=>field.key));
 export const copyFields=allCopyFields.filter(field=>!fixedCopyKeys.has(field.key)&&field.key!=="hero.text5"&&!["dressCode.text2","dressCode.text3","gifts.text3","gifts.text4"].includes(field.key));
 export function siteCopy(copy:Record<string,string>|undefined,key:string,templateId:TemplateId=defaultTemplateId){const defaults=templateCopyDefaults(templateId);if(key==="gifts.heading"&&copy?.[key]===undefined)return (copy?.["gifts.text3"]??copyDefaults["gifts.text3"])+(copy?.["gifts.text4"]??copyDefaults["gifts.text4"]);if(key==="dressCode.heading"&&copy?.[key]===undefined)return (copy?.["dressCode.text2"]??copyDefaults["dressCode.text2"])+(copy?.["dressCode.text3"]??copyDefaults["dressCode.text3"]);return fixedCopyKeys.has(key)?copyDefaults[key]:(copy?.[key]??defaults[key]??"");}
 
 export const templateSections:Record<TemplateId,CopySection[]>={
- "botanical-classic":["hero","countdown","story","transition","events","gallery","dressCode","gifts","rsvp","footer"],
+ "botanical-classic":["hero","story","transition","events","gallery","dressCode","gifts","rsvp","footer"],
  "contemporary-romance":["hero","countdown","story","gallery","events","schedule","dressCode","gifts","rsvp","footer"],
 };
 export function templateCopyFields(id:TemplateId){return copyFields.filter(field=>id==="contemporary-romance"?field.key.startsWith("romance.")||["rsvp.text1","rsvp.text4"].includes(field.key):!field.key.startsWith("romance."));}
