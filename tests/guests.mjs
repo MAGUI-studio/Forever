@@ -32,8 +32,9 @@ const ref = (key) => ({
 const db = {
   doc: ref,
   collection: (name) => {
-    const query = {name, doc:(id)=>ref(name+"/"+id), orderBy:()=>query, limit:()=>query,
-      get:async()=>({docs:[...store].filter(([k])=>k.startsWith(name+"/") && k.slice(name.length+1).indexOf("/")===-1).map(([k,v])=>({id:k.split("/").at(-1),ref:ref(k),data:()=>clone(v)}))})};
+    const filters=[];
+    const query = {name, where:(key,operator,value)=>{assert.equal(operator,"==");filters.push([key,value]);return query;},select:()=>query, doc:(id)=>ref(name+"/"+id), orderBy:()=>query, limit:()=>query,
+      get:async()=>({docs:[...store].filter(([k])=>k.startsWith(name+"/") && k.slice(name.length+1).indexOf("/")===-1).filter(([,value])=>filters.every(([key,expected])=>value[key]===expected)).map(([k,v])=>({id:k.split("/").at(-1),ref:ref(k),data:()=>clone(v)}))})};
     return query;
   },
   runTransaction: async (callback) => {
@@ -553,6 +554,24 @@ async function check(title, work) {
     const current=clone(emptyWeddingConfig);current.couple.coverImage="/fixed-cover.jpg";current.ceremony.image="/fixed-venue.jpg";
     const next=clone(current);next.couple.coverImage="/changed.jpg";next.ceremony.image="/changed-venue.jpg";next.gifts=[{id:"one",title:"Presente",price:10,category:"Casa",categoryLabel:"Casa",image:"/gift.jpg"}];
     const saved=preserveTemplateImages(next,current);assert.equal(saved.couple.coverImage,current.couple.coverImage);assert.equal(saved.ceremony.image,current.ceremony.image);assert.equal(saved.gifts[0].image,"/gift.jpg");
+  });
+  await check("SEO usa URLs públicas, imagem OG real e protege páginas privadas",async()=>{
+    const {pageMetadata,weddingMetadata,jsonLd,SEO_ORIGIN,SEO_IMAGE}=load("src/lib/seo.ts");
+    const image=fs.readFileSync("public/SEO/og-image.png");assert.equal(image.readUInt32BE(16),SEO_IMAGE.width);assert.equal(image.readUInt32BE(20),SEO_IMAGE.height);
+    const home=pageMetadata({title:"Forever"});assert.equal(home.alternates.canonical,SEO_ORIGIN+"/");assert.equal(home.openGraph.images[0].url,SEO_ORIGIN+"/SEO/og-image.png");assert.equal(home.twitter.card,"summary_large_image");
+    const privatePage=pageMetadata({title:"Editor",path:"/test-couple/admin/site?action=edit",index:false});assert.equal(privatePage.alternates.canonical,SEO_ORIGIN+"/test-couple/admin/site");assert.equal(privatePage.robots.index,false);assert.equal(privatePage.robots.googleBot.index,false);
+    assert.throws(()=>pageMetadata({title:"Invalid",path:"https://example.org"}));
+    const {emptyWeddingConfig}=load("src/config/forever.ts");const wedding={slug:"seo-couple",status:"published",config:{...emptyWeddingConfig,couple:{...emptyWeddingConfig.couple,partner1:"Ana",partner2:"Pedro",weddingDate:"2027-05-01T23:00:00-03:00"}}};
+    const meta=weddingMetadata(wedding);assert.equal(meta.title.absolute,"Ana & Pedro | Forever");assert.equal(meta.alternates.canonical,SEO_ORIGIN+"/seo-couple");assert(meta.description.includes("1 de maio de 2027"));assert.equal(weddingMetadata(wedding,"rsvp").robots.index,false);
+    const original={name:"</script><script>alert(1)</script>"};const encoded=jsonLd(original);assert(!encoded.includes("<"));assert.deepEqual(JSON.parse(encoded),original);
+  });
+  await check("sitemap inclui somente casamentos publicados e robots anuncia o sitemap",async()=>{
+    const {default:sitemap}=load("src/app/sitemap.ts"),{default:robots}=load("src/app/robots.ts"),{SEO_ORIGIN}=load("src/lib/seo.ts");
+    for(const status of ["published","draft","suspended","archived"])store.set("weddings/seo-"+status,{status,updatedAt:"2026-10-13T12:00:00Z"});
+    const entries=await sitemap();assert(entries.some(entry=>entry.url===SEO_ORIGIN+"/"));assert(entries.some(entry=>entry.url===SEO_ORIGIN+"/seo-published"));
+    for(const status of ["draft","suspended","archived"])assert(!entries.some(entry=>entry.url.endsWith("/seo-"+status)));
+    assert(entries.every(entry=>!entry.url.includes("/admin")&&!entry.url.includes("/rsvp")&&!entry.url.includes("?")));assert.equal(robots().sitemap,SEO_ORIGIN+"/sitemap.xml");
+    for(const status of ["published","draft","suspended","archived"])store.delete("weddings/seo-"+status);
   });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,

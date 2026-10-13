@@ -1,11 +1,15 @@
+import {pageMetadata,SEO_ORIGIN,SEO_IMAGE,jsonLd} from "@/lib/seo";
 import Link from "next/link";
 import {ArrowUpRight,ArrowRight} from "lucide-react";
 import {foreverTheme} from "@/config/brand";
 import {ForeverLogo} from "@/components/forever/ForeverLogo";
 import {ForeverBackground} from "@/components/forever/ForeverBackground";
 
+export const metadata=pageMetadata({title:"Forever | Sites de casamento por MAGUI.studio"});
+
 export default function ForeverHome(){
  return <main style={foreverTheme} className="relative mx-auto flex min-h-svh w-full max-w-440 flex-col overflow-hidden bg-[var(--page-background,#F1F1F1)] px-6 text-[#161616] sm:px-10">
+  <script type="application/ld+json" dangerouslySetInnerHTML={{__html:jsonLd({"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://magui.studio/#organization",name:"MAGUI.studio",url:"https://magui.studio"},{"@type":"WebSite","@id":SEO_ORIGIN+"/#website",name:"Forever",url:SEO_ORIGIN,inLanguage:"pt-BR",image:SEO_IMAGE.url,publisher:{"@id":"https://magui.studio/#organization"}}]})}}/>
   <ForeverBackground/>
   <div className="relative flex flex-1 flex-col items-center justify-center py-16 text-center sm:py-24">
    <ForeverLogo className="mb-10 w-72 max-w-full sm:mb-12 sm:w-[400px]"/>

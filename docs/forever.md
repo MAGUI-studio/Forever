@@ -46,3 +46,8 @@ Commercial follow-ups: automated billing/plan enforcement, contractual privacy a
 ### Template backgrounds
 
 Background artwork belongs to the selected template. The botanical branches, flowers and hearts live in `BotanicalClassicOrnaments.tsx`. `visual-registry.ts` requires background and accent renderers for every template ID. Public pages, the live preview, admin pages, dialogs and loading screens resolve their artwork through `WeddingOrnaments` and `WeddingBranch`, using the wedding template ID. Generic platform screens use the default template. Add each new template’s own renderers to this registry rather than changing the shared botanical artwork.
+
+
+### SEO and link previews
+
+`src/lib/seo.ts` defines the production origin, canonical URLs, Open Graph and Twitter cards. All share cards use `public/SEO/og-image.png` (1200 × 630). Public wedding pages generate couple-specific titles and descriptions; confirmation links never expose guest names or invitation tokens in metadata. Private pages declare noindex for both general crawlers and Googlebot. `robots.txt` advertises `sitemap.xml`, which lists only the home page and published wedding slugs. Drafts, suspended weddings, archived weddings, admin routes and RSVP URLs are excluded. JSON-LD identifies the Forever website and MAGUI.studio publisher; wedding pages have WebPage data. New public routes should call `pageMetadata` with their own path, and private routes must set `index: false`. The image becomes available on the production URL after deployment.

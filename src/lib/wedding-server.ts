@@ -1,4 +1,5 @@
 import "server-only";
+import {cache} from "react";
 import type { Firestore } from "firebase-admin/firestore";
 import { services } from "./firebase/admin";
 import { validWeddingSlug } from "@/config/forever";
@@ -17,10 +18,10 @@ export function scopedDatabase(db: Firestore, slug: string): WeddingDatabase {
     runTransaction: db.runTransaction.bind(db),
   };
 }
-export async function findWedding(slug: string) {
+export const findWedding=cache(async(slug: string)=> {
   if (!validWeddingSlug(slug)) return null;
   const snap = await services()
     .db.doc("weddings/" + slug)
     .get();
   return snap.exists ? ({ ...snap.data(), slug } as WeddingDocument) : null;
-}
+});

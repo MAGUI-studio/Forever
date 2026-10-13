@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import {rootMetadata} from "@/lib/seo";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -17,7 +17,7 @@ const jakarta = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-export const metadata: Metadata = {title:"Forever | MAGUI.studio",description:"Sites de casamento e organização de convidados por MAGUI.studio."};
+export const metadata=rootMetadata;
 
 export default function RootLayout({
   children,
