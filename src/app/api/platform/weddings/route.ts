@@ -4,6 +4,7 @@ import { platformIdentity } from "@/lib/platform-server";
 import { body, failure, HttpError, reply } from "@/lib/guest-server";
 import { slugSchema } from "@/lib/wedding-schema";
 import { emptyWeddingConfig } from "@/config/forever";
+import { foreverTemplateId } from "@/config/templates/registry";
 import { z } from "zod";
 export async function GET(request: Request) {
   try {
@@ -91,6 +92,7 @@ export async function POST(request: Request) {
         slug: data.slug,
         status: "draft",
         theme: "botanical",
+        templateId: foreverTemplateId,
         config: {
           ...emptyWeddingConfig,
           couple: {

@@ -18,6 +18,7 @@ export function SitePreviewFrame(){const {slug}=useWedding();const [session,setS
  function submit(event:Event){event.preventDefault();event.stopImmediatePropagation();}
  window.addEventListener("message",message);document.addEventListener("click",select,true);document.addEventListener("submit",submit,true);window.parent.postMessage({type:"forever:preview-ready",slug},window.location.origin);return ()=>{window.removeEventListener("message",message);document.removeEventListener("click",select,true);document.removeEventListener("submit",submit,true);};},[session,slug]);
  const hasDraft=!!draft;
+ useEffect(()=>{window.scrollTo({top:0,behavior:"instant"});},[draft?.templateId]);
  useEffect(()=>{
   if(!hasDraft||!session)return;
   let frame=0,lastSection="",until=0;
