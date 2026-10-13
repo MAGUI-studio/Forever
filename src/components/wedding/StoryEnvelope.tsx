@@ -103,7 +103,7 @@ export function StoryEnvelope() {
   }, [config]);
 
   return (
-    <div ref={root} className="relative bg-[#F1F1F1]">
+    <div ref={root} className="relative bg-[var(--page-background,#F1F1F1)]">
       <svg aria-hidden="true" width="0" height="0" className="absolute pointer-events-none">
         <defs>
           <clipPath id="envelope-real-top" clipPathUnits="objectBoundingBox"><path ref={topPath} /></clipPath>

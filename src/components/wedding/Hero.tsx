@@ -36,7 +36,7 @@ export function Hero() {
         className="object-cover object-center"
       />
     </motion.div>
-    <div className="absolute inset-0 bg-gradient-to-b from-[#17130D]/80 via-[#17130D]/70 to-[#17130D]/90" />
+    <div className="absolute inset-0 bg-[#17130D]/80" />
 
     <WeddingOrnaments progress={scrollYProgress} variant="hearts" tone="photo" />
     <motion.div style={reducedMotion ? undefined : { y: contentY, opacity }} className="relative z-10 text-center flex flex-col items-center gap-9 sm:gap-12 pb-10 sm:pb-14">

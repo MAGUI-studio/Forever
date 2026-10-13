@@ -14,7 +14,7 @@ export const studioTheme=foreverTheme;
 
 export function StudioShell({children,email}:{children:ReactNode;email?:string}) {
   const pathname=usePathname(),router=useRouter();
-  return <main style={studioTheme} className="relative mx-auto min-h-svh w-full max-w-440 bg-[#f6f5f2] text-[#161616]">
+  return <main style={studioTheme} className="relative mx-auto min-h-svh w-full max-w-440 bg-[var(--page-background,#F1F1F1)] text-[#161616]">
     <ForeverBackground/>
     <div className="relative px-5 pb-6 sm:px-8 lg:px-12">
       <header className="flex flex-wrap items-center justify-between gap-5 border-b border-[#16161610] py-5 sm:py-6">

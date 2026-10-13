@@ -15,7 +15,6 @@ export function LoadingScreen({icon,background,description,style}:{icon:ReactNod
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-20">
         {background}
       </div>
-      <div aria-hidden="true" className="pointer-events-none absolute size-[min(85vw,520px)] rounded-full bg-[#fffdfa]/80 blur-3xl" />
       <div className="relative flex w-full max-w-md flex-col items-center text-center">
         <div aria-hidden="true" className="relative mb-8 flex size-24 items-center justify-center sm:size-28">
           <div className="absolute inset-0 rounded-full border border-current opacity-10" />

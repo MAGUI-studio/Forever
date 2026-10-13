@@ -25,14 +25,14 @@ const themes = {
     ink: "#412B35",
     accent: "#986E79",
     sand: "#D4B1B9",
-    paper: "#FAF3F5",
+    paper: "#F1F1F1",
   },
   ocean: {
     primary: "#3D6870",
     ink: "#233B43",
     accent: "#637D86",
     sand: "#AFC5C7",
-    paper: "#F1F6F7",
+    paper: "#F1F1F1",
   },
 };
 const WeddingContext = createContext<{
@@ -71,7 +71,7 @@ export function WeddingProvider({
     "--forever-ink": colors.ink,
     "--forever-accent": colors.accent,
     "--forever-sand": colors.sand,
-    "--forever-paper": colors.paper,
+    "--forever-paper": "var(--page-background, #F1F1F1)",
   } as CSSProperties;
   return (
     <WeddingContext.Provider

@@ -5,7 +5,7 @@ import {ForeverLogo} from "@/components/forever/ForeverLogo";
 import {ForeverBackground} from "@/components/forever/ForeverBackground";
 
 export default function ForeverHome(){
- return <main style={foreverTheme} className="relative mx-auto flex min-h-svh w-full max-w-440 flex-col overflow-hidden bg-[#f6f5f2] px-6 text-[#161616] sm:px-10">
+ return <main style={foreverTheme} className="relative mx-auto flex min-h-svh w-full max-w-440 flex-col overflow-hidden bg-[var(--page-background,#F1F1F1)] px-6 text-[#161616] sm:px-10">
   <ForeverBackground/>
   <div className="relative flex flex-1 flex-col items-center justify-center py-16 text-center sm:py-24">
    <ForeverLogo className="mb-10 w-72 max-w-full sm:mb-12 sm:w-[400px]"/>

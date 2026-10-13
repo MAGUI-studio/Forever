@@ -44,7 +44,7 @@ export function Gallery() {
   return (
     <section
       id="galeria"
-      className="w-full py-20 sm:py-32 px-6 sm:px-12 lg:px-20 bg-[#F1F1F1] text-[#1A1715]"
+      className="w-full py-20 sm:py-32 px-6 sm:px-12 lg:px-20 bg-[var(--page-background,#F1F1F1)] text-[#1A1715]"
     >
       <div className="w-full space-y-16 sm:space-y-20">
         {/* Cabeçalho Editorial */}
@@ -85,7 +85,7 @@ export function Gallery() {
                 />
 
                 {/* Overlay Estilo Pinterest de Alta Costura */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-5 text-white">
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-5 text-white">
                   {/* Topo do Pin: Badge Mono & Ícone */}
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-1 rounded-full bg-white/20 backdrop-blur-md font-mono text-[9px] uppercase tracking-[0.25em] text-[#F3E2CE]">

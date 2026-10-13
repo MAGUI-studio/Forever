@@ -230,7 +230,6 @@ export function AdminPanel({
         <div className="admin-floral-layer">
           <WeddingOrnaments variant="floral" tone="paper" />
         </div>
-        <div className="admin-background-wash" />
       </div>
       <AdminContainer centered={view!=="dashboard"&&!user}>
 
@@ -297,7 +296,7 @@ export function AdminPanel({
                 aria-hidden="true"
                 style={{
                   backgroundImage:
-                    "linear-gradient(160deg, #424A30D9, #2F351FD9), url(" +
+                    "url(" +
                     weddingConfig.couple.coverImage +
                     ")",
                 }}

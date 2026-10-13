@@ -7,6 +7,6 @@ export const foreverTheme = {
   "--forever-ink": "#161616",
   "--forever-accent": "#77736c",
   "--forever-sand": "#dcd8d1",
-  "--forever-paper": "#f6f5f2",
+  "--forever-paper": "var(--page-background, #F1F1F1)",
   "--wedding-radius": "16px",
 } as CSSProperties;

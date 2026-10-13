@@ -18,7 +18,7 @@ export function Login(){
  async function action(work:()=>Promise<unknown>){setBusy(true);setError("");try{await work();}catch{setError("Não foi possível entrar. Confira seu e-mail e senha e tente novamente.");}finally{setBusy(false);}}
 
  if(!ready||resolving)return <StudioLoading/>;
- return <main style={foreverTheme} className="relative mx-auto min-h-svh w-full max-w-440 overflow-hidden bg-[#f6f5f2] text-[#161616]">
+ return <main style={foreverTheme} className="relative mx-auto min-h-svh w-full max-w-440 overflow-hidden bg-[var(--page-background,#F1F1F1)] text-[#161616]">
   <ForeverBackground/>
   <AdminContainer centered className="relative">
 <div className="admin-login-grid">

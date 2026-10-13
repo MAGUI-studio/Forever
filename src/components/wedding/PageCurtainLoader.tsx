@@ -65,8 +65,8 @@ export function PageCurtainLoader() {
     <>
       <div role="status" aria-label={"Carregando o convite de "+couple.partner1+" e "+couple.partner2} className={`wedding-loader fixed inset-0 z-[9999] flex justify-center ${isOpening ? "wedding-loader-opening pointer-events-none" : "pointer-events-auto"}`}>
         <div className="relative w-full max-w-440 mx-auto h-full overflow-hidden flex items-center justify-center">
-          <div aria-hidden="true" className="wedding-loader-left absolute inset-y-0 left-0 w-[50.5%] bg-[#F1F1F1] z-10" />
-          <div aria-hidden="true" className="wedding-loader-right absolute inset-y-0 right-0 w-[50.5%] bg-[#F1F1F1] z-10" />
+          <div aria-hidden="true" className="wedding-loader-left absolute inset-y-0 left-0 w-[50.5%] bg-[var(--page-background,#F1F1F1)] z-10" />
+          <div aria-hidden="true" className="wedding-loader-right absolute inset-y-0 right-0 w-[50.5%] bg-[var(--page-background,#F1F1F1)] z-10" />
           <div aria-hidden="true" className="wedding-loader-logo relative z-20 px-6 text-center font-serif text-4xl sm:text-6xl md:text-7xl font-light tracking-tight leading-none select-none">
             <div className="text-[#3D2501]/20">
               <span>{couple.partner1}</span><span className="italic px-3">&amp;</span><span>{couple.partner2}</span>

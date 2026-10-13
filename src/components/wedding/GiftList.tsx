@@ -26,7 +26,7 @@ export function GiftList(){
   const observer=new ResizeObserver(([entry])=>setCatalogHeight(entry.contentRect.height));
   observer.observe(element);return ()=>observer.disconnect();
  },[visibleGifts.length]);
- return <section id="presentes" className="cinematic-section relative overflow-hidden w-full py-16 sm:py-24 px-6 sm:px-12 lg:px-20 bg-[#F1F1F1] text-[#3D2501]">
+ return <section id="presentes" className="cinematic-section relative overflow-hidden w-full py-16 sm:py-24 px-6 sm:px-12 lg:px-20 bg-[var(--page-background,#F1F1F1)] text-[#3D2501]">
   <WeddingOrnaments variant="hearts" tone="paper"/>
   <div className="relative z-10 max-w-7xl mx-auto space-y-12 sm:space-y-16">
    <div className="text-center max-w-3xl mx-auto space-y-5">

@@ -12,7 +12,7 @@ export function Story() {
   const moments=story?.moments??[copy("story.text6"),copy("story.text7"),copy("story.text8")];
   if (!story?.enabled) return null;
   return (
-    <section id="historia" aria-label={copy("story.text1")} className="cinematic-section relative overflow-hidden z-10 bg-[#F1F1F1] text-[#3D2501] px-6 sm:px-12 lg:px-20 py-24 sm:py-28">
+    <section id="historia" aria-label={copy("story.text1")} className="cinematic-section relative overflow-hidden z-10 bg-[var(--page-background,#F1F1F1)] text-[#3D2501] px-6 sm:px-12 lg:px-20 py-24 sm:py-28">
       <WeddingOrnaments variant="floral" tone="paper" />
       <div data-story-content className="relative z-10 max-w-5xl mx-auto text-center">
         <p className="cinema-eyebrow text-[#80654E]">{copy("story.text2")}<span className="mx-3 text-[#C7B79D]">{copy("story.text3")}</span> {story.sinceYear ? copy("story.text9")+story.sinceYear : copy("story.text10")}</p>

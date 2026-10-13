@@ -21,13 +21,7 @@
 .admin-floral-layer > div {
   opacity: 0.75;
 }
-.admin-background-wash {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 8% 12%, #c7b79d24, transparent 46%),
-    radial-gradient(ellipse at 100% 70%, #5d613c0b, transparent 45%);
-}
+
 .admin-nav {
   min-height: 112px;
   display: flex;
@@ -229,7 +223,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 24px;
-  background: linear-gradient(145deg, #fffdfb, #f5f3ed);
+  background: #fffdfb;
 }
 .admin-login-intro {
   margin-bottom: 4px;
@@ -969,7 +963,7 @@
   gap: 17px;
   padding: 29px 32px 25px;
   border-bottom: 1px solid #c7b79d40;
-  background: radial-gradient(ellipse at 0 0, #c7b79d17, transparent 65%);
+  background: transparent;
   flex-shrink: 0;
 }
 .admin-modal-emblem {
