@@ -562,11 +562,12 @@ async function check(title, work) {
     assert.equal((await site.PUT(request("PUT",{action:"publish",config,templateId:"botanical-classic",expectedRevision:0}))).status,400);
     assert.equal((await site.PUT(request("PUT",{action:"draft",config,templateId:"botanical-classic",expectedRevision:0}))).status,400);
   });
-  await check("imagens do template são fixas e imagens de presentes continuam editáveis",async()=>{
+  await check("imagens do template são editáveis e preservam valores anteriores se omitidos",async()=>{
     const {preserveTemplateImages}=load("src/lib/template-images.ts"),{emptyWeddingConfig}=load("src/config/forever.ts");
     const current=clone(emptyWeddingConfig);current.couple.coverImage="/fixed-cover.jpg";current.ceremony.image="/fixed-venue.jpg";
     const next=clone(current);next.couple.coverImage="/changed.jpg";next.ceremony.image="/changed-venue.jpg";next.gifts=[{id:"one",title:"Presente",price:10,category:"Casa",categoryLabel:"Casa",image:"/gift.jpg"}];
-    const saved=preserveTemplateImages(next,current);assert.equal(saved.couple.coverImage,current.couple.coverImage);assert.equal(saved.ceremony.image,current.ceremony.image);assert.equal(saved.gifts[0].image,"/gift.jpg");
+    const saved=preserveTemplateImages(next,current);assert.equal(saved.couple.coverImage,"/changed.jpg");assert.equal(saved.ceremony.image,"/changed-venue.jpg");assert.equal(saved.gifts[0].image,"/gift.jpg");
+    const omitted=preserveTemplateImages({couple:{}},current);assert.equal(omitted.couple.coverImage,current.couple.coverImage);assert.equal(omitted.ceremony.image,current.ceremony.image);
   });
   await check("galeria permite até 6 fotos e é a única seção ocultável",async()=>{
     const {galleryPhotos,placeholderGallery,MAX_GALLERY_PHOTOS}=load("src/config/gallery.ts"),{emptyWeddingConfig}=load("src/config/forever.ts"),{weddingConfigSchema}=load("src/lib/wedding-schema.ts"),{templateSections,templateCopyFields}=load("src/config/templates/registry.ts");

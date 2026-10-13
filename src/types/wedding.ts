@@ -94,6 +94,7 @@ export type GalleryStyle = "polaroid" | "relicario" | "varal" | "filme" | "mural
 export interface WeddingConfig {
   giftPaymentLink?: string;
   copy?:Record<string,string>;
+  customImages?: Record<string, string>;
   sections?: {gallery?:boolean};
   galleryStyle?: GalleryStyle;
   couple: CoupleInfo;

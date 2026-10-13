@@ -29,13 +29,14 @@ export function weddingPath(slug: string, path = "") {
 }
 export const emptyWeddingConfig: WeddingConfig = {
   sections: {gallery:true},
+  customImages: {},
   couple: {
     partner1: "Primeira pessoa",
     partner2: "Segunda pessoa",
     weddingDate: "",
     locationSummary: "",
     hashtag: "",
-    coverImage: "/detalhes/aliancas-florais.jpg",
+    coverImage: "/casal/festa-de-casamento.png",
     headline: "Vamos celebrar nossa história.",
     story: {
       enabled: false,
