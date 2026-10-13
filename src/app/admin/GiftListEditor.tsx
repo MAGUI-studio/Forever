@@ -1,12 +1,14 @@
 "use client";
 
+import {UnsavedIndicator} from "./UnsavedIndicator";
 import { Gift, Link2, Plus, Trash2, ChevronDown } from "lucide-react";
 import type { GiftItem } from "@/types/wedding";
 import { WeddingInput, WeddingTextarea } from "@/components/ui/WeddingInput";
 import { WeddingSelect } from "@/components/ui/WeddingSelect";
 import { AdminButton } from "./AdminButton";
 
-export function GiftListEditor({gifts,paymentLink,onGiftsChange,onPaymentLinkChange,allowImages=false}:{allowImages?:boolean;gifts:GiftItem[];paymentLink:string;onGiftsChange:(gifts:GiftItem[])=>void;onPaymentLinkChange:(link:string)=>void}) {
+export function GiftListEditor({gifts,paymentLink,savedGifts,savedPaymentLink,onGiftsChange,onPaymentLinkChange,allowImages=false}:{savedGifts?:GiftItem[];savedPaymentLink?:string;allowImages?:boolean;gifts:GiftItem[];paymentLink:string;onGiftsChange:(gifts:GiftItem[])=>void;onPaymentLinkChange:(link:string)=>void}) {
+  const changed=(gift:GiftItem,key:keyof GiftItem)=>!!savedGifts&&JSON.stringify(savedGifts.find(item=>item.id===gift.id)?.[key])!==JSON.stringify(gift[key]);
   const categories = Array.from(new Set([
     "Presentes", "Casa nova", "Eletrodomésticos", "Eletroportáteis",
     "Cama, mesa e banho", "Decoração", "Utensílios de cozinha", "Para servir",
@@ -20,7 +22,7 @@ export function GiftListEditor({gifts,paymentLink,onGiftsChange,onPaymentLinkCha
   return <section className="space-y-5">
     <div className="rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#5d613c05] p-4">
       <div className="mb-3 flex items-center gap-2 text-sm font-medium text-[#5D613C]"><Link2 size={16}/>Pagamento dos presentes</div>
-      <label className="block text-sm text-[#5D613C]">Link único de pagamento{gifts.length>0&&required}<WeddingInput type="url" required={gifts.length>0} value={paymentLink} onChange={event=>onPaymentLinkChange(event.target.value)} placeholder="https://" className="mt-2"/></label>
+      <label className="block text-sm text-[#5D613C]">Link único de pagamento<UnsavedIndicator changed={savedPaymentLink!==undefined&&savedPaymentLink!==paymentLink}/>{gifts.length>0&&required}<WeddingInput type="url" required={gifts.length>0} value={paymentLink} onChange={event=>onPaymentLinkChange(event.target.value)} placeholder="https://" className="mt-2"/></label>
       <p className="mt-3 text-xs leading-relaxed text-[#80654E]">Crie no Mercado Pago ou em outro provedor um link sem valor fixo e sem prazo de validade. Todos os presentes usarão esse link, e o convidado informará o valor ao pagar.</p>
       <p className="mt-2 text-xs leading-relaxed text-[#80654E]">Você administra os recebimentos e as taxas diretamente no provedor.</p>
     </div>
@@ -36,13 +38,13 @@ export function GiftListEditor({gifts,paymentLink,onGiftsChange,onPaymentLinkCha
         <button type="button" aria-label={"Remover "+(gift.title.trim()||"presente "+(index+1))} onClick={()=>onGiftsChange(gifts.filter(item=>item.id!==gift.id))} className="inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-lg px-2 text-xs text-[#a15d53] transition-colors hover:bg-[#a15d530d] focus-visible:outline-2 focus-visible:outline-offset-2"><Trash2 size={14}/><span>Remover</span></button>
       </header>
       <div className="space-y-4 p-4">
-        <label className="block text-sm text-[#544b3b]">Nome do presente{required}<WeddingInput required className="mt-2" value={gift.title} placeholder="Ex.: Computador gamer" onChange={event=>update(gift.id,{title:event.target.value})}/></label>
+        <label className="block text-sm text-[#544b3b]">Nome do presente{required}<UnsavedIndicator changed={changed(gift,"title")}/><WeddingInput required className="mt-2" value={gift.title} placeholder="Ex.: Computador gamer" onChange={event=>update(gift.id,{title:event.target.value})}/></label>
         <div className="grid grid-cols-1 gap-4 min-[1600px]:grid-cols-2">
-          <label className="block text-sm text-[#544b3b]">Valor sugerido (R$){required}<WeddingInput type="number" min="0.01" step="0.01" required className="mt-2" value={gift.price??""} placeholder="5000,00" onChange={event=>update(gift.id,{price:event.target.value?Number(event.target.value):undefined})}/></label>
-          <label className="block text-sm text-[#544b3b]">Categoria<WeddingSelect label="Categoria do presente" className="mt-2" value={gift.categoryLabel||gift.category} options={categories.map(category=>({value:category,label:category}))} onValueChange={category=>update(gift.id,{category,categoryLabel:category})}/></label>
+          <label className="block text-sm text-[#544b3b]">Valor sugerido (R$){required}<UnsavedIndicator changed={changed(gift,"price")}/><WeddingInput type="number" min="0.01" step="0.01" required className="mt-2" value={gift.price??""} placeholder="5000,00" onChange={event=>update(gift.id,{price:event.target.value?Number(event.target.value):undefined})}/></label>
+          <label className="block text-sm text-[#544b3b]">Categoria<UnsavedIndicator changed={changed(gift,"category")||changed(gift,"categoryLabel")}/><WeddingSelect label="Categoria do presente" className="mt-2" value={gift.categoryLabel||gift.category} options={categories.map(category=>({value:category,label:category}))} onValueChange={category=>update(gift.id,{category,categoryLabel:category})}/></label>
         </div>
-        {allowImages&&<label className="block text-sm text-[#544b3b]">Imagem (URL)<WeddingInput className="mt-2" value={gift.image} placeholder="https://" onChange={event=>update(gift.id,{image:event.target.value})}/></label>}
-        <label className="block text-sm text-[#544b3b]">Descrição<WeddingTextarea rows={3} className="mt-2" value={gift.description??""} placeholder="Conte um pouco sobre esse presente…" onChange={event=>update(gift.id,{description:event.target.value})}/></label>
+        {allowImages&&<label className="block text-sm text-[#544b3b]">Imagem (URL)<UnsavedIndicator changed={changed(gift,"image")}/><WeddingInput className="mt-2" value={gift.image} placeholder="https://" onChange={event=>update(gift.id,{image:event.target.value})}/></label>}
+        <label className="block text-sm text-[#544b3b]">Descrição<UnsavedIndicator changed={changed(gift,"description")}/><WeddingTextarea rows={3} className="mt-2" value={gift.description??""} placeholder="Conte um pouco sobre esse presente…" onChange={event=>update(gift.id,{description:event.target.value})}/></label>
       </div>
     </article>)}
     <AdminButton variant="ghost" className="w-full border border-dashed border-[#5d613c40]" disabled={gifts.length>=300} onClick={()=>onGiftsChange([...gifts,{id:crypto.randomUUID(),title:"",category:"Presentes",categoryLabel:"Presentes",image:""}])}><Plus size={16}/>Adicionar presente</AdminButton>
