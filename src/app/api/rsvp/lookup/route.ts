@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { services } from "@/lib/firebase/admin";
+import {publicWeddingDatabase} from "@/lib/guest-server";
 import {
   body,
   failure,
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     const { token } = z
       .object({ token: tokenSchema })
       .parse(await body(request));
-    const { db } = services();
+    const db = await publicWeddingDatabase(request);
     const [snap, settings] = await Promise.all([
       db.collection("invitations").doc(invitationDocumentId(token)).get(),
       db.doc("settings/rsvp").get(),

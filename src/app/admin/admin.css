@@ -3,8 +3,8 @@
   position: relative;
   isolation: isolate;
   min-height: 100svh;
-  color: #3d2501;
-  background: #f1f1f1;
+  color: var(--forever-ink,#3d2501);
+  background: var(--forever-paper,#f1f1f1);
 }
 .admin-background {
   position: absolute;
@@ -44,7 +44,7 @@
 }
 .admin-wordmark em {
   padding-inline: 5px;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   font-weight: 300;
 }
 .admin-wordmark > span {
@@ -54,7 +54,7 @@
   font-size: 8px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
 }
 .admin-back {
   display: inline-flex;
@@ -63,18 +63,18 @@
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
   padding-block: 12px;
 }
 .admin-back:hover {
-  color: #3d2501;
+  color: var(--forever-ink,#3d2501);
 }
 .admin-eyebrow {
   font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
 }
 .admin-page-heading {
   display: flex;
@@ -93,7 +93,7 @@
 }
 .admin-page-heading h1 em,
 .admin-list-heading h2 em {
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
 }
 .admin-subtitle {
   margin-top: 24px;
@@ -101,7 +101,7 @@
   font-size: 13px;
   font-weight: 300;
   line-height: 1.9;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
 }
 .admin-heading-seal {
   position: relative;
@@ -110,7 +110,7 @@
   width: 150px;
   height: 150px;
   flex-shrink: 0;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
 }
 .admin-heading-seal > svg {
   position: absolute;
@@ -124,7 +124,7 @@
 }
 .admin-heading-seal i {
   font-size: 22px;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
 }
 .admin-login-grid {
   display: grid;
@@ -145,7 +145,7 @@
   overflow: hidden;
   min-height: 650px;
   padding: 64px 28px 48px;
-  background: #5d613c;
+  background: var(--forever-primary,#5d613c);
   color: #f5f5da;
 }
 .admin-scene-photo {
@@ -186,7 +186,7 @@
   font-size: 35px;
 }
 .admin-monogram span {
-  color: #c7b79d;
+  color: var(--forever-sand,#c7b79d);
   font-size: 25px;
   font-style: italic;
   padding-inline: 3px;
@@ -213,7 +213,7 @@
   align-items: center;
   justify-content: center;
   gap: 18px;
-  color: #c7b79d;
+  color: var(--forever-sand,#c7b79d);
   margin: 28px auto 22px;
 }
 .admin-scene-rule::before,
@@ -242,7 +242,7 @@
   margin-bottom: 26px;
   border: 1px solid #c7b79d80;
   border-radius: 50%;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
 }
 .admin-login-intro h2 {
   margin-top: 16px;
@@ -253,13 +253,13 @@
   letter-spacing: -0.035em;
 }
 .admin-login-intro h2 em {
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
 }
 .admin-login-intro > p:last-child {
   font-size: 12px;
   line-height: 1.9;
   font-weight: 300;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   margin-top: 20px;
   max-width: 300px;
 }
@@ -270,7 +270,7 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
 }
 .admin-wedding .guest-input {
   background: #fffdfbba;
@@ -307,7 +307,7 @@
     transform 0.25s;
 }
 .admin-wedding .guest-button {
-  background: #5d613c;
+  background: var(--forever-primary,#5d613c);
   color: #fffdfb;
 }
 .admin-wedding .guest-button:hover:not(:disabled) {
@@ -337,7 +337,7 @@
   justify-content: center;
   gap: 7px;
   font-size: 9px;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   text-align: center;
   line-height: 1.8;
 }
@@ -364,13 +364,13 @@
   flex-shrink: 0;
   border-radius: 50%;
   background: #e7e4d9;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
   font-family: var(--font-serif);
   font-size: 23px;
 }
 .admin-account small {
   display: block;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   font-size: 9px;
   margin-bottom: 4px;
 }
@@ -397,7 +397,7 @@
   justify-content: space-between;
   gap: 8px;
   align-items: center;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
 }
 .admin-stat-top p {
   font-size: 10px;
@@ -415,11 +415,11 @@
   display: block;
   font-size: 9px;
   margin-top: 11px;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
 }
 .admin-stat:first-child {
-  background: #5d613c;
-  border-color: #5d613c;
+  background: var(--forever-primary,#5d613c);
+  border-color: var(--forever-primary,#5d613c);
   color: #f5f5da;
 }
 .admin-stat:first-child .admin-stat-top,
@@ -438,7 +438,7 @@
   align-items: center;
   gap: 11px;
   font-size: 12px;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
   list-style: none;
 }
 .admin-settings summary::-webkit-details-marker {
@@ -458,7 +458,7 @@
 }
 .admin-settings > p {
   font-size: 11px;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   line-height: 1.8;
 }
 .admin-list-heading {
@@ -478,12 +478,12 @@
 .admin-list-heading > div > p:last-child {
   margin-top: 10px;
   font-size: 10px;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
 }
 .admin-heading-branch {
   width: 45px;
   height: 85px;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   opacity: 0.4;
   transform: rotate(25deg);
   overflow: hidden;
@@ -538,7 +538,7 @@
   margin-left: auto;
 }
 .admin-wedding input[type="checkbox"] {
-  accent-color: #5d613c;
+  accent-color: var(--forever-primary,#5d613c);
   width: 16px;
   height: 16px;
   flex-shrink: 0;
@@ -582,7 +582,7 @@
   border: 1px solid #c7b79d55;
   border-radius: 50%;
   font-family: var(--font-serif);
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   font-size: 18px;
 }
 .admin-person-actions {
@@ -594,7 +594,7 @@
 .admin-person-actions > label {
   align-items: center;
   font-size: 11px;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
 }
 .admin-status {
   display: inline-flex;
@@ -627,7 +627,7 @@
 .admin-invite > details {
   padding-top: 13px;
   border-top: 1px solid #c7b79d33;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   font-size: 10px;
 }
 .admin-invite > p {
@@ -647,7 +647,7 @@
   width: 72px;
   height: 72px;
   margin: 0 auto 20px;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
   border: 1px solid #c7b79d70;
   border-radius: 50%;
   background: #f1f1e9;
@@ -664,7 +664,7 @@
   margin: 14px auto 22px;
   font-size: 12px;
   line-height: 1.9;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
 }
 .admin-alert {
   margin-block: 20px;
@@ -689,7 +689,7 @@
   justify-items: center;
   padding: 140px 24px;
   gap: 22px;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   font-size: 12px;
 }
 .admin-loading > svg,
@@ -904,7 +904,7 @@
   align-items: center;
   gap: 14px;
   text-align: left;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
   cursor: pointer;
   transition:
     background 0.2s,
@@ -912,7 +912,7 @@
 }
 .admin-settings-trigger:hover {
   background: #fffdfb;
-  border-color: #c7b79d;
+  border-color: var(--forever-sand,#c7b79d);
 }
 .admin-settings-trigger > span:first-of-type {
   display: grid;
@@ -924,7 +924,7 @@
 }
 .admin-settings-trigger small {
   font-size: 10px;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
 }
 .admin-settings-edit {
   margin-left: auto;
@@ -980,7 +980,7 @@
   border: 1px solid #c7b79d70;
   border-radius: 50%;
   flex-shrink: 0;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
   background: #f4f2e9;
 }
 .admin-modal-emblem--danger {
@@ -1007,7 +1007,7 @@
 .admin-modal-description {
   margin-top: 11px;
   font-size: 11px;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   line-height: 1.8;
   max-width: 490px;
 }
@@ -1021,7 +1021,7 @@
   height: 34px;
   border-radius: 50%;
   border: 1px solid #c7b79d50;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   background: #fffdfb;
   cursor: pointer;
   transition: background 0.2s;
@@ -1070,7 +1070,7 @@
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
 }
 .admin-modal-field {
   display: flex;
@@ -1115,12 +1115,12 @@
 }
 .admin-invitation-toggle strong {
   font-size: 11px;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
   font-weight: 500;
 }
 .admin-invitation-toggle small {
   font-size: 10px;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   line-height: 1.7;
 }
 .admin-modal .admin-invitation-toggle > input {
@@ -1152,13 +1152,13 @@
   transition: transform 0.2s;
 }
 .admin-invitation-toggle input:checked + .admin-switch-track {
-  background: #5d613c;
+  background: var(--forever-primary,#5d613c);
 }
 .admin-invitation-toggle input:checked + .admin-switch-track::after {
   transform: translateX(15px);
 }
 .admin-invitation-toggle:has(input:focus-visible) {
-  outline: 2px solid #5d613c;
+  outline: 2px solid var(--forever-primary,#5d613c);
   outline-offset: 3px;
 }
 .admin-people-heading {
@@ -1179,7 +1179,7 @@
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
   border: 1px solid #c7b79d60;
   border-radius: var(--wedding-radius);
   padding: 7px 10px;
@@ -1188,7 +1188,7 @@
 }
 .admin-form-help {
   font-size: 10px;
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   line-height: 1.9;
 }
 .admin-people-heading + .admin-form-help {
@@ -1232,7 +1232,7 @@
   font-size: 9px;
   font-style: normal;
   background: #e9e6da;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
 }
 .admin-remove-person {
   display: inline-flex;
@@ -1300,7 +1300,7 @@
   place-items: center;
   width: 15px;
   height: 15px;
-  border: 1px solid #c7b79d;
+  border: 1px solid var(--forever-sand,#c7b79d);
   border-radius: var(--wedding-radius);
 }
 .admin-option-check svg {
@@ -1312,9 +1312,9 @@
   border-color: #a8b18a;
 }
 .admin-option-chip input:checked + .admin-option-check {
-  background: #5d613c;
+  background: var(--forever-primary,#5d613c);
   color: #fffdf9;
-  border-color: #5d613c;
+  border-color: var(--forever-primary,#5d613c);
 }
 .admin-option-chip input:checked + .admin-option-check svg {
   opacity: 1;
@@ -1324,7 +1324,7 @@
   cursor: not-allowed;
 }
 .admin-option-chip:has(input:focus-visible) {
-  outline: 2px solid #5d613c;
+  outline: 2px solid var(--forever-primary,#5d613c);
   outline-offset: 3px;
 }
 .admin-add-person {
@@ -1332,11 +1332,11 @@
   align-items: center;
   justify-content: center;
   gap: 9px;
-  border: 1px dashed #c7b79d;
+  border: 1px dashed var(--forever-sand,#c7b79d);
   border-radius: var(--wedding-radius);
   padding: 14px 16px;
   min-height: 46px;
-  color: #5d613c;
+  color: var(--forever-primary,#5d613c);
   font-size: 10px;
   cursor: pointer;
   background: #fffdfb;
@@ -1348,7 +1348,7 @@
 }
 .admin-add-person:hover:not(:disabled) {
   background: #f2f1e6;
-  border-color: #5d613c;
+  border-color: var(--forever-primary,#5d613c);
 }
 .admin-add-person:disabled {
   opacity: 0.5;
@@ -1394,7 +1394,7 @@
   overflow-wrap: anywhere;
 }
 .admin-delete-summary span {
-  color: #80654e;
+  color: var(--forever-accent,#80654e);
   font-size: 10px;
 }
 .admin-modal .admin-danger-button {
@@ -1545,14 +1545,14 @@
 @media(max-width:900px){.admin-nav .admin-session{width:100%;border-top:1px solid #c7b79d40;padding-top:18px}.admin-nav .admin-account{margin-right:auto}}
 @media(max-width:480px){.admin-nav .admin-account{width:100%;flex-basis:100%}.admin-nav .admin-session .guest-secondary{flex:1}}
 
-.admin-profile-trigger{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:#697046;border-radius:var(--wedding-radius);padding:5px;background:#f8f7ef;border:1px solid #d9d7c6;flex-shrink:0}.admin-profile-trigger .admin-account-avatar{width:34px;height:34px;font-size:22px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:#eaeddc}.admin-profile-trigger:focus-visible{outline:2px solid #858b65;outline-offset:3px}.admin-profile-menu{z-index:260;min-width:240px;max-width:calc(100vw - 32px);padding:7px;border-radius:var(--wedding-radius);background:#fffdf9;border:1px solid #e3dccf;box-shadow:0 14px 45px #3d25011c;animation:admin-modal-fade .16s ease-out}.admin-profile-label{padding:12px 10px;color:#6c724c;font-size:11px}.admin-profile-label span{display:block;margin-top:7px;color:#80654e;overflow-wrap:anywhere;font-size:12px}.admin-profile-separator{height:1px;background:#e9e2d5;margin:4px 0}.admin-profile-item{display:flex;gap:9px;align-items:center;padding:12px 10px;color:#8c4a4c;font-size:12px;border-radius:var(--wedding-radius);cursor:pointer;outline:none}.admin-profile-item[data-highlighted]{background:#f9eded}.admin-profile-item[data-disabled]{opacity:.4;cursor:not-allowed}.admin-toolbar .admin-toolbar-refresh{flex-shrink:0;white-space:nowrap;min-height:48px;padding:12px 14px;font-size:11px}@media(max-width:600px){.admin-toolbar .admin-toolbar-refresh{width:100%}}
+.admin-profile-trigger{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:#697046;border-radius:var(--wedding-radius);padding:5px;background:#f8f7ef;border:1px solid #d9d7c6;flex-shrink:0}.admin-profile-trigger .admin-account-avatar{width:34px;height:34px;font-size:22px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:#eaeddc}.admin-profile-trigger:focus-visible{outline:2px solid #858b65;outline-offset:3px}.admin-profile-menu{z-index:260;min-width:240px;max-width:calc(100vw - 32px);padding:7px;border-radius:var(--wedding-radius);background:#fffdf9;border:1px solid #e3dccf;box-shadow:0 14px 45px #3d25011c;animation:admin-modal-fade .16s ease-out}.admin-profile-label{padding:12px 10px;color:#6c724c;font-size:11px}.admin-profile-label span{display:block;margin-top:7px;color:var(--forever-accent,#80654e);overflow-wrap:anywhere;font-size:12px}.admin-profile-separator{height:1px;background:#e9e2d5;margin:4px 0}.admin-profile-item{display:flex;gap:9px;align-items:center;padding:12px 10px;color:#8c4a4c;font-size:12px;border-radius:var(--wedding-radius);cursor:pointer;outline:none}.admin-profile-item[data-highlighted]{background:#f9eded}.admin-profile-item[data-disabled]{opacity:.4;cursor:not-allowed}.admin-toolbar .admin-toolbar-refresh{flex-shrink:0;white-space:nowrap;min-height:48px;padding:12px 14px;font-size:11px}@media(max-width:600px){.admin-toolbar .admin-toolbar-refresh{width:100%}}
 
-.admin-profile-trigger{background:transparent;border:0;padding:0;gap:10px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:transparent;color:#3d2501}.admin-profile-name{font-size:11px;color:#66563e;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:480px){.admin-profile-name{max-width:150px}.admin-nav .admin-back{margin-left:0}.admin-profile-trigger{margin-left:auto}}
+.admin-profile-trigger{background:transparent;border:0;padding:0;gap:10px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:transparent;color:var(--forever-ink,#3d2501)}.admin-profile-name{font-size:11px;color:#66563e;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:480px){.admin-profile-name{max-width:150px}.admin-nav .admin-back{margin-left:0}.admin-profile-trigger{margin-left:auto}}
 
 .admin-guest-accordion summary { font-size:15px; }
 .admin-guest-accordion .admin-person-actions { justify-content:flex-start; flex-wrap:wrap; }
 .admin-guest-notes { display:grid; gap:18px; font-size:14px; }
-.admin-guest-notes p { color:#80654E; margin-bottom:8px; }
+.admin-guest-notes p { color:var(--forever-accent,#80654E); margin-bottom:8px; }
 .admin-guest-notes span { white-space:pre-wrap; overflow-wrap:anywhere; }
 
 .admin-guest-quick-actions { display:inline-flex; align-items:center; gap:8px; }
@@ -1576,16 +1576,16 @@
 .admin-guest-name-alerts { display:inline-flex; align-items:center; gap:9px; flex-wrap:wrap; }
 .admin-dietary-alert { color:#e07b00; flex-shrink:0; }
 .admin-message-alert { color:#23864b; flex-shrink:0; }
-.admin-guest-legend { display:flex; align-items:center; flex-wrap:wrap; gap:12px 24px; margin-top:16px; color:#80654E; font-size:12px; }
+.admin-guest-legend { display:flex; align-items:center; flex-wrap:wrap; gap:12px 24px; margin-top:16px; color:var(--forever-accent,#80654E); font-size:12px; }
 .admin-guest-legend>span { display:inline-flex; align-items:center; gap:7px; }
 .admin-guest-legend small { font-size:12px; }
 
 .admin-guest-legend { display:flex; align-items:center; gap:20px; padding:16px 20px; margin-top:16px; background:#fffdfa; border-radius:12px; color:#5c584d; }
-.admin-guest-legend>strong { font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:#5D613C; }
+.admin-guest-legend>strong { font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--forever-primary,#5D613C); }
 .admin-guest-legend-items { display:flex; flex-wrap:wrap; gap:12px 24px; }
 .admin-guest-legend-items>span { display:inline-flex; align-items:center; gap:8px; font-size:12px; }
 .admin-guest-accordion .admin-person-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; width:100%; }
-.admin-guest-accordion .admin-person-actions .admin-action { width:100%; justify-content:center; border:1px solid #5d613c30; background:transparent; box-shadow:none; color:#5D613C; transition:background-color .2s,color .2s; }
+.admin-guest-accordion .admin-person-actions .admin-action { width:100%; justify-content:center; border:1px solid #5d613c30; background:transparent; box-shadow:none; color:var(--forever-primary,#5D613C); transition:background-color .2s,color .2s; }
 .admin-guest-accordion .admin-person-actions .admin-action:hover:not(:disabled),
 .admin-guest-quick-actions .admin-action-icon:hover:not(:disabled) { background:#edf0e3; color:#3f5628; }
 @media(max-width:540px) {
@@ -1598,14 +1598,14 @@
 .admin-invite-actions .admin-action-danger {
   background:transparent;
   border:1px solid #5d613c30;
-  color:#5D613C;
+  color:var(--forever-primary,#5D613C);
   box-shadow:none;
 }
 .admin-invite-actions .admin-action:hover:not(:disabled),
 .admin-guest-accordion .admin-person-actions .admin-action:hover:not(:disabled) {
   background:#edf0e3;
   border-color:#5d613c60;
-  color:#5D613C;
+  color:var(--forever-primary,#5D613C);
 }
 
 .admin-invite-actions .admin-action { min-width:42px; height:42px; padding:10px 12px; gap:0; }

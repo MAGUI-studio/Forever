@@ -1,6 +1,6 @@
 import {audit} from "@/lib/event-audit";
 import { z } from "zod";
-import { services } from "@/lib/firebase/admin";
+import {publicWeddingDatabase} from "@/lib/guest-server";
 import {
   body,
   failure,
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   try {
     sameOrigin(request);
     const data = schema.parse(await body(request));
-    const { db } = services();
+    const db = await publicWeddingDatabase(request);
     const ref = db.collection("invitations").doc(invitationDocumentId(data.token));
     await db.runTransaction(async (t) => {
       const snap = await t.get(ref);

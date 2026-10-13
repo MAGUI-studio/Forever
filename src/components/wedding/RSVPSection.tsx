@@ -1,4 +1,5 @@
 "use client";
+import {useWedding} from "./WeddingProvider";
 import { AttendanceBadge } from "@/components/ui/AttendanceBadge";
 import { useEffect, useState } from "react";
 import { EnvelopeOpenIcon, CheckCircleIcon, PaperPlaneTiltIcon, UsersIcon, CaretDownIcon } from "@phosphor-icons/react";
@@ -16,6 +17,7 @@ type PublicInvite = {
   dietaryRestrictions: string;
 };
 export function RSVPSection() {
+ const {slug}=useWedding();
   const [code, setCode] = useState("");
   const [invite, setInvite] = useState<PublicInvite | null>(null);
   const [settings, setSettings] = useState<RSVPSettings>({
@@ -32,7 +34,7 @@ export function RSVPSection() {
       const value = window.location.hash.slice(1);
       if (/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(value)) {
         setCode(value); setBusy(true); setError("");
-        fetch("/api/rsvp/lookup", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:value})}).then(async response => { const result = await response.json(); if (!response.ok) throw new Error(result.error); if (!active) return; setInvite(result.invitation);setSettings(result.settings);setClosed(!result.settings.enabled || (!!result.settings.deadline && Date.now() > Date.parse(result.settings.deadline))); }).catch(e => {if(active) setError(e.message || "Não foi possível consultar o convite.");}).finally(() => {if(active) setBusy(false);});
+        fetch("/api/rsvp/lookup", {method:"POST",headers:{"Content-Type":"application/json","x-wedding-slug":slug},body:JSON.stringify({token:value})}).then(async response => { const result = await response.json(); if (!response.ok) throw new Error(result.error); if (!active) return; setInvite(result.invitation);setSettings(result.settings);setClosed(!result.settings.enabled || (!!result.settings.deadline && Date.now() > Date.parse(result.settings.deadline))); }).catch(e => {if(active) setError(e.message || "Não foi possível consultar o convite.");}).finally(() => {if(active) setBusy(false);});
       }
     };
     window.addEventListener("hashchange", syncHash);
@@ -43,7 +45,7 @@ export function RSVPSection() {
   async function lookup(event: React.FormEvent) {
     event.preventDefault();
     const token = code.trim().toLowerCase();
-    if (!/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(token)) {setError("Esse código parece incompleto ou inválido. Copie o código completo do convite enviado por Giovanna e Edson, sem espaços, ou abra o link que você recebeu."); return;}
+    if (!/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(token)) {setError("Esse código parece incompleto ou inválido. Copie o código completo do convite enviado por os noivos, sem espaços, ou abra o link que você recebeu."); return;}
     setBusy(true);
     setError("");
     setSaved(false);
@@ -51,11 +53,11 @@ export function RSVPSection() {
     try {
       const response = await fetch("/api/rsvp/lookup", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-wedding-slug":slug },
         body: JSON.stringify({ token: code.trim().toLowerCase() }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(response.status === 404 ? "Não encontramos um convite ativo com esse código. Confira se você copiou o código completo ou use o link recebido. Se continuar sem conseguir, fale com Giovanna ou Edson." : response.status === 400 ? "Não foi possível reconhecer esse código. Copie o código completo do convite ou abra o link enviado pelos noivos." : result.error);
+      if (!response.ok) throw new Error(response.status === 404 ? "Não encontramos um convite ativo com esse código. Confira se você copiou o código completo ou use o link recebido. Se continuar sem conseguir, fale com os noivos." : response.status === 400 ? "Não foi possível reconhecer esse código. Copie o código completo do convite ou abra o link enviado pelos noivos." : result.error);
       setCode(token);
       window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search + "#" + token);
       setInvite(result.invitation);
@@ -89,7 +91,7 @@ export function RSVPSection() {
     try {
       const response = await fetch("/api/rsvp", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-wedding-slug":slug },
         body: JSON.stringify({
           token: code.trim().toLowerCase(),
           revision: invite.revision,
@@ -123,20 +125,20 @@ export function RSVPSection() {
   return (
     <section
       id="rsvp"
-      className="rsvp-section relative overflow-hidden px-6 py-20 text-[#3D2501]"
+      className="rsvp-section relative overflow-hidden px-6 py-20 text-[var(--forever-ink,#3D2501)]"
     >
       <WeddingOrnaments variant="vows" tone="paper" />
       <div className="rsvp-shell relative z-10 mx-auto max-w-2xl space-y-8">
         <div className="text-center">
           <span className="rsvp-emblem"><EnvelopeOpenIcon size={30} weight="duotone" aria-hidden="true" /></span><p className="cinema-eyebrow">Um lugar especial para você</p>
           <h2 className="font-serif text-5xl sm:text-7xl">
-            Confirmação de <em className="text-[#5D613C]">presença</em>
+            Confirmação de <em className="text-[var(--forever-primary,#5D613C)]">presença</em>
           </h2>
-          <p className="mt-5 text-[#80654E]">
+          <p className="mt-5 text-[var(--forever-accent,#80654E)]">
             Que alegria ter você fazendo parte da nossa história! Estamos
             preparando esse dia com muito carinho e esperamos celebrar ao seu lado.
           </p>
-          {!invite && !busy && <p className="mt-5 text-[#80654E]">
+          {!invite && !busy && <p className="mt-5 text-[var(--forever-accent,#80654E)]">
             Informe o código enviado com o convite.
           </p>}
         </div>
@@ -220,7 +222,7 @@ export function RSVPSection() {
                         </label>
                         <label className="flex flex-col gap-3">
                           <span>Recado aos noivos (opcional)</span>
-                          <textarea className="guest-input" maxLength={500} rows={3} placeholder="Deixe uma mensagem carinhosa para Giovanna e Edson…" value={g.message} onChange={e => updateGuest(g.id, {message: e.target.value})} />
+                          <textarea className="guest-input" maxLength={500} rows={3} placeholder="Deixe uma mensagem carinhosa para os noivos…" value={g.message} onChange={e => updateGuest(g.id, {message: e.target.value})} />
                         </label>
                       </div>
                     </details>

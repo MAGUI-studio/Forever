@@ -12,15 +12,14 @@ export function DressCode() {
         <div className="text-center max-w-3xl mx-auto space-y-5">
           <p data-cinema-copy className="cinema-eyebrow text-[#5D613C]">Para viver esse dia com leveza</p>
           <h2 className="font-serif text-5xl sm:text-7xl font-light tracking-[-0.04em] leading-[1.08]">Dress Code <span className="italic text-[#5D613C]">&amp; Estilo</span></h2>
-          <p data-cinema-copy className="font-serif italic text-xl sm:text-2xl text-[#80654E]">Elegância para celebrar. Conforto para aproveitar.</p>
+          <p data-cinema-copy className="font-serif italic text-xl sm:text-2xl text-[#80654E]">Traje obrigatório para celebração - esporte fino</p>
         </div>
 
         <div data-cinema-copy className="text-center max-w-2xl mx-auto space-y-4">
           <p className="cinema-eyebrow text-[#5D613C]">O traje da celebração</p>
           <h3 className="font-serif text-4xl sm:text-5xl font-light">Esporte fino</h3>
-          <p className="text-base sm:text-lg font-light leading-[1.8] text-[#80654E]">O traje para homens e mulheres é esporte fino.</p>
           <div className="pt-5 space-y-6">
-            <p className="font-serif text-2xl sm:text-3xl text-[#3D2501]">Por favor, não use branco ou marrom.</p>
+            <p className="font-serif text-2xl sm:text-3xl text-[#3D2501]">Pedimos que não sejam utilizados trajes nas cores branca e marrom.</p>
             <div className="grid grid-cols-2 gap-5 sm:gap-8 max-w-md mx-auto">
               {[{ name: "Branco", fill: "#FFFFFF", stroke: "#AFA493" }, { name: "Marrom", fill: "#80654E", stroke: "#3D2501" }].map(color => (
                 <div key={color.name} className="space-y-3">

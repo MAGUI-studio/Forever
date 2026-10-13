@@ -1,10 +1,3 @@
-export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  (process.env.NODE_ENV === "development"
-    ? "http://localhost:3000"
-    : "https://giovannaeedson.magui.studio")
-).replace(/\/+$/, "");
-
-export function invitationUrl(token: string) {
-  return SITE_URL + "/rsvp#" + token;
-}
+import {FOREVER_ORIGIN,weddingPath} from "./forever";
+export const SITE_URL=FOREVER_ORIGIN;
+export function invitationUrl(token:string,slug:string){return (process.env.NODE_ENV==="development"&&typeof window!=="undefined"?window.location.origin:SITE_URL)+weddingPath(slug,"rsvp")+"#"+token;}

@@ -1,18 +1,19 @@
 "use client";
 
 import { WeddingOrnaments } from "./WeddingOrnaments";
-import { weddingConfig } from "@/config/wedding.config";
+import {useWedding} from "./WeddingProvider";
 
-const moments = ["O encontro · 2016", "Uma vida construída juntos", "O nosso grande sim · 2027"];
 
 export function Story() {
+  const {config:weddingConfig,path}=useWedding();
   const story = weddingConfig.couple.story;
+  const moments=story?.moments??["O encontro","Uma vida construída juntos","O nosso grande sim"];
   if (!story?.enabled) return null;
   return (
     <section id="historia" aria-label="Nossa história" className="cinematic-section relative overflow-hidden z-10 bg-[#F1F1F1] text-[#3D2501] px-6 sm:px-12 lg:px-20 py-24 sm:py-28">
       <WeddingOrnaments variant="floral" tone="paper" />
       <div data-story-content className="relative z-10 max-w-5xl mx-auto text-center">
-        <p className="cinema-eyebrow text-[#80654E]">Nossa história <span className="mx-3 text-[#C7B79D]">/</span> Desde 2016</p>
+        <p className="cinema-eyebrow text-[#80654E]">Nossa história <span className="mx-3 text-[#C7B79D]">/</span> {story.sinceYear ? "Desde "+story.sinceYear : "Nossa jornada"}</p>
         <h2 className="font-serif font-light text-[clamp(2.8rem,4.7vw,5rem)] leading-[1.06] tracking-[-0.04em] text-balance max-w-4xl mx-auto mt-7">{story.title}</h2>
         <div data-story-panels className="grid gap-16 mt-10 sm:mt-12">
           {story.text.map((paragraph, index) => (

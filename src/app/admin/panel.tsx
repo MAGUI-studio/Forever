@@ -19,7 +19,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AdminModals, type InviteDraft } from "./modals";
 import { useAdminModal, type AdminModalName } from "./modal-state";
-import { weddingConfig } from "@/config/wedding.config";
+import {useWedding} from "@/components/wedding/WeddingProvider";
 import {
   ArrowUpRight,
   CalendarDays,
@@ -53,6 +53,7 @@ export function AdminPanel({
   view: "entry" | "login" | "dashboard";
   section?: "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
 }) {
+  const {slug,config:weddingConfig,setConfig,setTheme,path:weddingPath}=useWedding();
   const router = useRouter();
   const [modalState, setModalState] = useAdminModal();
   const [user, setUser] = useState<User | null>(null);
@@ -86,13 +87,13 @@ export function AdminPanel({
         setLoading(true);
         setInvites([]);
         const destination = u ? "dashboard" : "login";
-        if (view !== destination) router.replace("/admin/" + destination);
+        if (view !== destination) router.replace(u?weddingPath("admin/dashboard"):"/login");
       });
     } catch (e) {
       queueMicrotask(() => {
         setError(e instanceof Error ? e.message : "Falha ao iniciar login.");
         setReady(true);
-        if (view !== "login") router.replace("/admin/login");
+        if (view !== "login") router.replace("/login");
       });
     }
   }, [router, view]);
@@ -108,6 +109,7 @@ export function AdminPanel({
       headers: {
         Authorization: `Bearer ${await account.getIdToken()}`,
         "Content-Type": "application/json",
+        "x-wedding-slug":slug,
       },
       ...(data ? { body: JSON.stringify(data) } : {}),
     });
@@ -116,6 +118,7 @@ export function AdminPanel({
   }
   async function load(account = user) {
     const session = await api("/api/admin/session", "GET", undefined, account);
+    setConfig(session.wedding.config);setTheme(session.wedding.theme);
     const reception = session.role === "reception";
     const list = await api(reception || section === "check-in" ? "/api/admin/reception" : "/api/admin/invites", "GET", undefined, account);
     const config = reception ? null : await api("/api/admin/settings", "GET", undefined, account);
@@ -123,7 +126,7 @@ export function AdminPanel({
     setRole(session.role); setTables(operations.tables); setInvites(list.invitations);
     if(config) setSettings(config.settings);
     setAuthorized(true); setLoading(false);
-    if(reception && section !== "check-in") router.replace("/admin/check-in");
+    if(reception && section !== "check-in") router.replace(weddingPath("admin/check-in"));
   }
   useEffect(() => {
     if(user && view === "dashboard") void load(user).catch(e => {setLoading(false);setError(e instanceof Error ? e.message : "Erro ao carregar painel.");});
@@ -142,7 +145,7 @@ export function AdminPanel({
   },[authorized,section,busy,user]);
   async function copyInvitationLink(token: string, key: string) {
     try {
-      await navigator.clipboard.writeText(invitationUrl(token));
+      await navigator.clipboard.writeText(invitationUrl(token,slug));
       setCopiedId(key);
       if (copyTimer.current) clearTimeout(copyTimer.current);
       copyTimer.current = setTimeout(() => setCopiedId(null), 3000);
@@ -174,7 +177,7 @@ export function AdminPanel({
   }
   async function downloadPdf(invitation: {label: string; token: string}, key: string) {
     setGeneratingPdf(key); setError("");
-    try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf"); await downloadInvitationPdf(invitation);}
+    try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf"); await downloadInvitationPdf(invitation,weddingConfig,slug);}
     catch {setError("Não foi possível gerar o convite. Tente novamente.");}
     finally {setGeneratingPdf(null);}
   }
@@ -225,21 +228,22 @@ export function AdminPanel({
       <AdminContainer centered={!user}>
         {user && view === "dashboard" && (
           <nav className="admin-nav flex-nowrap! gap-3! lg:flex-wrap! lg:gap-6!" aria-label="Navegação da administração">
-            <Link href="/admin/dashboard" className="admin-wordmark">
+            <Link href={weddingPath("admin/dashboard")} className="admin-wordmark">
               {weddingConfig.couple.partner1} <em>&</em> {weddingConfig.couple.partner2}<span>O nosso grande dia</span>
             </Link>
             <div className="hidden! lg:flex! order-last flex w-full items-center justify-center gap-2 lg:order-none lg:w-auto lg:flex-1" aria-label="Seções do painel">
-              {role === "admin" && <Link href="/admin/guests" aria-current={section === "guests" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "guests" ? "bg-[#5d613c10] font-semibold text-[#5D613C]" : "text-[#80654E]")}><Users size={16} aria-hidden="true" />Lista de convidados</Link>}
-              <Link href="/admin/check-in" aria-current={section === "check-in" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "check-in" ? "bg-[#5d613c10] font-semibold text-[#5D613C]" : "text-[#80654E]")}><CheckIcon size={16} aria-hidden="true" />Controle de chegada</Link>
-              {role === "admin" && <DropdownMenu.Root><DropdownMenu.Trigger className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs text-[#5D613C] hover:bg-[#5d613c10]">Organização<CaretDownIcon size={14} /></DropdownMenu.Trigger><DropdownMenu.Portal><DropdownMenu.Content sideOffset={8} className="z-50 min-w-48 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-2 shadow-lg">{[{href:"tables",label:"Mesas e lugares"},{href:"buffet",label:"Alimentação e buffet"},{href:"history",label:"Histórico de alterações"},{href:"team",label:"Equipe da recepção"}].map(item=><DropdownMenu.Item asChild key={item.href}><Link className="block rounded-lg px-4 py-3 text-xs text-[#5D613C] outline-none hover:bg-[#5d613c10] focus:bg-[#5d613c10]" href={"/admin/"+item.href}>{item.label}</Link></DropdownMenu.Item>)}</DropdownMenu.Content></DropdownMenu.Portal></DropdownMenu.Root>}
+              {role === "admin" && <Link href={weddingPath("admin/guests")} aria-current={section === "guests" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "guests" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><Users size={16} aria-hidden="true" />Lista de convidados</Link>}
+              <Link href={weddingPath("admin/check-in")} aria-current={section === "check-in" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "check-in" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><CheckIcon size={16} aria-hidden="true" />Controle de chegada</Link>
+              {role === "admin" && <DropdownMenu.Root><DropdownMenu.Trigger className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs text-[var(--forever-primary,#5D613C)] hover:bg-[#5d613c10]">Organização<CaretDownIcon size={14} /></DropdownMenu.Trigger><DropdownMenu.Portal><DropdownMenu.Content sideOffset={8} className="z-50 min-w-48 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-2 shadow-lg">{[{href:"site",label:"Personalizar site"},{href:"tables",label:"Mesas e lugares"},{href:"buffet",label:"Alimentação e buffet"},{href:"history",label:"Histórico de alterações"},{href:"team",label:"Equipe da recepção"}].map(item=><DropdownMenu.Item asChild key={item.href}><Link className="block rounded-lg px-4 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none hover:bg-[#5d613c10] focus:bg-[#5d613c10]" href={weddingPath("admin/"+item.href)}>{item.label}</Link></DropdownMenu.Item>)}</DropdownMenu.Content></DropdownMenu.Portal></DropdownMenu.Root>}
             </div>
+            <Link href={weddingPath()} target="_blank" rel="noopener noreferrer" className="hidden min-h-11 shrink-0 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[#5d613c10] lg:inline-flex"><ArrowUpRight size={16} aria-hidden="true"/>Ver site</Link>
             <div className="hidden lg:block">
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild><button type="button" className="admin-profile-trigger" aria-label="Abrir menu da conta"><span className="admin-account-avatar" aria-hidden="true">{user.email?.slice(0,1).toUpperCase() || "G"}</span><span className="admin-profile-name">{user.displayName || user.email}</span><CaretDownIcon size={13} aria-hidden="true" /></button></DropdownMenu.Trigger>
               <DropdownMenu.Portal><DropdownMenu.Content className="admin-profile-menu" align="end" sideOffset={10} collisionPadding={16}>
                 <DropdownMenu.Label className="admin-profile-label">Espaço dos noivos<span>{user.email}</span></DropdownMenu.Label>
                 <DropdownMenu.Separator className="admin-profile-separator" />
-                <DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-[var(--wedding-radius)] px-2.5 py-3 text-xs text-[#5D613C] outline-none data-highlighted:bg-[#edf0e3] data-disabled:opacity-40" disabled={busy || !authorized || role !== "admin"} onSelect={() => openModal("settings")}><CalendarDays size={16} aria-hidden="true" />Configurações</DropdownMenu.Item>
+                <DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-[var(--wedding-radius)] px-2.5 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none data-highlighted:bg-[#edf0e3] data-disabled:opacity-40" disabled={busy || !authorized || role !== "admin"} onSelect={() => openModal("settings")}><CalendarDays size={16} aria-hidden="true" />Configurações</DropdownMenu.Item>
                 <DropdownMenu.Item className="admin-profile-item" disabled={busy} onSelect={() => void action(async () => {await signOut(clientAuth());})}><LogOut size={16} aria-hidden="true" /> Sair</DropdownMenu.Item>
               </DropdownMenu.Content></DropdownMenu.Portal>
             </DropdownMenu.Root>
@@ -407,14 +411,14 @@ export function AdminPanel({
                 </AdminContainer>
                 <div className="flex flex-col gap-5 py-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="grid min-w-0 gap-3 sm:grid-cols-[340px_220px] sm:items-center sm:gap-6">
-                    <label className="flex min-h-12 min-w-0 items-center gap-3 rounded-[var(--wedding-radius)] border border-[#5d613c30] bg-[#fffdfa] px-3 text-[#5D613C] transition-[border-color,box-shadow] focus-within:border-[#5d613c70] focus-within:ring-2 focus-within:ring-[#5d613c20]">
+                    <label className="flex min-h-12 min-w-0 items-center gap-3 rounded-[var(--wedding-radius)] border border-[#5d613c30] bg-[#fffdfa] px-3 text-[var(--forever-primary,#5D613C)] transition-[border-color,box-shadow] focus-within:border-[#5d613c70] focus-within:ring-2 focus-within:ring-[#5d613c20]">
                       <Search size={19} className="shrink-0" aria-hidden="true" />
-                      <input aria-label="Buscar convidados" className="h-12 w-full min-w-0 rounded-lg bg-transparent text-sm text-[#3D2501] border-0! outline-none! ring-0! shadow-none! placeholder:text-[#8a887b] focus:outline-none! focus-visible:outline-none!" placeholder="Buscar nome, família ou grupo" value={query} onChange={event => setQuery(event.target.value)} />
+                      <input aria-label="Buscar convidados" className="h-12 w-full min-w-0 rounded-lg bg-transparent text-sm text-[var(--forever-ink,#3D2501)] border-0! outline-none! ring-0! shadow-none! placeholder:text-[#8a887b] focus:outline-none! focus-visible:outline-none!" placeholder="Buscar nome, família ou grupo" value={query} onChange={event => setQuery(event.target.value)} />
                     </label>
                     <WeddingSelect label="Filtrar situação" className="h-12! min-h-12! border! border-[#5d613c30]! bg-[#fffdfa]! px-3! text-sm! shadow-none! focus-visible:border-[#5d613c70]!" value={filter} onValueChange={setFilter} options={[{value:"todos",label:"Todos os convites"},{value:"pendente",label:"Com pendentes"},{value:"confirmado",label:"Com confirmados"},{value:"recusado",label:"Com recusas"},{value:"abertos",label:"Convites abertos"},{value:"nao-respondidos",label:"Com respostas pendentes"},{value:"respondidos",label:"Totalmente respondidos"},{value:"enviados",label:"Convites enviados"},{value:"nao-enviados",label:"Ainda não enviados"},{value:"inativos",label:"Inativos"}]} />
                   </div>
                   <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
-                    <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[#5D613C] transition-colors hover:bg-[#5d613c0d] disabled:opacity-50" disabled={busy} onClick={() => void action(async () => {await load();})}>
+                    <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[#5d613c0d] disabled:opacity-50" disabled={busy} onClick={() => void action(async () => {await load();})}>
                       <RefreshCw size={16} aria-hidden="true" className={busy ? "animate-spin" : ""} />Atualizar
                     </button>
                     <AdminButton disabled={busy} onClick={() => open()}><Plus size={17} aria-hidden="true" />Adicionar convite</AdminButton>
@@ -462,7 +466,7 @@ export function AdminPanel({
                   {invitationSections.filter(section => section.invitations.length > 0).map(section => (
                     <section key={section.id} className="space-y-5">
                       <SectionDivider title={section.title} count={section.invitations.length} actions={
-                        <button type="button" className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--wedding-radius)] px-2 text-xs transition-colors hover:bg-[#5d613c10] focus-visible:outline-2 focus-visible:outline-[#5D613C]" onClick={() => setCollapsed(current => {
+                        <button type="button" className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--wedding-radius)] px-2 text-xs transition-colors hover:bg-[#5d613c10] focus-visible:outline-2 focus-visible:outline-[var(--forever-primary,#5D613C)]" onClick={() => setCollapsed(current => {
                           const allExpanded = section.invitations.every(invite => !current[invite.id]);
                           return {...current, ...Object.fromEntries(section.invitations.map(invite => [invite.id, allExpanded]))};
                         })}>
@@ -485,7 +489,7 @@ export function AdminPanel({
 
                           <ExpandingIconButton disabled={busy} onClick={() => open(i)} icon={<PencilSimpleIcon size={17} aria-hidden="true" />} label={"Editar"} />
                           <ExpandingIconButton disabled={busy || !i.active} onClick={() => void action(async () => {
-                            await navigator.clipboard.writeText(invitationUrl(i.token));
+                            await navigator.clipboard.writeText(invitationUrl(i.token,slug));
                             setCopiedId(i.id); if (copyTimer.current) clearTimeout(copyTimer.current);
                             copyTimer.current = setTimeout(() => setCopiedId(null), 3000);
                           })} icon={copiedId === i.id ? <CheckIcon size={17} weight="bold" aria-hidden="true" /> : <CopyIcon size={17} aria-hidden="true" />} label={copiedId === i.id ? "Copiado" : (i.guests.length > 1 ? "Copiar link do grupo" : "Copiar link")} />
@@ -494,12 +498,12 @@ export function AdminPanel({
                             setInvites(current => current.map(item => item.id === i.id ? {...item,sentAt:result.sentAt} : item));
                             
                           })} icon={<PaperPlaneTiltIcon size={17} weight={i.sentAt ? "fill" : "regular"} aria-hidden="true" />} label={i.sentAt ? "Enviado" : "Marcar enviado"} />
-                          <ExpandingIconButton disabled={busy || !!generatingPdf || !i.active} onClick={async () => {setGeneratingPdf(i.id);setError("");try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf");await downloadInvitationPdf(i);}catch {setError("Não foi possível gerar o convite. Tente novamente.");}finally {setGeneratingPdf(null);}}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={generatingPdf === i.id ? "Gerando convite…" : (i.guests.length > 1 ? "Convite do grupo" : "Baixar convite")} />
+                          <ExpandingIconButton disabled={busy || !!generatingPdf || !i.active} onClick={async () => {setGeneratingPdf(i.id);setError("");try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf");await downloadInvitationPdf(i,weddingConfig,slug);}catch {setError("Não foi possível gerar o convite. Tente novamente.");}finally {setGeneratingPdf(null);}}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={generatingPdf === i.id ? "Gerando convite…" : (i.guests.length > 1 ? "Convite do grupo" : "Baixar convite")} />
                           <ExpandingIconButton disabled={busy} onClick={() => openModal("delete-invitation",i.id)} icon={<TrashIcon size={17} aria-hidden="true" />} label={"Excluir"} />
                         </ExpandingIconButtonGroup>
                       </div>
                       <div id={"invite-body-" + i.id} className="admin-invite-collapse" data-open={!collapsed[i.id]} aria-hidden={!!collapsed[i.id]} inert={!!collapsed[i.id]}><div className="admin-invite-collapse-inner">
-                      <div className="my-3 flex flex-wrap gap-x-5 gap-y-2 text-[11px] text-[#80654E]"><span>{i.sentAt ? "Enviado em "+new Date(i.sentAt).toLocaleDateString("pt-BR") : "Envio não registrado"}</span><span>{i.openedAt ? "Primeiro acesso em "+new Date(i.openedAt).toLocaleString("pt-BR") : "Sem acesso registrado"}</span><span>{i.guests.filter(g=>g.status!=="pendente").length}/{i.guests.length} respostas</span></div><div className={i.respondedAt || i.dietaryRestrictions || i.message ? "mt-5 mb-5" : "mt-5"}>
+                      <div className="my-3 flex flex-wrap gap-x-5 gap-y-2 text-[11px] text-[var(--forever-accent,#80654E)]"><span>{i.sentAt ? "Enviado em "+new Date(i.sentAt).toLocaleDateString("pt-BR") : "Envio não registrado"}</span><span>{i.openedAt ? "Primeiro acesso em "+new Date(i.openedAt).toLocaleString("pt-BR") : "Sem acesso registrado"}</span><span>{i.guests.filter(g=>g.status!=="pendente").length}/{i.guests.length} respostas</span></div><div className={i.respondedAt || i.dietaryRestrictions || i.message ? "mt-5 mb-5" : "mt-5"}>
                         {i.guests.map((g) => (
                           <details key={g.id} className="rsvp-guest-accordion admin-guest-accordion last:border-b-0! [&:last-child>summary]:pb-0! [&:last-child[open]>summary]:pb-[18px]!">
                             <summary>
@@ -518,7 +522,7 @@ export function AdminPanel({
                             </summary>
                             <div className="rsvp-guest-accordion-fields">
                               <div className="admin-guest-notes">
-                                {i.personalOpenedAt?.[g.id] && <p className="text-xs text-[#80654E]">Link pessoal aberto em {new Date(i.personalOpenedAt[g.id]).toLocaleString("pt-BR")}</p>}
+                                {i.personalOpenedAt?.[g.id] && <p className="text-xs text-[var(--forever-accent,#80654E)]">Link pessoal aberto em {new Date(i.personalOpenedAt[g.id]).toLocaleString("pt-BR")}</p>}
                                 <div><p><WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" aria-hidden="true" />Restrições alimentares</p><span>{i.personalResponses?.[g.id]?.dietaryRestrictions || "Nenhuma restrição informada."}</span></div>
                                 <div><p><ChatTextIcon size={19} weight="fill" className="admin-message-alert" aria-hidden="true" />Recado aos noivos</p><span>{i.personalResponses?.[g.id]?.message || "Nenhum recado enviado."}</span></div>
                               </div>
@@ -527,7 +531,7 @@ export function AdminPanel({
                         ))}
                       </div>
                       {i.respondedAt && (
-                        <p className="text-sm text-[#80654E]">
+                        <p className="text-sm text-[var(--forever-accent,#80654E)]">
                           Última resposta do convite:{" "}
                           {new Date(i.respondedAt).toLocaleString("pt-BR")}
                         </p>

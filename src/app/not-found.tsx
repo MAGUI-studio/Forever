@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function NotFound(){return <main className="flex min-h-[70svh] flex-col items-center justify-center gap-5 px-6 text-center"><h1 className="font-serif text-5xl">Este espaço não está disponível</h1><p className="text-sm text-[#80654E]">Confira o endereço recebido e tente novamente.</p><Link href="/" className="text-sm text-[#5D613C]">Forever · MAGUI.studio</Link></main>;}

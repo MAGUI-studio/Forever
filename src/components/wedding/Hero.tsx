@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import Image from 'next/image';
 
-import { weddingConfig } from "@/config/wedding.config";
+import {useWedding} from "./WeddingProvider";
 import { formatDateBR } from "@/lib/utils";
 import { WeddingOrnaments } from "./WeddingOrnaments";
 import { Countdown } from "./Countdown";
@@ -12,6 +12,7 @@ import { Countdown } from "./Countdown";
 import { ArrowDown } from "lucide-react";
 
 export function Hero() {
+  const {config:weddingConfig,path}=useWedding();
   const { couple } = weddingConfig;
   const section = useRef<HTMLElement>(null);
   const reducedMotion = useReducedMotion();
@@ -22,7 +23,7 @@ export function Hero() {
   const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0.15]);
   return <section ref={section} id="inicio" className="relative w-full overflow-hidden bg-[#17130D] px-6 sm:px-12 lg:px-20 pt-8 sm:pt-12 pb-24 sm:pb-36 text-[#F1F1F1]">
     <motion.div style={reducedMotion ? undefined : { y: imageY, scale: imageScale }} className="absolute inset-x-0 -inset-y-[20%] origin-center">
-      <Image
+      <Image unoptimized
         src={couple.coverImage}
         alt=""
         fill
@@ -37,7 +38,7 @@ export function Hero() {
 
     <WeddingOrnaments progress={scrollYProgress} variant="hearts" tone="photo" />
     <motion.div style={reducedMotion ? undefined : { y: contentY, opacity }} className="relative z-10 text-center flex flex-col items-center gap-9 sm:gap-12 pb-10 sm:pb-14">
-      <p className="hero-intro cinema-eyebrow text-white">Uma história de amor <span className="mx-3">·</span> 2027</p>
+      <p className="hero-intro cinema-eyebrow text-white">Uma história de amor <span className="mx-3">·</span> {new Date(couple.weddingDate).getFullYear()}</p>
       <h1 className="hero-logo font-serif text-5xl sm:text-7xl lg:text-9xl font-light tracking-tight leading-none text-white">
         <span>{couple.partner1}</span>
         <span className="font-serif italic font-light text-[#C7B79D] px-4">&amp;</span>

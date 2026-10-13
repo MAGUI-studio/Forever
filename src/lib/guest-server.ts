@@ -1,4 +1,5 @@
 import "server-only";
+import {scopedDatabase,findWedding} from "./wedding-server";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { services } from "./firebase/admin";
@@ -26,11 +27,12 @@ export function failure(error: unknown) {
     503,
   );
 }
-export async function body(request: Request) {
-  const text = await request.text();
-  if (text.length > 64000) throw new HttpError(413, "Dados muito extensos.");
-  return JSON.parse(text);
+export async function limitedBody(request:Request,limit=64000){
+ const reader=request.body?.getReader();if(!reader)return new Uint8Array();const chunks:Uint8Array[]=[];let length=0;
+ try{while(true){const {done,value}=await reader.read();if(done)break;length+=value.length;if(length>limit){await reader.cancel();throw new HttpError(413,"Dados muito extensos.");}chunks.push(value);}}finally{reader.releaseLock();}
+ const result=new Uint8Array(length);let offset=0;for(const chunk of chunks){result.set(chunk,offset);offset+=chunk.length;}return result;
 }
+export async function body(request:Request){return JSON.parse(new TextDecoder().decode(await limitedBody(request)));}
 export function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   if (origin && origin !== new URL(request.url).origin)
@@ -44,12 +46,15 @@ export async function requireAccess(request: Request) {
   let identity;
   try { identity = await auth.verifyIdToken(bearer, true); }
   catch { throw new HttpError(401, "Sua sessão expirou. Entre novamente."); }
-  const admins = (process.env.FIREBASE_ADMIN_UIDS ?? "").split(",").map(s => s.trim());
-  if (admins.includes(identity.uid)) return {db, uid:identity.uid, email:identity.email ?? "Administrador", role:"admin" as const};
-  const email = identity.email?.toLowerCase();
-  if (email) {
-    const member = await db.collection("receptionTeam").doc(tokenId(email)).get();
-    if (member.data()?.active === true && (identity.email_verified || member.data()?.uid === identity.uid)) return {db, uid:identity.uid, email, role:"reception" as const};
+  const wedding=await requestWedding(request);
+  const scope=scopedDatabase(db,wedding.slug);
+  if((process.env.MAGUI_ADMIN_UIDS??"").split(",").map(v=>v.trim()).includes(identity.uid))return {db:scope,uid:identity.uid,email:identity.email??"MAGUI.studio",role:"admin" as const,wedding};
+  if(wedding.status==="suspended"||wedding.status==="archived")throw new HttpError(403,"Este casamento está suspenso ou arquivado.");
+  const member=await db.doc("weddings/"+wedding.slug+"/members/"+identity.uid).get();
+  if(member.data()?.active===true && member.data()?.role==="admin")return {db:scope,uid:identity.uid,email:identity.email??"Administrador",role:"admin" as const,wedding};
+  const email=identity.email?.toLowerCase();
+  if(email){const reception=await scope.collection("receptionTeam").doc(tokenId(email)).get();
+    if(reception.data()?.active===true && (identity.email_verified||reception.data()?.uid===identity.uid))return {db:scope,uid:identity.uid,email,role:"reception" as const,wedding};
   }
   throw new HttpError(403, "Esta conta não tem acesso ao painel.");
 }
@@ -118,3 +123,11 @@ export const settingsSchema = z
       ),
   })
   .strict();
+
+export async function requestWedding(request:Request,publicOnly=false){
+ const slug=request.headers.get("x-wedding-slug")??"";
+ const wedding=await findWedding(slug);
+ if(!wedding || (publicOnly && wedding.status!=="published"))throw new HttpError(404,"Casamento indisponível.");
+ return wedding;
+}
+export async function publicWeddingDatabase(request:Request){const wedding=await requestWedding(request,true);return scopedDatabase(services().db,wedding.slug);}

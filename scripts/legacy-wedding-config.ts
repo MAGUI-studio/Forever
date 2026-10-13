@@ -1,4 +1,4 @@
-import giftCatalog from "./gifts.json";
+import giftCatalog from "../src/config/gifts.json";
 import { WeddingConfig } from "@/types/wedding";
 const photosWithPeople = new Set([
   "https://gift-media.lejour.com.br/9a917f53-1486-422c-af2d-8dfa2e2341ef.jpeg",
@@ -21,6 +21,8 @@ export const weddingConfig: WeddingConfig = {
     coverImage: "/casal/festa-de-casamento.png",
     story: {
       enabled: true,
+      sinceYear:2016,
+      moments:["O encontro · 2016","Uma vida construída juntos","O nosso grande sim · 2027"],
       title: "Do primeiro encontro ao nosso grande ‘sim’.",
       text: [
         "Nossa história começou em 2016, quando a vida nos colocou no mesmo caminho. Desde então, entre encontros, desafios, conquistas e muitos momentos compartilhados, fomos construindo uma vida juntos.",
@@ -51,7 +53,8 @@ export const weddingConfig: WeddingConfig = {
     cityState: "São José dos Campos - SP",
     googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Quintal+e+Cia+Rua+dos+Marceneiros+210+Jardim+Valparaiba+Sao+Jose+dos+Campos",
     wazeUrl: "https://waze.com/ul?q=Rua%20dos%20Marceneiros%20210%20Sao%20Jose%20dos%20Campos&navigate=yes",
-    image: "/casal/cerimonia-religiosa.png", tips: "A cerimônia e a recepção acontecerão no mesmo local.",
+    websiteUrl:"https://www.instagram.com/quintal_sjc/",
+    image: "/utils/quintal-e-cia/quintal-e-cia-wp.webp", tips: "A cerimônia e a recepção acontecerão no mesmo local.",
   },
   party: {
     image: "/casal/festa-de-casamento.png", title: "Recepção", subtitle: "Após a cerimônia", time: "Após a cerimônia",

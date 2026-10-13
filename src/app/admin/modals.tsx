@@ -176,7 +176,7 @@ function InviteForm({
       <div className="admin-modal-body">
         <fieldset disabled={busy} className="admin-modal-fields">
           <ErrorMessage error={error} />
-          <p className="text-xs text-[#80654E]">Todos os campos marcados com <RequiredMark /> são obrigatórios.</p>
+          <p className="text-xs text-[var(--forever-accent,#80654E)]">Todos os campos marcados com <RequiredMark /> são obrigatórios.</p>
           <section className="admin-form-section">
             <p className="admin-form-kicker">01 · O convite</p>
 <label className="admin-modal-field"><span>Tipo de convite <RequiredMark /></span><WeddingSelect label="Tipo de convite" value={kind} onValueChange={value => setKind(value as "individual" | "group")} options={[{value:"individual",label:"Individual — uma pessoa"},{value:"group",label:"Família ou grupo"}]} /></label>
@@ -274,11 +274,11 @@ function InviteForm({
                     </label>
                   </div>
                   <div className="admin-guest-options">
-                    <label className="relative flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa]/70 px-4 py-3 text-[#5D613C] transition-colors hover:bg-[#fffdfa] has-[:checked]:border-[#5d613c55] has-[:checked]:bg-[#edf0e3] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[#5D613C]">
+                    <label className="relative flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa]/70 px-4 py-3 text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[#fffdfa] has-[:checked]:border-[#5d613c55] has-[:checked]:bg-[#edf0e3] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--forever-primary,#5D613C)]">
                       <Baby size={22} strokeWidth={1.5} className="shrink-0" aria-hidden="true" />
                       <span className="flex-1 text-xs font-medium">Este convidado é uma criança</span>
                       <input type="checkbox" role="switch" className="peer sr-only!" checked={guest.child} onChange={event => change(guest.id, {child:event.target.checked})} />
-                      <span aria-hidden="true" className="relative h-6 w-10 shrink-0 rounded-full bg-[#bcb7ab] transition-colors duration-200 after:absolute after:top-1 after:left-1 after:size-4 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-200 peer-checked:bg-[#5D613C] peer-checked:after:translate-x-4" />
+                      <span aria-hidden="true" className="relative h-6 w-10 shrink-0 rounded-full bg-[#bcb7ab] transition-colors duration-200 after:absolute after:top-1 after:left-1 after:size-4 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-200 peer-checked:bg-[var(--forever-primary,#5D613C)] peer-checked:after:translate-x-4" />
                     </label>
 
                   </div>
