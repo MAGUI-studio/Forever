@@ -4,7 +4,7 @@ import type { WeddingDocument } from "@/types/forever";
 // Canonical/share URLs must never depend on localhost or a Vercel preview host.
 export const SEO_ORIGIN = "https://forever.magui.studio";
 export const SEO_IMAGE = {
-  url: `${SEO_ORIGIN}/SEO/og-image.png`,
+  url: `${SEO_ORIGIN}/SEO/og-image.png?v=2`,
   width: 1200,
   height: 630,
   alt: "Forever — sites de casamento por MAGUI.studio",

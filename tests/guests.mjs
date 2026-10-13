@@ -558,7 +558,7 @@ async function check(title, work) {
   await check("SEO usa URLs públicas, imagem OG real e protege páginas privadas",async()=>{
     const {pageMetadata,weddingMetadata,jsonLd,SEO_ORIGIN,SEO_IMAGE}=load("src/lib/seo.ts");
     const image=fs.readFileSync("public/SEO/og-image.png");assert.equal(image.readUInt32BE(16),SEO_IMAGE.width);assert.equal(image.readUInt32BE(20),SEO_IMAGE.height);
-    const home=pageMetadata({title:"Forever"});assert.equal(home.alternates.canonical,SEO_ORIGIN+"/");assert.equal(home.openGraph.images[0].url,SEO_ORIGIN+"/SEO/og-image.png");assert.equal(home.twitter.card,"summary_large_image");
+    const home=pageMetadata({title:"Forever"});assert.equal(home.alternates.canonical,SEO_ORIGIN+"/");assert.equal(home.openGraph.images[0].url,SEO_ORIGIN+"/SEO/og-image.png?v=2");assert.equal(home.twitter.card,"summary_large_image");assert.ok(image.length<500_000,"Social sharing image should stay lightweight");
     const privatePage=pageMetadata({title:"Editor",path:"/test-couple/admin/site?action=edit",index:false});assert.equal(privatePage.alternates.canonical,SEO_ORIGIN+"/test-couple/admin/site");assert.equal(privatePage.robots.index,false);assert.equal(privatePage.robots.googleBot.index,false);
     assert.throws(()=>pageMetadata({title:"Invalid",path:"https://example.org"}));
     const {emptyWeddingConfig}=load("src/config/forever.ts");const wedding={slug:"seo-couple",status:"published",config:{...emptyWeddingConfig,couple:{...emptyWeddingConfig.couple,partner1:"Ana",partner2:"Pedro",weddingDate:"2027-05-01T23:00:00-03:00"}}};
