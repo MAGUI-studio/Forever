@@ -7,6 +7,8 @@ export interface CoupleInfo {
   hashtag: string;
   coverImage: string;
   story?: {
+    sinceYear?:number;
+    moments?:string[];
     enabled: boolean;
     title: string;
     text: string[];
@@ -29,6 +31,7 @@ export interface EventLocation {
   address: string;
   cityState: string;
   googleMapsUrl: string;
+  websiteUrl?:string;
   wazeUrl?: string;
   uberUrl?: string;
   image?: string;
@@ -87,6 +90,7 @@ export interface RsvpConfig {
 }
 
 export interface WeddingConfig {
+  sections?: {gallery?:boolean;dressCode?:boolean;gifts?:boolean;rsvp?:boolean};
   couple: CoupleInfo;
   gallery: GalleryPhoto[];
   ceremony: EventLocation;

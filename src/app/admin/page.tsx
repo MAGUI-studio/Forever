@@ -1,4 +1,2 @@
-import { AdminPanel } from "./panel";
-export default function AdminPage() {
-  return <AdminPanel view="entry" />;
-}
+import {redirect} from "next/navigation";
+export default function Page(){redirect("/login");}

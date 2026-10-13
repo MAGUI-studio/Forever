@@ -1,6 +1,8 @@
+import {resolveModules,redactModuleData} from "@/config/modules";
+import {requestWedding,assertModule} from "@/lib/guest-server";
 import {audit} from "@/lib/event-audit";
 import { z } from "zod";
-import { services } from "@/lib/firebase/admin";
+import {publicWeddingDatabase} from "@/lib/guest-server";
 import {
   body,
   failure,
@@ -38,7 +40,10 @@ export async function POST(request: Request) {
   try {
     sameOrigin(request);
     const data = schema.parse(await body(request));
-    const { db } = services();
+    const wedding=await requestWedding(request,true);assertModule(wedding,"rsvp");const modules=resolveModules(wedding.modules);
+    const db = await publicWeddingDatabase(request);
+    if(!modules.dietaryRestrictions&&(data.dietaryRestrictions?.trim()||data.responses.some(r=>r.dietaryRestrictions?.trim())))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
+    if(!modules.messages&&(data.message?.trim()||data.responses.some(r=>r.message?.trim())))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
     const ref = db.collection("invitations").doc(invitationDocumentId(data.token));
     await db.runTransaction(async (t) => {
       const snap = await t.get(ref);
@@ -86,13 +91,13 @@ export async function POST(request: Request) {
         personalResponses: {
           ...(current.personalResponses ?? {}),
           ...Object.fromEntries(data.responses.map(r => [r.id, {
-            message: r.message ?? (data.token.includes('.') ? data.message : undefined) ?? current.personalResponses?.[r.id]?.message ?? "",
-            dietaryRestrictions: r.dietaryRestrictions ?? (data.token.includes('.') ? data.dietaryRestrictions : undefined) ?? current.personalResponses?.[r.id]?.dietaryRestrictions ?? "",
+            message: modules.messages?(r.message ?? (data.token.includes('.') ? data.message : undefined) ?? current.personalResponses?.[r.id]?.message ?? ""):(current.personalResponses?.[r.id]?.message??""),
+            dietaryRestrictions: modules.dietaryRestrictions?(r.dietaryRestrictions ?? (data.token.includes('.') ? data.dietaryRestrictions : undefined) ?? current.personalResponses?.[r.id]?.dietaryRestrictions ?? ""):(current.personalResponses?.[r.id]?.dietaryRestrictions??""),
             respondedAt: now,
           }])),
         },
-        ...(!data.token.includes('.') && data.message !== undefined ? {message: data.message} : {}),
-        ...(!data.token.includes('.') && data.dietaryRestrictions !== undefined ? {dietaryRestrictions: data.dietaryRestrictions} : {}),
+        ...(modules.messages&&!data.token.includes('.') && data.message !== undefined ? {message: data.message} : {}),
+        ...(modules.dietaryRestrictions&&!data.token.includes('.') && data.dietaryRestrictions !== undefined ? {dietaryRestrictions: data.dietaryRestrictions} : {}),
       });
     });
     return reply({ success: true, revision: data.revision + 1 });

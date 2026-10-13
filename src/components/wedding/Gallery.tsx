@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { weddingConfig } from "@/config/wedding.config";
+import {useWedding} from "./WeddingProvider";
 import { X, ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 
 export function Gallery() {
+  const {config:weddingConfig,path}=useWedding();
   const { gallery } = weddingConfig;
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
 

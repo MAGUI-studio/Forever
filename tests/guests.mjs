@@ -8,6 +8,10 @@ const vm = runtimeRequire("node:vm");
 const ts = runtimeRequire("typescript");
 const { randomUUID } = runtimeRequire("node:crypto");
 const store = new Map();
+store.set("weddings/test-couple",{slug:"test-couple",status:"published",config:{couple:{partner1:"Test",partner2:"Couple"}},theme:"botanical"});
+store.set("weddings/test-couple/members/bride",{role:"admin",active:true});
+store.set("weddings/test-couple/members/groom",{role:"admin",active:true});
+
 const clone = (value) =>
   value === undefined ? undefined : structuredClone(value);
 const snapshot = (key) => ({
@@ -22,19 +26,21 @@ const ref = (key) => ({
     store.set(key, clone(value));
   },
   set: async (value) => store.set(key, clone(value)),
+  update: async value => store.set(key,{...store.get(key),...clone(value)}),
+  collection: name => db.collection(key+"/"+name),
 });
 const db = {
   doc: ref,
   collection: (name) => {
     const query = {name, doc:(id)=>ref(name+"/"+id), orderBy:()=>query, limit:()=>query,
-      get:async()=>({docs:[...store].filter(([k])=>k.startsWith(name+"/")).map(([k,v])=>({id:k.split("/")[1],data:()=>clone(v)}))})};
+      get:async()=>({docs:[...store].filter(([k])=>k.startsWith(name+"/") && k.slice(name.length+1).indexOf("/")===-1).map(([k,v])=>({id:k.split("/").at(-1),ref:ref(k),data:()=>clone(v)}))})};
     return query;
   },
   runTransaction: async (callback) => {
     const writes = [];
     const result = await callback({
       get: async (r) => r.name ? r.get() : snapshot(r.key),
-      set: (r,value)=>writes.push(()=>store.set(r.key,clone(value))),
+      set: (r,value,options)=>writes.push(()=>store.set(r.key,options?.merge?{...store.get(r.key),...clone(value)}:clone(value))),
       update: (r, value) =>
         writes.push(() =>
           store.set(r.key, { ...store.get(r.key), ...clone(value) }),
@@ -45,10 +51,11 @@ const db = {
     return result;
   },
 };
-const authAccounts = new Map();
+const authAccounts = new Map([["staff@example.com",{uid:"reception-user",email:"staff@example.com"}]]);
 const services = () => ({
   db,
   auth: {
+    getUserByEmail: async email => {const user=authAccounts.get(email.toLowerCase());if(!user)throw Object.assign(new Error("Missing"),{code:"auth/user-not-found"});return user;},
     createUser: async ({email,password}) => {if(authAccounts.has(email))throw Object.assign(new Error("Exists"),{code:"auth/email-already-exists"});const user={uid:randomUUID(),email,password};authAccounts.set(email,user);return user;},
     deleteUser: async uid => {for(const [email,user] of authAccounts)if(user.uid===uid)authAccounts.delete(email);},
     verifyIdToken: async (token) => {
@@ -80,6 +87,7 @@ function load(filename) {
     if (name === "@/lib/firebase/admin" || name === "./firebase/admin")
       return { services };
     if (name.startsWith("@/")) return load(`src/${name.slice(2)}.ts`);
+    if(name.startsWith("."))return load(path.resolve(path.dirname(full),name+".ts"));
     return runtimeRequire(name);
   };
   vm.runInThisContext(`(function(require,module,exports){${javascript}\n})`, {
@@ -104,6 +112,7 @@ const request = (
       origin,
       authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      "x-wedding-slug":"test-couple",
     },
     ...(data ? { body: JSON.stringify(data) } : {}),
   });
@@ -143,11 +152,11 @@ async function check(title, work) {
   const invitation = { label: "Família teste", active: true, guests };
   await check("convite cadastrado com código aleatório", async () => {
     assert.equal((await admin.POST(request("POST", invitation))).status, 201);
-    assert.equal([...store.keys()].filter(k=>k.startsWith("invitations/")).length, 1);
+    assert.equal([...store.keys()].filter(k=>k.startsWith("weddings/test-couple/invitations/")).length, 1);
   });
   const list = await (await admin.GET(request("GET"))).json();
   const invite = list.invitations[0];
-  const key = `invitations/${invite.id}`;
+  const key = `weddings/test-couple/invitations/${invite.id}`;
   assert.match(invite.token, /^[a-f0-9]{48}$/);
   await check("consulta não expõe campos administrativos", async () => {
     const res = await lookup.POST(request("POST", { token: invite.token }, ""));
@@ -222,7 +231,7 @@ async function check(title, work) {
     ),
   );
   await check("prazo vencido bloqueia envio", async () => {
-    store.set("settings/rsvp", {
+    store.set("weddings/test-couple/settings/rsvp", {
       enabled: true,
       deadline: "2020-01-01T00:00:00.000Z",
     });
@@ -260,7 +269,7 @@ async function check(title, work) {
     );
   });
   await check("convite inativo não aceita resposta", async () => {
-    store.set("settings/rsvp", { enabled: true, deadline: "" });
+    store.set("weddings/test-couple/settings/rsvp", { enabled: true, deadline: "" });
     assert.equal(
       (await rsvp.POST(request("POST", { ...answer, revision: 3 }))).status,
       404,
@@ -272,7 +281,7 @@ async function check(title, work) {
     assert.equal((await admin.POST(request("POST", data))).status, 400);
   });
   await check("administrador corrige convite após fechamento", async () => {
-    store.set("settings/rsvp", { enabled: false, deadline: "" });
+    store.set("weddings/test-couple/settings/rsvp", { enabled: false, deadline: "" });
     assert.equal(
       (
         await admin.PATCH(
@@ -322,9 +331,9 @@ async function check(title, work) {
     const list = await (await admin.GET(request("GET"))).json(); assert.equal(list.invitations[0].label,guests[0].name);
   });
   await check("acesso pessoal limita leitura e escrita e rejeita adulteração e remoção", async () => {
-    store.clear(); await admin.POST(request("POST",invitation));
+    for(const key of [...store.keys()])if(key.split("/").length>2&&!key.includes("/members/"))store.delete(key); await admin.POST(request("POST",invitation));
     const list = await (await admin.GET(request("GET"))).json(); const group = list.invitations[0];
-    const token = group.personalTokens[guests[0].id]; const groupKey = 'invitations/'+group.id;
+    const token = group.personalTokens[guests[0].id]; const groupKey = 'weddings/test-couple/invitations/'+group.id;
     const view = await (await lookup.POST(request("POST",{token}))).json();
     assert.deepEqual(view.invitation.guests.map(g=>g.id),[guests[0].id]);
     const payload = {...answer,token,revision:1};
@@ -381,7 +390,7 @@ async function check(title, work) {
     assert.equal((await ops.POST(request("POST",{action:"delete-table",id:table.id}))).status,400);
   });
   await check("recepção recebe mesas e nomes sem tokens nem recados", async () => {
-    const key="invitations/"+eventInvite.id;
+    const key="weddings/test-couple/invitations/"+eventInvite.id;
     store.set(key,{...store.get(key),message:"private",dietaryRestrictions:"private",personalResponses:{[guests[0].id]:{message:"private",dietaryRestrictions:"private"}}});
     const result=await (await reception.GET(request("GET",null,"reception"))).json();
     const item=result.invitations.find(i=>i.id===eventInvite.id);
@@ -391,25 +400,25 @@ async function check(title, work) {
   await check("chegada em grupo, desfazer e proteção contra alteração concorrente", async () => {
     const payload={id:eventInvite.id,guestIds:guests.map(g=>g.id),checkedIn:true,expectedCheckedIn:false};
     assert.equal((await reception.PATCH(request("PATCH",payload,"reception"))).status,200);
-    assert(store.get("invitations/"+eventInvite.id).guests.every(g=>g.checkedInAt));
+    assert(store.get("weddings/test-couple/invitations/"+eventInvite.id).guests.every(g=>g.checkedInAt));
     assert.equal((await reception.PATCH(request("PATCH",payload,"reception"))).status,409);
     assert.equal((await reception.PATCH(request("PATCH",{...payload,checkedIn:false,expectedCheckedIn:true},"reception"))).status,200);
-    assert(store.get("invitations/"+eventInvite.id).guests.every(g=>!g.checkedIn && g.checkedInAt===null));
+    assert(store.get("weddings/test-couple/invitations/"+eventInvite.id).guests.every(g=>!g.checkedIn && g.checkedInAt===null));
     assert.equal((await reception.PATCH(request("PATCH",{...payload,guestIds:[randomUUID()]},"reception"))).status,400);
   });
   await check("histórico é atômico e não guarda tokens privados", async () => {
-    const entries=[...store].filter(([key])=>key.startsWith("auditLog/")).map(([,value])=>value);
+    const entries=[...store].filter(([key])=>key.startsWith("weddings/test-couple/auditLog/")).map(([,value])=>value);
     assert(entries.some(e=>e.action==="Chegada registrada"));assert(entries.some(e=>e.action==="Lugar atualizado"));
     assert(!JSON.stringify(entries).includes(eventInvite.token));
     const size=entries.length;
     await reception.PATCH(request("PATCH",{id:eventInvite.id,guestIds:[randomUUID()],checkedIn:true,expectedCheckedIn:false},"reception"));
-    assert.equal([...store.keys()].filter(key=>key.startsWith("auditLog/")).length,size);
+    assert.equal([...store.keys()].filter(key=>key.startsWith("weddings/test-couple/auditLog/")).length,size);
   });
   await check("abertura válida é registrada sem alterar revisão e links inválidos não contam", async () => {
-    const before=clone(store.get("invitations/"+eventInvite.id));
+    const before=clone(store.get("weddings/test-couple/invitations/"+eventInvite.id));
     const token=eventInvite.personalTokens[guests[0].id];
     assert.equal((await lookup.POST(request("POST",{token}))).status,200);
-    const after=store.get("invitations/"+eventInvite.id);assert(after.openedAt);assert(after.personalOpenedAt[guests[0].id]);assert.equal(after.revision,before.revision);
+    const after=store.get("weddings/test-couple/invitations/"+eventInvite.id);assert(after.openedAt);assert(after.personalOpenedAt[guests[0].id]);assert.equal(after.revision,before.revision);
     assert.equal((await lookup.POST(request("POST",{token:token.replace(guests[0].id,randomUUID())}))).status,404);
   });
   await check("revogação bloqueia imediatamente a conta da recepção", async () => {
@@ -429,6 +438,79 @@ async function check(title, work) {
     assert.equal((await ops.POST(request("POST",{action:"remove-team",email:payload.email}))).status,200);
     assert.equal((await reception.GET(request("GET",null,"managed"))).status,403);
     assert(authAccounts.has(payload.email));
+  });
+  await check("isolamento entre casamentos e rejeição de escopo ausente",async()=>{
+    store.set("weddings/other-couple",{slug:"other-couple",status:"published",config:{}});
+    const foreign=request("GET");foreign.headers.set("x-wedding-slug","other-couple");
+    assert.equal((await admin.GET(foreign)).status,403);
+    const noScope=request("GET");noScope.headers.delete("x-wedding-slug");assert.equal((await admin.GET(noScope)).status,404);
+    const publicRequest=request("POST",{token:"a".repeat(48)});publicRequest.headers.set("x-wedding-slug","other-couple");assert.equal((await lookup.POST(publicRequest)).status,404);
+    const saved=store.get("weddings/test-couple");store.set("weddings/test-couple",{...saved,status:"draft"});assert.equal((await lookup.POST(request("POST",{token:"a".repeat(48)}))).status,404);store.set("weddings/test-couple",saved);
+  });
+  await check("validação de slugs, publicação e URLs de conteúdo",async()=>{
+    const {validWeddingSlug,emptyWeddingConfig}=load("src/config/forever.ts");
+    const {weddingConfigSchema,weddingUpdateSchema}=load("src/lib/wedding-schema.ts");
+    assert(validWeddingSlug("ana-e-pedro"));assert(!validWeddingSlug("admin"));assert(!validWeddingSlug("../foreign"));assert(!validWeddingSlug("Ana Pedro"));
+    assert(weddingConfigSchema.safeParse(emptyWeddingConfig).success);
+    assert(!weddingConfigSchema.safeParse({...emptyWeddingConfig,couple:{...emptyWeddingConfig.couple,coverImage:"javascript:alert(1)"}}).success);
+    assert(!weddingUpdateSchema.safeParse({config:emptyWeddingConfig,theme:"botanical",status:"published"}).success);
+  });
+  await check("somente MAGUI cria casamentos, e cada responsável acessa só o próprio",async()=>{
+    const platform=load("src/app/api/platform/weddings/route.ts");
+    const payload={slug:"new-couple",partner1:"Ana",partner2:"Pedro",ownerEmail:"newstaff@example.com"};
+    assert.equal((await platform.POST(request("POST",payload))).status,403);
+    process.env.MAGUI_ADMIN_UIDS="bride";
+    assert.equal((await platform.POST(request("POST",payload))).status,201);
+    assert.equal((await platform.POST(request("POST",payload))).status,409);
+    process.env.MAGUI_ADMIN_UIDS="";
+    const own=request("GET",null,"managed");own.headers.set("x-wedding-slug","new-couple");assert.equal((await admin.GET(own)).status,200);
+    own.headers.set("x-wedding-slug","test-couple");assert.equal((await admin.GET(own)).status,403);
+    const members=load("src/app/api/admin/members/route.ts");
+    const remove=request("POST",{action:"remove",uid:authAccounts.get(payload.ownerEmail).uid},"managed");remove.headers.set("x-wedding-slug","new-couple");assert.equal((await members.POST(remove)).status,400);
+  });
+  await check("login resolve casamento único e bloqueia novos vínculos duplicados",async()=>{
+    const destination=load("src/app/api/auth/destination/route.ts");
+    const result=await destination.GET(request("GET",null,"managed"));assert.equal(result.status,200);assert.equal((await result.json()).destination,"/new-couple/admin/dashboard");
+    const members=load("src/app/api/admin/members/route.ts");
+    assert.equal((await members.POST(request("POST",{action:"add",email:"newstaff@example.com"}))).status,409);
+    assert.equal((await destination.GET(request("GET",null,"outsider"))).status,403);
+    const ref="weddings/other-couple/members/"+authAccounts.get("newstaff@example.com").uid;store.set(ref,{active:true,role:"admin"});
+    assert.equal((await destination.GET(request("GET",null,"managed"))).status,409);store.delete(ref);
+  });
+  await check("módulos têm dependências consistentes por casamento",async()=>{
+    const {resolveModules,toggleModule}=load("src/config/modules.ts");
+    const defaults=resolveModules();assert(defaults.dietaryRestrictions);const withoutDiet=toggleModule(defaults,"dietaryRestrictions",false);assert(!withoutDiet.buffet);assert(withoutDiet.messages);assert(resolveModules().dietaryRestrictions);
+    const noGuests=toggleModule(defaults,"guestList",false);assert(!noGuests.rsvp&&!noGuests.checkIn&&!noGuests.team&&!noGuests.tables);assert(noGuests.gifts);
+    assert(toggleModule(noGuests,"team",true).checkIn);assert(toggleModule(noGuests,"team",true).guestList);
+  });
+  await check("somente administrador principal altera módulos e a configuração é isolada",async()=>{
+    const modulesApi=load("src/app/api/platform/modules/route.ts"),{resolveModules}=load("src/config/modules.ts");
+    const payload={slug:"test-couple",modules:{...resolveModules(),dietaryRestrictions:false}};
+    assert.equal((await modulesApi.PUT(request("PUT",payload))).status,403);
+    store.set("platformAdmins/bride",{active:true});
+    assert.equal((await modulesApi.PUT(request("PUT",payload))).status,200);
+    assert.equal(store.get("weddings/test-couple").modules.buffet,false);assert.equal(store.get("weddings/other-couple").modules,undefined);
+    assert.equal((await modulesApi.PUT(request("PUT",{...payload,modules:{...payload.modules,unknown:true}}))).status,400);
+    store.delete("platformAdmins/bride");
+  });
+  await check("restrições desativadas desaparecem das respostas sem apagar dados",async()=>{
+    const before=clone(store.get("weddings/test-couple/invitations/"+eventInvite.id));
+    const result=await (await admin.GET(request("GET"))).json();assert(!JSON.stringify(result).includes("dietaryRestrictions"));assert(JSON.stringify(result).includes("message"));
+    const publicView=await (await lookup.POST(request("POST",{token:eventInvite.token}))).json();assert(!JSON.stringify(publicView).includes("dietaryRestrictions"));
+    const payload={token:eventInvite.token,revision:publicView.invitation.revision,responses:publicView.invitation.guests.map(g=>({id:g.id,status:"confirmado",dietaryRestrictions:"not allowed"}))};
+    assert.equal((await rsvp.POST(request("POST",payload))).status,403);
+    assert.deepEqual(store.get("weddings/test-couple/invitations/"+eventInvite.id).personalResponses,before.personalResponses);
+  });
+  await check("módulos desativados bloqueiam acesso direto às APIs",async()=>{
+    const original=clone(store.get("weddings/test-couple"));
+    store.set("weddings/test-couple",{...original,modules:{...original.modules,checkIn:false,organization:false}});
+    assert.equal((await reception.GET(request("GET"))).status,403);
+    assert.equal((await reception.PATCH(request("PATCH",{id:eventInvite.id,guestIds:[guests[0].id],checkedIn:true,expectedCheckedIn:false}))).status,403);
+    assert.equal((await ops.POST(request("POST",{action:"table",name:"Blocked table",capacity:5}))).status,403);
+    const operations=await (await ops.GET(request("GET"))).json();assert.deepEqual(operations.tables,[]);assert.deepEqual(operations.team,[]);assert.deepEqual(operations.history,[]);
+    store.set("weddings/test-couple",{...original,modules:{...original.modules,guestList:false}});
+    assert.equal((await admin.GET(request("GET"))).status,403);assert.equal((await lookup.POST(request("POST",{token:eventInvite.token}))).status,403);
+    store.set("weddings/test-couple",original);
   });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,

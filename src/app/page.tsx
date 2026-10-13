@@ -1,21 +1,2 @@
-import { StoryEnvelope } from "@/components/wedding/StoryEnvelope";
-
-
-
-import { DressCode } from "@/components/wedding/DressCode";
-import { GiftList } from "@/components/wedding/GiftList";
-import { RSVPSection } from "@/components/wedding/RSVPSection";
-import { Footer } from "@/components/wedding/Footer";
-import { CinematicExperience } from "@/components/wedding/CinematicExperience";
-
-export default function HomePage() {
-  return <main className="w-full bg-[#F1F1F1] overflow-x-hidden relative">
-    <CinematicExperience>
-      <StoryEnvelope />
-      <DressCode />
-      <GiftList preview />
-      <RSVPSection />
-      <Footer />
-    </CinematicExperience>
-  </main>;
-}
+import Link from "next/link";
+export default function ForeverHome(){return <main className="flex min-h-[85svh] flex-col items-center justify-center gap-7 px-6 text-center"><p className="text-xs uppercase tracking-[.3em] text-[var(--forever-primary,#5D613C)]">MAGUI.studio apresenta</p><h1 className="font-serif text-8xl text-[var(--forever-ink,#3D2501)]">Forever</h1><p className="max-w-md text-[var(--forever-accent,#80654E)]">Um endereço para celebrar sua história. Um espaço para cuidar de cada detalhe do seu casamento.</p><Link href="/login" className="rounded-2xl bg-[var(--forever-primary,#5D613C)] px-7 py-4 text-white hover:bg-[#4b4f30]">Acessar meu espaço</Link><a href="https://magui.studio" className="text-sm text-[var(--forever-primary,#5D613C)]">Conheça a MAGUI.studio</a></main>;}

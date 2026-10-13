@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { weddingConfig } from "@/config/wedding.config";
+import {useWedding} from "./WeddingProvider";
 import { generatePixPayload } from "@/lib/pix";
 import { formatCurrency } from "@/lib/utils";
 import { GiftItem } from "@/types/wedding";
 import { X, CreditCard, QrCode } from "lucide-react";
 export function PixModal({gift,customAmount,onClose}:{gift:GiftItem|null;customAmount?:number|null;onClose:()=>void}) {
+  const {config:weddingConfig,path}=useWedding();
   const [tab,setTab]=useState<"pix"|"card">("pix");
   const [notice,setNotice]=useState("");
   const dialog=useRef<HTMLDialogElement>(null);

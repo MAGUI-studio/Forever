@@ -4,13 +4,14 @@ import Link from 'next/link';
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { WeddingOrnaments } from "./WeddingOrnaments";
-import { weddingConfig } from "@/config/wedding.config";
+import {useWedding} from "./WeddingProvider";
 import { formatCurrency } from "@/lib/utils";
 import { GiftItem } from "@/types/wedding";
 import { PixModal } from "./PixModal";
 import { Search, ArrowUpRight } from "lucide-react";
 
 export function GiftList({ preview = false }: { preview?: boolean }) {
+  const {config:weddingConfig,path}=useWedding();
   const { gifts } = weddingConfig;
 
   const [selectedCategory, setSelectedCategory] = useState<string>("todos");
@@ -45,11 +46,11 @@ export function GiftList({ preview = false }: { preview?: boolean }) {
       <WeddingOrnaments variant="hearts" tone="paper" />
       <div className="relative z-10 max-w-7xl mx-auto space-y-12 sm:space-y-16">
         <div className="text-center max-w-3xl mx-auto space-y-5">
-          {!preview && <Link href="/" className="inline-flex text-xs text-[#80654E] hover:text-[#3D2501] transition-colors">← Voltar ao início</Link>}
+          {!preview && <Link href={path()} className="inline-flex text-xs text-[#80654E] hover:text-[#3D2501] transition-colors">← Voltar ao início</Link>}
           <p data-cinema-copy className="cinema-eyebrow text-[#5D613C]">Um gesto de carinho</p>
-          <h2 className="font-serif text-5xl sm:text-7xl font-light tracking-[-0.04em] leading-[1.08]">Lista de <span className="italic text-[#5D613C]">presentes</span></h2>
+          <h2 className="font-serif text-5xl sm:text-7xl font-light tracking-[-0.04em] leading-[1.08]">Lista de <span className="italic">presentes</span></h2>
           <p data-cinema-copy className="font-serif italic text-xl sm:text-2xl text-[#80654E]">Sua presença é o nosso maior presente.</p>
-          <p data-cinema-copy className="text-sm sm:text-base text-[#80654E] font-light leading-[1.8] max-w-2xl mx-auto">Para quem desejar nos presentear, preparamos esta lista com carinho. PIX e cartão de crédito estarão disponíveis em breve.</p>
+          <p data-cinema-copy className="text-sm sm:text-base text-[#80654E] font-light leading-[1.8] max-w-2xl mx-auto">Para quem desejar nos presentear, preparamos esta lista com carinho.</p>
         </div>
 
         {!preview && <>
@@ -147,7 +148,7 @@ export function GiftList({ preview = false }: { preview?: boolean }) {
                 className="cinema-gift group flex flex-col justify-between space-y-4"
               >
                 <div className="space-y-3">
-            {!preview && <Link href="/" className="inline-flex text-xs text-[#80654E] hover:text-[#3D2501] transition-colors">← Voltar ao início</Link>}
+            {!preview && <Link href={path()} className="inline-flex text-xs text-[#80654E] hover:text-[#3D2501] transition-colors">← Voltar ao início</Link>}
                   {/* Foto com Zoom Suave */}
                   <div className="relative rounded-t-[3.5rem] rounded-b-2xl aspect-[4/3] overflow-hidden bg-[#C7B79D]/15">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -196,7 +197,7 @@ export function GiftList({ preview = false }: { preview?: boolean }) {
 
         {preview && (
           <div className="flex justify-center">
-            <Link href="/presentes" className="cinema-button bg-[#3D2501] text-[#F1F1F1] hover:bg-[#5D613C] gap-3">
+            <Link href={path("presentes")} className="cinema-button bg-[#3D2501] text-[#F1F1F1] hover:bg-[#5D613C] gap-3">
               Ver todos os presentes <ArrowUpRight size={18} />
             </Link>
           </div>

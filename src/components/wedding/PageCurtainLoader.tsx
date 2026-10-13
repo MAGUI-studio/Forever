@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { weddingConfig } from "@/config/wedding.config";
+import {useWedding} from "./WeddingProvider";
 
 export function PageCurtainLoader() {
+  const {config:weddingConfig,path}=useWedding();
   const fill = useRef<HTMLDivElement>(null);
   const { couple } = weddingConfig;
 
@@ -62,7 +63,7 @@ export function PageCurtainLoader() {
 
   return (
     <>
-      <div role="status" aria-label="Carregando o convite de Giovanna e Edson" className={`wedding-loader fixed inset-0 z-[9999] flex justify-center ${isOpening ? "wedding-loader-opening pointer-events-none" : "pointer-events-auto"}`}>
+      <div role="status" aria-label={"Carregando o convite de "+couple.partner1+" e "+couple.partner2} className={`wedding-loader fixed inset-0 z-[9999] flex justify-center ${isOpening ? "wedding-loader-opening pointer-events-none" : "pointer-events-auto"}`}>
         <div className="relative w-full max-w-440 mx-auto h-full overflow-hidden flex items-center justify-center">
           <div aria-hidden="true" className="wedding-loader-left absolute inset-y-0 left-0 w-[50.5%] bg-[#F1F1F1] z-10" />
           <div aria-hidden="true" className="wedding-loader-right absolute inset-y-0 right-0 w-[50.5%] bg-[#F1F1F1] z-10" />

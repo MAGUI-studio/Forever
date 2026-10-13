@@ -1,9 +1,9 @@
 import { invitationArtwork } from "./invitation-artwork";
 import { invitationUrl } from "@/config/site";
-import { weddingConfig } from "@/config/wedding.config";
+import type {WeddingConfig} from "@/types/wedding";
 
 /** Generated locally; invitation codes are never sent to a PDF or QR service. */
-export async function createInvitationPdf(invitation: { label: string; token: string }) {
+export async function createInvitationPdf(invitation: { label: string; token: string }, weddingConfig:WeddingConfig, slug:string) {
   const [{ jsPDF }, { default: QRCode }, { svg2pdf }, fonts] = await Promise.all([import("jspdf"), import("qrcode"), import("svg2pdf.js"), Promise.all(["regular", "italic", "light", "light-italic"].map(async style => {
     const response = await fetch("/fonts/cormorant-garamond-" + style + ".ttf");
     if (!response.ok) throw new Error("Não foi possível carregar a fonte do convite.");
@@ -17,8 +17,8 @@ export async function createInvitationPdf(invitation: { label: string; token: st
   const width = 148, center = width / 2;
   const olive = "#5D613C", ink = "#3D2501", taupe = "#80654E", sand = "#C7B79D";
   const { couple, ceremony } = weddingConfig;
-  const url = invitationUrl(invitation.token);
-  pdf.setProperties({title: "Convite de casamento - " + invitation.label, subject: "Giovanna e Edson", author: "Giovanna e Edson", creator: "Site do casamento"});
+  const url = invitationUrl(invitation.token,slug);
+  pdf.setProperties({title: "Convite de casamento - " + invitation.label, subject: couple.partner1+" e "+couple.partner2, author: couple.partner1+" e "+couple.partner2, creator: "Site do casamento"});
   pdf.setFillColor("#FAF8F1"); pdf.rect(0, 0, width, 210, "F");
   pdf.setDrawColor(sand); pdf.setLineWidth(.25); pdf.roundedRect(8, 8, 132, 194, 5, 5);
   const artwork = new DOMParser().parseFromString(invitationArtwork,"image/svg+xml").documentElement;
@@ -27,8 +27,7 @@ export async function createInvitationPdf(invitation: { label: string; token: st
     pdf.setFont(font,style); pdf.setFontSize(size); pdf.setTextColor(color);
     pdf.text(value,center,y,{align:"center"});
   }
-  text("Deus uniu nossos caminhos e sob sua benção",25,11,taupe,"CormorantGaramond","italic");
-  text("uniremos nossas vidas para sempre!",30,11,taupe,"CormorantGaramond","italic");
+  text((couple.headline || "Vamos celebrar nossa história.").split("\n")[0].slice(0,90),25,11,taupe,"CormorantGaramond","italic");
   // Match the hero: Cormorant Garamond 300, with an italic ampersand.
   pdf.setFont("CormorantGaramondLight","normal");pdf.setFontSize(32);
   const firstWidth=pdf.getTextWidth(couple.partner1), lastWidth=pdf.getTextWidth(couple.partner2);
@@ -62,8 +61,8 @@ export async function createInvitationPdf(invitation: { label: string; token: st
   return pdf;
 }
 
-export async function downloadInvitationPdf(invitation: {label:string;token:string}) {
-  const pdf = await createInvitationPdf(invitation);
+export async function downloadInvitationPdf(invitation: {label:string;token:string}, weddingConfig:WeddingConfig, slug:string) {
+  const pdf = await createInvitationPdf(invitation,weddingConfig,slug);
   const name = invitation.label.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,80) || "familia";
   pdf.save("convite-" + name.toLowerCase() + ".pdf");
 }

@@ -10,29 +10,29 @@
   font-family: var(--font-sans);
 }
 
-/* Fundo e Paleta Oficial: #C7B79D, #80654E, #3D2501, #5D613C, #F5F5DA, #F1F1F1 */
+/* Fundo e Paleta Oficial: var(--forever-sand,#C7B79D), var(--forever-accent,#80654E), var(--forever-ink,#3D2501), var(--forever-primary,#5D613C), #F5F5DA, var(--forever-paper,#F1F1F1) */
 .bg-wedding-warm {
-  background-color: #F1F1F1;
+  background-color: var(--forever-paper,#F1F1F1);
 }
 
 .bg-wedding-sand {
-  background-color: #C7B79D;
+  background-color: var(--forever-sand,#C7B79D);
 }
 
 .bg-wedding-espresso {
-  background-color: #3D2501;
+  background-color: var(--forever-ink,#3D2501);
 }
 
 .bg-wedding-olive {
-  background-color: #5D613C;
+  background-color: var(--forever-primary,#5D613C);
 }
 
 .bg-wedding-taupe {
-  background-color: #80654E;
+  background-color: var(--forever-accent,#80654E);
 }
 
 .bg-wedding-neutral {
-  background-color: #F1F1F1;
+  background-color: var(--forever-paper,#F1F1F1);
 }
 
 /* Molduras em Arco Arquitetônico Romântico */
@@ -45,13 +45,13 @@
 
 /* Efeito Papelaria Fina / Stationery */
 .stationery-card {
-  background: #F1F1F1;
+  background: var(--forever-paper,#F1F1F1);
   box-shadow: 0 20px 40px -15px rgba(61, 37, 1, 0.08), 0 0 1px 1px rgba(199, 183, 157, 0.25);
 }
 
 /* Degradê Dourado / Champagne Suave */
 .text-champagne {
-  background: linear-gradient(135deg, #80654E 0%, #C7B79D 50%, #3D2501 100%);
+  background: linear-gradient(135deg, var(--forever-accent,#80654E) 0%, var(--forever-sand,#C7B79D) 50%, var(--forever-ink,#3D2501) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -68,17 +68,17 @@ html {
   width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1F1F1;
+  background: var(--forever-paper,#F1F1F1);
 }
 ::-webkit-scrollbar-thumb {
-  background: #C7B79D;
+  background: var(--forever-sand,#C7B79D);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #80654E;
+  background: var(--forever-accent,#80654E);
 }
 
-:focus-visible { outline: 2px solid #5D613C; outline-offset: 4px; }
+:focus-visible { outline: 2px solid var(--forever-primary,#5D613C); outline-offset: 4px; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
 
 /* Motion complements the reading rhythm; layout remains in normal document flow. */
@@ -106,7 +106,7 @@ html {
 .cinematic-section h2 { text-wrap: balance; }
 .cinematic-section p { text-wrap: pretty; }
 .cinematic-section { scroll-margin-top: 2rem; }
-.cinematic-experience ::selection { background: #C7B79D; color: #3D2501; }
+.cinematic-experience ::selection { background: var(--forever-sand,#C7B79D); color: var(--forever-ink,#3D2501); }
 @media (prefers-reduced-motion: reduce) {
   .cinema-button:hover { transform: none; }
 }
@@ -121,7 +121,7 @@ html {
 @media (hover: hover) and (pointer: fine) {
   .cinema-gift:hover > div:first-child > div:first-child {
     box-shadow: 0 22px 45px -22px #3D25012B;
-    border-color: #C7B79D;
+    border-color: var(--forever-sand,#C7B79D);
   }
   .cinema-color:hover > div:first-child {
     transform: translateY(-8px) scale(1.025);
@@ -154,43 +154,43 @@ html { scrollbar-gutter: stable; }
   .wedding-loader-left, .wedding-loader-right, .wedding-loader-logo { transition: none; }
 }
 /* Administração e confirmação de convidados */
-.guest-input { width: 100%; border: 1px solid #C7B79D; border-radius: var(--wedding-radius); padding: .8rem 1rem; background: #fff; color: #3D2501; min-height: 44px; }
-.guest-input:focus-visible { outline: 2px solid #5D613C; outline-offset: 2px; }
+.guest-input { width: 100%; border: 1px solid var(--forever-sand,#C7B79D); border-radius: var(--wedding-radius); padding: .8rem 1rem; background: #fff; color: var(--forever-ink,#3D2501); min-height: 44px; }
+.guest-input:focus-visible { outline: 2px solid var(--forever-primary,#5D613C); outline-offset: 2px; }
 .guest-button, .guest-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; border-radius: var(--wedding-radius); padding: .75rem 1.25rem; cursor: pointer; }
-.guest-button { background: #5D613C; color: #F5F5DA; transition: background-color .2s; }
+.guest-button { background: var(--forever-primary,#5D613C); color: #F5F5DA; transition: background-color .2s; }
 .guest-button:hover:not(:disabled) { background: #4B4F30; }
-.guest-secondary { border: 1px solid #C7B79D; color: #3D2501; background: transparent; }
+.guest-secondary { border: 1px solid var(--forever-sand,#C7B79D); color: var(--forever-ink,#3D2501); background: transparent; }
 .guest-button:disabled, .guest-secondary:disabled { opacity: .5; cursor: wait; }
-.guest-button:focus-visible, .guest-secondary:focus-visible { outline: 2px solid #5D613C; outline-offset: 3px; }
+.guest-button:focus-visible, .guest-secondary:focus-visible { outline: 2px solid var(--forever-primary,#5D613C); outline-offset: 3px; }
 
 /* Shared wedding form controls and loading states */
 .guest-input{appearance:none;background:#fffdfa;border-color:#ddd3c3;border-radius: var(--wedding-radius);padding:13px 16px;box-shadow:0 1px 2px #3d250104;transition:border-color .2s,box-shadow .2s;font:inherit;font-size:14px;line-height:1.5}
 .guest-input::placeholder{color:#9c8c7b}.guest-input:hover{border-color:#b6b79b}.guest-input:focus-visible{outline:2px solid #858b65;outline-offset:3px;background:#fff}.guest-input:disabled{opacity:.55;cursor:not-allowed}textarea.guest-input{min-height:108px;resize:vertical}
-input[type=checkbox]{appearance:none;width:19px;height:19px;flex-shrink:0;border:1.5px solid #b6ac9d;border-radius: var(--wedding-radius);background:#fffdfa;display:inline-grid;place-content:center;vertical-align:middle;cursor:pointer}input[type=checkbox]:checked{background:#5d613c;border-color:#5d613c}input[type=checkbox]:checked::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}input[type=checkbox]:focus-visible{outline:2px solid #858b65;outline-offset:3px}input[type=checkbox]:disabled{opacity:.45;cursor:not-allowed}
-.wedding-select-trigger{display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left;cursor:pointer}.wedding-select-trigger>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wedding-select-trigger[data-placeholder]{color:#9c8c7b}.wedding-select-content{z-index:250;min-width:var(--radix-select-trigger-width);max-width:calc(100vw - 24px);max-height:var(--radix-select-content-available-height);overflow:hidden;background:#fffdfa;border:1px solid #ddd3c3;border-radius: var(--wedding-radius);box-shadow:0 15px 45px #3d250125;color:#3d2501}.wedding-select-viewport{padding:6px}.wedding-select-item{position:relative;padding:12px 38px 12px 12px;border-radius: var(--wedding-radius);font-size:14px;cursor:pointer;outline:none}.wedding-select-item[data-highlighted]{background:#eeefe3;color:#4f5532}.wedding-select-item[data-state=checked]{color:#5d613c;font-weight:600}.wedding-select-item[data-disabled]{opacity:.4;pointer-events:none}.wedding-select-check{position:absolute;right:12px;top:50%;transform:translateY(-50%)}.wedding-select-scroll{display:flex;justify-content:center;padding:5px;color:#5d613c}.admin-filter{max-width:280px}
+input[type=checkbox]{appearance:none;width:19px;height:19px;flex-shrink:0;border:1.5px solid #b6ac9d;border-radius: var(--wedding-radius);background:#fffdfa;display:inline-grid;place-content:center;vertical-align:middle;cursor:pointer}input[type=checkbox]:checked{background:var(--forever-primary,#5d613c);border-color:var(--forever-primary,#5d613c)}input[type=checkbox]:checked::after{content:"";width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}input[type=checkbox]:focus-visible{outline:2px solid #858b65;outline-offset:3px}input[type=checkbox]:disabled{opacity:.45;cursor:not-allowed}
+.wedding-select-trigger{display:flex;align-items:center;justify-content:space-between;gap:16px;text-align:left;cursor:pointer}.wedding-select-trigger>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wedding-select-trigger[data-placeholder]{color:#9c8c7b}.wedding-select-content{z-index:250;min-width:var(--radix-select-trigger-width);max-width:calc(100vw - 24px);max-height:var(--radix-select-content-available-height);overflow:hidden;background:#fffdfa;border:1px solid #ddd3c3;border-radius: var(--wedding-radius);box-shadow:0 15px 45px #3d250125;color:var(--forever-ink,#3d2501)}.wedding-select-viewport{padding:6px}.wedding-select-item{position:relative;padding:12px 38px 12px 12px;border-radius: var(--wedding-radius);font-size:14px;cursor:pointer;outline:none}.wedding-select-item[data-highlighted]{background:#eeefe3;color:#4f5532}.wedding-select-item[data-state=checked]{color:var(--forever-primary,#5d613c);font-weight:600}.wedding-select-item[data-disabled]{opacity:.4;pointer-events:none}.wedding-select-check{position:absolute;right:12px;top:50%;transform:translateY(-50%)}.wedding-select-scroll{display:flex;justify-content:center;padding:5px;color:var(--forever-primary,#5d613c)}.admin-filter{max-width:280px}
 .admin-invite-header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}.admin-invite-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#8a765e;margin-top:12px}.admin-invite-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-action{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:10px 13px;border:1px solid #e4ddcf;border-radius: var(--wedding-radius);background:#faf8f3;color:#66563e;font-size:12px;transition:background .2s,border-color .2s;cursor:pointer}.admin-action:hover{background:#eeefe3;border-color:#a5aa87}.admin-action:focus-visible{outline:2px solid #858b65;outline-offset:3px}.admin-action:disabled{opacity:.45;cursor:not-allowed}.admin-action-copy{min-width:111px}.admin-action.is-success{background:#e9eddd;color:#505a34;border-color:#d0d8bd}.admin-action-danger{background:transparent;color:#9b4652;border-color:#edd9dd}.admin-action-danger:hover{background:#fff0f2;border-color:#d9a4ae}
 .wedding-skeleton{display:block;border-radius: var(--wedding-radius);background:linear-gradient(100deg,#e9e5db 25%,#f6f3ed 45%,#e9e5db 65%);background-size:250% 100%;animation:wedding-shimmer 1.7s ease-in-out infinite}.admin-skeleton-message{display:flex;align-items:center;gap:9px;color:#70764d;font-size:13px;margin:24px 0}.admin-skeleton-stat:first-child{background:#faf8f3}.admin-skeleton-label{height:13px;width:70%}.admin-skeleton-number{height:42px;width:45px;margin:24px 0}.admin-skeleton-caption{height:9px;width:80%}.admin-skeleton-settings{height:84px;margin:24px 0}.admin-skeleton-list-heading{margin:40px 0 24px}.admin-skeleton-list-heading span:first-child{width:220px;height:36px;margin-bottom:12px}.admin-skeleton-list-heading span:last-child{width:140px;height:12px}.admin-skeleton-toolbar{height:48px;margin-bottom:32px}.admin-skeleton-invite{margin-bottom:20px}.admin-skeleton-card-top{display:flex;justify-content:space-between;gap:20px;margin-bottom:28px}.admin-skeleton-card-top span:first-child{height:30px;width:36%}.admin-skeleton-card-top span:last-child{height:35px;width:28%}.admin-skeleton-person{display:flex;align-items:center;gap:16px;padding:18px 0;border-bottom:1px solid #ebe5db}.admin-skeleton-person span:first-child{height:36px;width:36px;border-radius:50%}.admin-skeleton-person span:nth-child(2){width:40%;height:13px}.admin-skeleton-person span:last-child{margin-left:auto;width:85px;height:24px}
 .rsvp-section{background:radial-gradient(ellipse at top,#ebe9dc88,transparent 65%)}.rsvp-shell{max-width:760px}.rsvp-emblem{width:72px;height:72px;border:1px solid #dcd7c7;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#6b7247;background:#f6f5ee;margin-bottom:24px}.rsvp-card{padding:40px;background:#fffdfaeb;border:1px solid #e3dccf;border-radius: var(--wedding-radius);box-shadow:0 15px 60px #3d250107}.rsvp-card-eyebrow{display:flex;align-items:center;gap:8px;font-size:11px;text-transform:uppercase;letter-spacing:.17em;color:#6b7247;margin-bottom:12px}.rsvp-response h3{font-size:38px;line-height:1.15}.rsvp-instruction{color:#8a765e;font-size:14px;margin-top:14px}.rsvp-person{padding:20px;background:#f4f2e9;border:1px solid #e6e0d1;border-radius:18px}.rsvp-person-heading{display:flex;align-items:center;gap:12px;margin-bottom:14px;font-size:15px}.rsvp-person-avatar{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#e6e8d7;color:#646b44;font-family:var(--font-serif);font-size:22px}.rsvp-response fieldset>label>span{font-size:14px;color:#705c44}.rsvp-loading{margin-top:28px;color:#727750;font-size:13px}.rsvp-loading .wedding-skeleton{height:58px;margin-bottom:12px}.rsvp-loading .wedding-skeleton:nth-child(2){width:70%}.rsvp-response .guest-button{display:flex;align-items:center;justify-content:center;gap:10px}.wedding-amount-input{width:110px}
 @keyframes wedding-shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}@media(prefers-reduced-motion:reduce){.wedding-skeleton{animation:none}}@media(max-width:600px){.rsvp-card{padding:24px 20px;border-radius:22px}.rsvp-person{padding:16px}.admin-invite-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.admin-action{padding:11px 8px}.admin-filter{max-width:none}.rsvp-section{padding-top:48px}}
 
-.rsvp-change{float:right;color:#737a50;font-size:11px;text-decoration:underline;text-underline-offset:4px;cursor:pointer;margin:0 0 16px 16px}.rsvp-page-nav{max-width:1240px;padding:28px 24px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px}.rsvp-page-brand{font-family:var(--font-serif);font-size:27px;color:#3d2501}.rsvp-page-brand em{color:#80654e}.rsvp-page-back{font-size:12px;color:#6b7247}@media(max-width:480px){.rsvp-page-brand{font-size:22px}.rsvp-page-back{font-size:11px}.rsvp-change{float:none;display:block;margin:0 0 20px auto}}
+.rsvp-change{float:right;color:#737a50;font-size:11px;text-decoration:underline;text-underline-offset:4px;cursor:pointer;margin:0 0 16px 16px}.rsvp-page-nav{max-width:1240px;padding:28px 24px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px}.rsvp-page-brand{font-family:var(--font-serif);font-size:27px;color:var(--forever-ink,#3d2501)}.rsvp-page-brand em{color:var(--forever-accent,#80654e)}.rsvp-page-back{font-size:12px;color:#6b7247}@media(max-width:480px){.rsvp-page-brand{font-size:22px}.rsvp-page-back{font-size:11px}.rsvp-change{float:none;display:block;margin:0 0 20px auto}}
 
-.admin-invite-code{border-top:1px solid #e7dfd3;margin-top:24px;padding-top:16px}.admin-invite-code summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;font-size:12px;color:#737750;padding:6px 0}.admin-invite-code summary::-webkit-details-marker{display:none}.admin-invite-code summary>span{display:flex;align-items:center;gap:9px}.admin-code-caret{transition:transform .2s}.admin-invite-code[open] .admin-code-caret{transform:rotate(180deg)}.admin-code-content{margin-top:14px;padding:18px;background:#f3f1e9;border:1px solid #e4dece;border-radius:14px}.admin-code-content>p{color:#8a765e;font-size:12px;line-height:1.7;margin-bottom:12px}.admin-code-value{display:flex;align-items:center;gap:18px;justify-content:space-between}.admin-code-value code{font-size:12px;line-height:1.8;letter-spacing:.05em;overflow-wrap:anywhere;min-width:0;user-select:all;color:#5d613c}.admin-code-value button{flex-shrink:0}@media(max-width:600px){.admin-code-value{align-items:stretch;flex-direction:column;gap:14px}}
+.admin-invite-code{border-top:1px solid #e7dfd3;margin-top:24px;padding-top:16px}.admin-invite-code summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;font-size:12px;color:#737750;padding:6px 0}.admin-invite-code summary::-webkit-details-marker{display:none}.admin-invite-code summary>span{display:flex;align-items:center;gap:9px}.admin-code-caret{transition:transform .2s}.admin-invite-code[open] .admin-code-caret{transform:rotate(180deg)}.admin-code-content{margin-top:14px;padding:18px;background:#f3f1e9;border:1px solid #e4dece;border-radius:14px}.admin-code-content>p{color:#8a765e;font-size:12px;line-height:1.7;margin-bottom:12px}.admin-code-value{display:flex;align-items:center;gap:18px;justify-content:space-between}.admin-code-value code{font-size:12px;line-height:1.8;letter-spacing:.05em;overflow-wrap:anywhere;min-width:0;user-select:all;color:var(--forever-primary,#5d613c)}.admin-code-value button{flex-shrink:0}@media(max-width:600px){.admin-code-value{align-items:stretch;flex-direction:column;gap:14px}}
 
 /* One shared radius for UI surfaces and controls. Decorative arches and avatars retain their shapes. */
 :root { --wedding-radius: 14px; }
 .guest-button, .guest-secondary, .cinema-button, .guest-input, .wedding-select-content, .wedding-select-item, .admin-action, .rsvp-card, .rsvp-person, .admin-code-content { border-radius: var(--wedding-radius); }
 .rsvp-section [role="alert"], .rsvp-section [role="status"], .cinematic-section button.rounded-full, .cinematic-section a.rounded-full { border-radius: var(--wedding-radius); }
 
-.admin-invite-toggle{display:inline-flex;align-items:center;gap:16px;text-align:left;cursor:pointer;border-radius:var(--wedding-radius);color:inherit}.admin-invite-toggle svg{flex-shrink:0;color:#858b65;transition:transform .2s}.admin-invite-toggle svg.is-expanded{transform:rotate(180deg)}.admin-invite-toggle:hover{color:#5d613c}.admin-invite-toggle:focus-visible{outline:2px solid #858b65;outline-offset:5px}
+.admin-invite-toggle{display:inline-flex;align-items:center;gap:16px;text-align:left;cursor:pointer;border-radius:var(--wedding-radius);color:inherit}.admin-invite-toggle svg{flex-shrink:0;color:#858b65;transition:transform .2s}.admin-invite-toggle svg.is-expanded{transform:rotate(180deg)}.admin-invite-toggle:hover{color:var(--forever-primary,#5d613c)}.admin-invite-toggle:focus-visible{outline:2px solid #858b65;outline-offset:5px}
 
 .admin-invite-collapse{display:grid;grid-template-rows:1fr;opacity:1;visibility:visible;transition:grid-template-rows .42s cubic-bezier(.22,1,.36,1),opacity .28s ease,visibility 0s}.admin-invite-collapse-inner{min-height:0;overflow:hidden}.admin-invite-collapse[data-open="false"]{grid-template-rows:0fr;opacity:0;visibility:hidden;transition:grid-template-rows .42s cubic-bezier(.22,1,.36,1),opacity .2s ease,visibility 0s .42s}.admin-invite-toggle svg{transition:transform .42s cubic-bezier(.22,1,.36,1)}@media(prefers-reduced-motion:reduce){.admin-invite-collapse,.admin-invite-collapse[data-open="false"],.admin-invite-toggle svg{transition:none}}
 
 
 .rsvp-guest-accordion { border-bottom: 1px solid #e3dccf; }
-.rsvp-guest-accordion summary { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 0; cursor:pointer; list-style:none; color:#5D613C; }
+.rsvp-guest-accordion summary { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:18px 0; cursor:pointer; list-style:none; color:var(--forever-primary,#5D613C); }
 .rsvp-guest-accordion summary::-webkit-details-marker { display:none; }
-.rsvp-guest-accordion summary:focus-visible { outline:2px solid #5D613C; outline-offset:4px; }
+.rsvp-guest-accordion summary:focus-visible { outline:2px solid var(--forever-primary,#5D613C); outline-offset:4px; }
 .rsvp-guest-summary-status { display:flex; align-items:center; gap:10px; font-size:12px; }
 .rsvp-guest-summary-status svg { flex-shrink:0; transition:transform .2s; }
 .rsvp-guest-accordion[open] .rsvp-accordion-caret { transform:rotate(180deg); }
@@ -202,4 +202,4 @@ input[type=checkbox]{appearance:none;width:19px;height:19px;flex-shrink:0;border
 .rsvp-attendance-badge--pendente { color:#885c1e; background:#faf0df; }
 .rsvp-attendance-badge--recusado { color:#994452; background:#faecef; }
 
-.wedding-tooltip { position:fixed; z-index:10000; transform:translateX(-50%); max-width:min(260px, calc(100vw - 24px)); padding:8px 12px; border-radius:8px; background:#5D613C; color:#fff; font-family:var(--font-sans); font-size:12px; line-height:1.5; text-align:center; pointer-events:none; box-shadow:0 4px 16px #0002; }
+.wedding-tooltip { position:fixed; z-index:10000; transform:translateX(-50%); max-width:min(260px, calc(100vw - 24px)); padding:8px 12px; border-radius:8px; background:var(--forever-primary,#5D613C); color:#fff; font-family:var(--font-sans); font-size:12px; line-height:1.5; text-align:center; pointer-events:none; box-shadow:0 4px 16px #0002; }

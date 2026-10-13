@@ -5,10 +5,10 @@ import Image from "next/image";
 import { useScroll } from "framer-motion";
 import { ArrowUpRight, Heart, Navigation } from "lucide-react";
 import { WeddingOrnaments, WeddingBranch } from "./WeddingOrnaments";
-import { weddingConfig } from "@/config/wedding.config";
-import venuePhoto from "../../../public/utils/quintal-e-cia/quintal-e-cia-wp.webp";
+import {useWedding} from "./WeddingProvider";
 
 export function Events() {
+  const {config:weddingConfig,path}=useWedding();
   const section = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: section, offset: ["start end", "end start"] });
   const { ceremony } = weddingConfig;
@@ -29,7 +29,7 @@ export function Events() {
               className="relative w-full max-w-xl mx-auto rounded-t-[45%] rounded-b-[2rem] border border-[#C7B79D]/65 bg-white/5 p-3 sm:p-4 shadow-[0_24px_70px_-30px_#17130D80]">
               <div aria-hidden="true" className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#C7B79D] z-10"><Heart size={20} strokeWidth={1.2} /></div>
               <div className="relative aspect-[4/5] w-full rounded-t-[45%] rounded-b-[1.5rem] overflow-hidden ring-1 ring-[#F1F1F1]/25 bg-[#C7B79D]/20">
-                <Image src={venuePhoto} alt="Espaço da cerimônia no Quintal & Cia, com corredor entre cadeiras, flores e vegetação" fill placeholder="blur" sizes="(min-width: 1024px) 42vw, 90vw" className="object-cover" />
+                <Image src={ceremony.image || "/detalhes/mesa.jpg"} unoptimized alt={ceremony.placeName} fill sizes="(min-width: 1024px) 42vw, 90vw" className="object-cover" />
               </div>
               <div aria-hidden="true" className="absolute -left-7 -bottom-3 w-16 sm:w-20 -rotate-[30deg] text-[#C7B79D] pointer-events-none z-10"><WeddingBranch /></div>
             </div>
@@ -44,18 +44,18 @@ export function Events() {
             <dl data-cinema-sequence className="grid grid-cols-2 gap-6 sm:gap-10">
               <div className="space-y-3">
                 <dt className="cinema-eyebrow text-[#F1F1F1]/80">Reserve a data</dt>
-                <dd className="font-serif text-3xl sm:text-4xl text-[#C7B79D]">29 maio 2027<span className="block font-sans text-xs sm:text-sm text-[#F1F1F1]/80 mt-2">Sábado</span></dd>
+                <dd className="font-serif text-3xl sm:text-4xl text-[#C7B79D]">{new Date(weddingConfig.couple.weddingDate).toLocaleDateString("pt-BR",{day:"numeric",month:"short",year:"numeric",timeZone:"America/Sao_Paulo"}).replace(" de "," ").replace(" de "," ").replace(".","")}<span className="block font-sans text-xs sm:text-sm text-[#F1F1F1]/80 mt-2">{new Date(weddingConfig.couple.weddingDate).toLocaleDateString("pt-BR",{weekday:"long",timeZone:"America/Sao_Paulo"}).replace(/^./,c=>c.toUpperCase())}</span></dd>
               </div>
               <div className="space-y-3">
                 <dt className="cinema-eyebrow text-[#F1F1F1]/80">O nosso sim</dt>
-                <dd className="font-serif text-3xl sm:text-4xl text-[#C7B79D]">11h30<span className="block font-sans text-xs sm:text-sm text-[#F1F1F1]/80 mt-2">Recepção após a cerimônia</span></dd>
+                <dd className="font-serif text-3xl sm:text-4xl text-[#C7B79D]">{ceremony.time}<span className="block font-sans text-xs sm:text-sm text-[#F1F1F1]/80 mt-2">Recepção após a cerimônia</span></dd>
               </div>
             </dl>
 
             <div data-cinema-copy className="space-y-3">
               <p className="cinema-eyebrow text-[#F1F1F1]/80">Onde nos encontrar</p>
               <address className="not-italic text-base sm:text-lg font-light leading-[1.8]">{ceremony.address}<br /><span className="text-[#F1F1F1]/80">{ceremony.cityState}</span></address>
-              <a href="https://www.instagram.com/quintal_sjc/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs text-[#C7B79D] hover:text-[#F1F1F1] py-2">Conheça o espaço <ArrowUpRight size={15} /></a>
+              {ceremony.websiteUrl&&<a href={ceremony.websiteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs text-[#C7B79D] hover:text-[#F1F1F1] py-2">Conheça o espaço <ArrowUpRight size={15} /></a>}
             </div>
 
             <div data-cinema-copy className="space-y-5">

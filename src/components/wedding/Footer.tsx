@@ -2,10 +2,11 @@
 
 
 import { WeddingOrnaments } from "./WeddingOrnaments";
-import { weddingConfig } from "@/config/wedding.config";
+import {useWedding} from "./WeddingProvider";
 import { ArrowUp } from "lucide-react";
 
 export function Footer() {
+  const {config:weddingConfig,path}=useWedding();
   const { couple } = weddingConfig;
 
   const scrollToTop = () => {
@@ -42,7 +43,7 @@ export function Footer() {
         </div>
 
         <p className="text-[11px] font-mono uppercase tracking-widest text-[#8C8276] pt-8">
-          SÃO JOSÉ DOS CAMPOS, SP &bull; 29 DE MAIO DE 2027
+          {couple.locationSummary.toUpperCase()} · {new Date(couple.weddingDate).toLocaleDateString("pt-BR",{day:"numeric",month:"long",year:"numeric",timeZone:"America/Sao_Paulo"}).toUpperCase()}
         </p>
       </div>
     </footer>

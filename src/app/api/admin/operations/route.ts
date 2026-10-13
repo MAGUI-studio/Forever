@@ -1,10 +1,13 @@
+import {resolveModules} from "@/config/modules";
+import {assertModule} from "@/lib/guest-server";
+import {bindWeddingUser,releaseWeddingUser} from "@/lib/wedding-membership";
 import {services} from "@/lib/firebase/admin";
 import {randomUUID} from "node:crypto";
 import {z} from "zod";
 import {body,failure,HttpError,reply,requireAdmin,requireAccess,tokenId} from "@/lib/guest-server";
 import {audit} from "@/lib/event-audit";
 import type {EventTable,Guest} from "@/types/guests";
-export async function GET(request:Request){try{const db=await requireAdmin(request);const [tables,team,history]=await Promise.all([db.doc("settings/tables").get(),db.collection("receptionTeam").orderBy("email").get(),db.collection("auditLog").orderBy("at","desc").limit(100).get()]);return reply({tables:tables.data()?.tables??[],team:team.docs.map(d=>({id:d.id,...d.data()})),history:history.docs.map(d=>({id:d.id,...d.data()}))});}catch(e){return failure(e);}}
+export async function GET(request:Request){try{const db=await requireAdmin(request);const {wedding}=await requireAccess(request),modules=resolveModules(wedding.modules);const [tables,team,history]=await Promise.all([db.doc("settings/tables").get(),db.collection("receptionTeam").orderBy("email").get(),db.collection("auditLog").orderBy("at","desc").limit(100).get()]);return reply({tables:modules.tables?tables.data()?.tables??[]:[],team:modules.team?team.docs.map(d=>({id:d.id,...d.data()})):[],history:modules.history?history.docs.map(d=>({id:d.id,...d.data()})):[]});}catch(e){return failure(e);}}
 const schema=z.discriminatedUnion("action",[
  z.object({action:z.literal("table"),id:z.string().max(80).optional(),name:z.string().trim().min(2).max(80),capacity:z.number().int().min(1).max(100)}).strict(),
  z.object({action:z.literal("delete-table"),id:z.string().min(1).max(80)}).strict(),
@@ -14,20 +17,23 @@ const schema=z.discriminatedUnion("action",[
  z.object({action:z.literal("team"),email:z.string().trim().email().max(254),active:z.boolean()}).strict()
 ]);
 export async function POST(request:Request){try{
- const db=await requireAdmin(request),{email:actor}=await requireAccess(request),data=schema.parse(await body(request));
+ const db=await requireAdmin(request),{email:actor,wedding}=await requireAccess(request),data=schema.parse(await body(request));
+ assertModule(wedding,["create-team","remove-team","team"].includes(data.action)?"team":"tables");
  if(data.action==="create-team"){
   const email=data.email.toLowerCase(),auth=services().auth;
   let account;
   try{account=await auth.createUser({email,password:data.password});}
   catch(error){if((error as {code?:string}).code==="auth/email-already-exists")throw new HttpError(409,"Este e-mail já possui uma conta. Use outro e-mail ou reative o acesso existente.");throw error;}
-  try{await db.runTransaction(async t=>{t.set(db.collection("receptionTeam").doc(tokenId(email)),{email,uid:account.uid,active:true});audit(t,db,actor,"Conta da recepção criada",email);});}
+  try{await db.runTransaction(async t=>{await bindWeddingUser(t,account.uid,email,wedding.slug);t.set(db.collection("receptionTeam").doc(tokenId(email)),{email,uid:account.uid,active:true});audit(t,db,actor,"Conta da recepção criada",email);});}
   catch(error){await auth.deleteUser(account.uid);throw error;}
   return reply({success:true});
  }
+ let existingTeamAccount:{uid:string}|undefined;
+ if(data.action==="team"&&data.active){try{existingTeamAccount=await services().auth.getUserByEmail(data.email);}catch{throw new HttpError(400,"Conta de acesso não encontrada.");}}
  await db.runTransaction(async t=>{
-  if(data.action==="remove-team"){const email=data.email.toLowerCase();t.delete(db.collection("receptionTeam").doc(tokenId(email)));audit(t,db,actor,"Pessoa removida da recepção",email);return;}
+  if(data.action==="remove-team"){const email=data.email.toLowerCase();const member=await t.get(db.collection("receptionTeam").doc(tokenId(email)));if(member.data()?.uid)await releaseWeddingUser(t,member.data()!.uid,wedding.slug);t.delete(db.collection("receptionTeam").doc(tokenId(email)));audit(t,db,actor,"Pessoa removida da recepção",email);return;}
 
-  if(data.action==="team") {const email=data.email.toLowerCase();t.set(db.collection("receptionTeam").doc(tokenId(email)),{email,active:data.active},{merge:true});audit(t,db,actor,data.active?"Acesso à recepção concedido":"Acesso à recepção revogado",email);return;}
+  if(data.action==="team") {const email=data.email.toLowerCase();if(existingTeamAccount)await bindWeddingUser(t,existingTeamAccount.uid,email,wedding.slug);t.set(db.collection("receptionTeam").doc(tokenId(email)),{email,active:data.active,...(existingTeamAccount?{uid:existingTeamAccount.uid}:{})},{merge:true});audit(t,db,actor,data.active?"Acesso à recepção concedido":"Acesso à recepção revogado",email);return;}
   const tablesRef=db.doc("settings/tables"),tableSnap=await t.get(tablesRef),tables=(tableSnap.data()?.tables??[]) as EventTable[];
   const invites=await t.get(db.collection("invitations"));
   const people=invites.docs.flatMap(d=>(d.data().guests as Guest[]).map(g=>({...g,invitationId:d.id,active:d.data().active})));

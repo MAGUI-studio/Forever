@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
-import { weddingConfig } from "@/config/wedding.config";
-import { PageCurtainLoader } from "@/components/wedding/PageCurtainLoader";
 import "./globals.css";
 
 const cormorant = Cormorant_Garamond({
@@ -19,15 +17,7 @@ const jakarta = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: `${weddingConfig.couple.partner1} & ${weddingConfig.couple.partner2} — Casamento`,
-  description: `Convidamos você para celebrar o nosso amor. Cerimônia, recepção, trajes, presentes e confirmação de presença (RSVP). ${weddingConfig.couple.hashtag}`,
-  openGraph: {
-    title: `${weddingConfig.couple.partner1} & ${weddingConfig.couple.partner2} — Casamento`,
-    description: `Celebre esse dia especial com a gente!`,
-    images: [{ url: weddingConfig.couple.coverImage }],
-  },
-};
+export const metadata: Metadata = {title:"Forever | MAGUI.studio",description:"Sites de casamento e organização de convidados por MAGUI.studio."};
 
 export default function RootLayout({
   children,
@@ -39,9 +29,8 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${cormorant.variable} ${jakarta.variable} scroll-smooth`}
     >
-      <body className="font-sans antialiased bg-[#F1F1F1] text-[#3D2501] selection:bg-[#C7B79D] selection:text-[#3D2501] w-full overflow-x-hidden">
-        <PageCurtainLoader />
-        <div className="w-full max-w-440 mx-auto relative bg-[#F1F1F1]">
+      <body className="font-sans antialiased bg-[var(--forever-paper,#F1F1F1)] text-[var(--forever-ink,#3D2501)] selection:bg-[var(--forever-sand,#C7B79D)] selection:text-[var(--forever-ink,#3D2501)] w-full overflow-x-hidden">
+        <div className="w-full max-w-440 mx-auto relative bg-[var(--forever-paper,#F1F1F1)]">
           {children}
         </div>
       </body>
