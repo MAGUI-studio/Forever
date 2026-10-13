@@ -6,7 +6,7 @@ import { WeddingInput, WeddingTextarea } from "@/components/ui/WeddingInput";
 import { WeddingSelect } from "@/components/ui/WeddingSelect";
 import { AdminButton } from "./AdminButton";
 
-export function GiftListEditor({gifts,paymentLink,onGiftsChange,onPaymentLinkChange}:{gifts:GiftItem[];paymentLink:string;onGiftsChange:(gifts:GiftItem[])=>void;onPaymentLinkChange:(link:string)=>void}) {
+export function GiftListEditor({gifts,paymentLink,onGiftsChange,onPaymentLinkChange,allowImages=false}:{allowImages?:boolean;gifts:GiftItem[];paymentLink:string;onGiftsChange:(gifts:GiftItem[])=>void;onPaymentLinkChange:(link:string)=>void}) {
   const categories = Array.from(new Set([
     "Presentes", "Casa nova", "Eletrodomésticos", "Eletroportáteis",
     "Cama, mesa e banho", "Decoração", "Utensílios de cozinha", "Para servir",
@@ -41,7 +41,7 @@ export function GiftListEditor({gifts,paymentLink,onGiftsChange,onPaymentLinkCha
           <label className="block text-sm text-[#544b3b]">Valor sugerido (R$){required}<WeddingInput type="number" min="0.01" step="0.01" required className="mt-2" value={gift.price??""} placeholder="5000,00" onChange={event=>update(gift.id,{price:event.target.value?Number(event.target.value):undefined})}/></label>
           <label className="block text-sm text-[#544b3b]">Categoria<WeddingSelect label="Categoria do presente" className="mt-2" value={gift.categoryLabel||gift.category} options={categories.map(category=>({value:category,label:category}))} onValueChange={category=>update(gift.id,{category,categoryLabel:category})}/></label>
         </div>
-        <label className="block text-sm text-[#544b3b]">Imagem (URL)<WeddingInput className="mt-2" value={gift.image} placeholder="https://" onChange={event=>update(gift.id,{image:event.target.value})}/></label>
+        {allowImages&&<label className="block text-sm text-[#544b3b]">Imagem (URL)<WeddingInput className="mt-2" value={gift.image} placeholder="https://" onChange={event=>update(gift.id,{image:event.target.value})}/></label>}
         <label className="block text-sm text-[#544b3b]">Descrição<WeddingTextarea rows={3} className="mt-2" value={gift.description??""} placeholder="Conte um pouco sobre esse presente…" onChange={event=>update(gift.id,{description:event.target.value})}/></label>
       </div>
     </article>)}

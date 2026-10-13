@@ -17,7 +17,7 @@ const jakarta = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-export const metadata: Metadata = {title:"Forever | MAGUI.studio",description:"Sites de casamento e organização de convidados por MAGUI.studio."};
+export const metadata: Metadata = {icons:{icon:"/forever/icon_black.png",apple:"/forever/icon_black.png"},title:"Forever | MAGUI.studio",description:"Sites de casamento e organização de convidados por MAGUI.studio."};
 
 export default function RootLayout({
   children,

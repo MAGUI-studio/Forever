@@ -1,0 +1,658 @@
+[
+  {
+    "id": "ge-gift-001",
+    "title": "Tudo que tenho na conta",
+    "price": 30,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-002",
+    "title": "Garrafa térmica",
+    "price": 50,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-003",
+    "title": "Abridor de vinhos",
+    "price": 50,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-004",
+    "title": "Só para não dizer que não dei nada",
+    "price": 50,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-005",
+    "title": "Potinhos de cerâmica",
+    "price": 50,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-006",
+    "title": "Boleira",
+    "price": 60,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-007",
+    "title": "Conjunto de frigideiras",
+    "price": 80,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-008",
+    "title": "Quadro decorativo",
+    "price": 89,
+    "category": "Decoração",
+    "categoryLabel": "Decoração",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-009",
+    "title": "Jogos de potes herméticos transparentes",
+    "price": 89,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-010",
+    "title": "Kit de potes de vidro herméticos",
+    "price": 90,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-011",
+    "title": "Petisqueira",
+    "price": 90,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-012",
+    "title": "Jogo de taças",
+    "price": 90,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-013",
+    "title": "Vale um “eu te amo” sussurrado ao pé do ouvido, para fechar o dia com chave de ouro",
+    "price": 100,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-014",
+    "title": "Um sorvete durante a lua de mel",
+    "price": 100,
+    "category": "Lua de mel",
+    "categoryLabel": "Lua de mel",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-015",
+    "title": "Porta-azeite e vinagre",
+    "price": 100,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-016",
+    "title": "6 taças para vinho de cristal",
+    "price": 100,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-017",
+    "title": "Tutorial de como fritar um ovo",
+    "price": 100,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-018",
+    "title": "Kit de drinks",
+    "price": 120,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-019",
+    "title": "Sanduicheira elétrica",
+    "price": 120,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-020",
+    "title": "Porta-temperos",
+    "price": 120,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-021",
+    "title": "Espremedor de frutas Electrolux",
+    "price": 130,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-022",
+    "title": "Sanduicheira grill",
+    "price": 130,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-023",
+    "title": "Conjunto de jarras de vidro",
+    "price": 130,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-024",
+    "title": "Panela de arroz",
+    "price": 150,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-025",
+    "title": "Máquina de waffle",
+    "price": 150,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-026",
+    "title": "Kit de utensílios de madeira",
+    "price": 150,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-027",
+    "title": "Vaquinha para a lua de mel",
+    "price": 150,
+    "category": "Lua de mel",
+    "categoryLabel": "Lua de mel",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-028",
+    "title": "Aviãozinho de dinheiro",
+    "price": 150,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-029",
+    "title": "Pipoqueira elétrica",
+    "price": 160,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-030",
+    "title": "Prato para doces",
+    "price": 160,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-031",
+    "title": "Sanduicheira Efficient Electrolux Antiaderente Inox",
+    "price": 170,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-032",
+    "title": "Espelhos decorativos",
+    "price": 170,
+    "category": "Decoração",
+    "categoryLabel": "Decoração",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-033",
+    "title": "Jogo de banho",
+    "price": 180,
+    "category": "Cama, mesa e banho",
+    "categoryLabel": "Cama, mesa e banho",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-034",
+    "title": "Aparador de Pelos Philips Multifuncional 7 em 1",
+    "price": 190,
+    "category": "Tecnologia",
+    "categoryLabel": "Tecnologia",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-035",
+    "title": "Primeiro jantar dos noivos",
+    "price": 200,
+    "category": "Experiências",
+    "categoryLabel": "Experiências",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-036",
+    "title": "12 taças para vinho de cristal",
+    "price": 200,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-037",
+    "title": "Mesa próxima à mesa de doces",
+    "price": 200,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-038",
+    "title": "Liquidificador Oster Full com 15 Velocidades e Jarra de 2,0 Litros",
+    "price": 210,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-039",
+    "title": "Jogo de cama",
+    "price": 220,
+    "category": "Cama, mesa e banho",
+    "categoryLabel": "Cama, mesa e banho",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-040",
+    "title": "Ferro de Passar a Vapor e a Seco Electrolux Experience Care",
+    "price": 230,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-041",
+    "title": "Edredom liso",
+    "price": 250,
+    "category": "Cama, mesa e banho",
+    "categoryLabel": "Cama, mesa e banho",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-042",
+    "title": "Chaleira Elétrica Experience Electrolux com Capacidade de 1,7 L",
+    "price": 250,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-043",
+    "title": "Ventilador",
+    "price": 250,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-044",
+    "title": "Contribuição financeira para os noivos",
+    "price": 250,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-045",
+    "title": "Vale uma briga resolvida: “Você tem razão, amor”",
+    "price": 250,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-046",
+    "title": "Aspirador de Pó Electrolux 2 em 1 com Capacidade de 1,6 Litros",
+    "price": 260,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-047",
+    "title": "Batedeira",
+    "price": 260,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-048",
+    "title": "Multiprocessador",
+    "price": 280,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-049",
+    "title": "Panela Elétrica para Fondue Oster",
+    "price": 290,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-050",
+    "title": "Jogo de lençol",
+    "price": 300,
+    "category": "Cama, mesa e banho",
+    "categoryLabel": "Cama, mesa e banho",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-051",
+    "title": "Conjunto de cobertor e mantas",
+    "price": 300,
+    "category": "Cama, mesa e banho",
+    "categoryLabel": "Cama, mesa e banho",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-052",
+    "title": "Kit primeira “DR na lua de mel” (vinho + chocolates)",
+    "price": 300,
+    "category": "Lua de mel",
+    "categoryLabel": "Lua de mel",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-053",
+    "title": "Vale um passeio romântico sem olhar o celular (difícil, mas vale a tentativa)",
+    "price": 300,
+    "category": "Experiências",
+    "categoryLabel": "Experiências",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-054",
+    "title": "Selfie com os noivos antes de acabar a make e o penteado",
+    "price": 300,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-055",
+    "title": "Óculos escuros para disfarçar as olheiras no dia seguinte",
+    "price": 300,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-056",
+    "title": "Curso de como lavar a louça",
+    "price": 300,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-057",
+    "title": "Jantar com vinho exclusivo",
+    "price": 320,
+    "category": "Experiências",
+    "categoryLabel": "Experiências",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-058",
+    "title": "Air fryer",
+    "price": 350,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-059",
+    "title": "Assinatura anual da Netflix",
+    "price": 350,
+    "category": "Tecnologia",
+    "categoryLabel": "Tecnologia",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-060",
+    "title": "Sentar na mesa mais próxima dos doces, com acesso VIP ao bolo",
+    "price": 400,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-061",
+    "title": "Terapia da noiva pós-preparativos do casamento",
+    "price": 400,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-062",
+    "title": "Cota para os noivos se amarem para sempre",
+    "price": 400,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-063",
+    "title": "Frigobar para bebidinhas",
+    "price": 400,
+    "category": "Eletrodomésticos",
+    "categoryLabel": "Eletrodomésticos",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-064",
+    "title": "Conjunto de pratos para almoço (8 peças)",
+    "price": 500,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-065",
+    "title": "Diária com jantar à luz de velas, onde as palavras são doces",
+    "price": 500,
+    "category": "Experiências",
+    "categoryLabel": "Experiências",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-066",
+    "title": "Jogo de panelas antiaderentes (e antidiscussão)",
+    "price": 500,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-067",
+    "title": "Vale para conhecerem um restaurante novo",
+    "price": 500,
+    "category": "Experiências",
+    "categoryLabel": "Experiências",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-068",
+    "title": "Vale-presente para realizar uma experiência surpresa escolhida pelos noivos",
+    "price": 500,
+    "category": "Experiências",
+    "categoryLabel": "Experiências",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-069",
+    "title": "Bebidas para o casamento",
+    "price": 600,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-070",
+    "title": "Diária para noite de núpcias",
+    "price": 600,
+    "category": "Lua de mel",
+    "categoryLabel": "Lua de mel",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-071",
+    "title": "Jogo de panelas de cerâmica",
+    "price": 650,
+    "category": "Utensílios de cozinha",
+    "categoryLabel": "Utensílios de cozinha",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-072",
+    "title": "Contribuição para o projeto casal maromba anos de 2070",
+    "price": 660,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-073",
+    "title": "Contribuição para a banda do casamento",
+    "price": 800,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-074",
+    "title": "Vale um open bar sem fila e sem ressaca",
+    "price": 800,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-075",
+    "title": "Dar palpite sobre o casamento",
+    "price": 800,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-076",
+    "title": "Adega climatizada",
+    "price": 900,
+    "category": "Eletrodomésticos",
+    "categoryLabel": "Eletrodomésticos",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-077",
+    "title": "Doces do casamento",
+    "price": 900,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-078",
+    "title": "Robô aspirador",
+    "price": 1000,
+    "category": "Eletroportáteis",
+    "categoryLabel": "Eletroportáteis",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-079",
+    "title": "Melhor presente da lista",
+    "price": 1000,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-080",
+    "title": "Deixa Deus te usar",
+    "price": 1000,
+    "category": "Personalizados",
+    "categoryLabel": "Personalizados",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-081",
+    "title": "Diária em hotel com café da manhã digno de Instagram",
+    "price": 1500,
+    "category": "Lua de mel",
+    "categoryLabel": "Lua de mel",
+    "image": ""
+  },
+  {
+    "id": "ge-gift-082",
+    "title": "Televisão de 50 polegadas",
+    "price": 1990,
+    "category": "Tecnologia",
+    "categoryLabel": "Tecnologia",
+    "image": ""
+  }
+]

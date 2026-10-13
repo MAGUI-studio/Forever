@@ -3,6 +3,8 @@ import { useOptionalWedding } from "@/components/wedding/WeddingProvider";
 import * as Dialog from "@radix-ui/react-dialog";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
+import {ForeverBackground} from "@/components/forever/ForeverBackground";
+import {studioTheme} from "@/components/forever/StudioShell";
 import { WeddingOrnaments } from "@/components/wedding/WeddingOrnaments";
 export function AdminDialog({
   open,
@@ -30,7 +32,7 @@ export function AdminDialog({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-[300] bg-[#26291c]/45 backdrop-blur-sm" />
         <Dialog.Content
-          style={wedding?.themeStyle}
+          style={wedding?.themeStyle??studioTheme}
           onEscapeKeyDown={(e) => {
             if (busy) e.preventDefault();
           }}
@@ -43,21 +45,21 @@ export function AdminDialog({
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 overflow-hidden opacity-20"
           >
-            <WeddingOrnaments variant="floral" tone="paper" />
+            {wedding?<WeddingOrnaments variant="floral" tone="paper" />:<ForeverBackground/>}
           </div>
           <div className="relative">
             <Dialog.Close
               disabled={busy}
               aria-label="Fechar"
-              className="absolute top-0 right-0 rounded-[var(--wedding-radius)] p-2 text-[#5D613C] hover:bg-[#5d613c10] focus-visible:outline-2"
+              className="absolute top-0 right-0 rounded-[var(--wedding-radius)] p-2 text-[var(--forever-primary,#5D613C)] hover:bg-[#16161608] focus-visible:outline-2"
             >
               <X size={20} />
             </Dialog.Close>
-            <p className="admin-eyebrow pr-10">Cada detalhe, com carinho</p>
-            <Dialog.Title className="mt-3 pr-10 font-serif text-4xl text-[#3D2501]">
+            <p className="admin-eyebrow pr-10">{wedding?"Cada detalhe, com carinho":"Forever Studio"}</p>
+            <Dialog.Title className="mt-3 pr-10 font-serif text-4xl text-[var(--forever-ink,#3D2501)]">
               {title}
             </Dialog.Title>
-            <Dialog.Description className="mt-3 text-sm text-[#80654E]">
+            <Dialog.Description className="mt-3 text-sm text-[var(--forever-accent,#80654E)]">
               {description}
             </Dialog.Description>
             {children}

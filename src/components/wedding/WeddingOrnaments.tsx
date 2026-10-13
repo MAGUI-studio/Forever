@@ -16,3 +16,9 @@ export function WeddingBranch() {
   const Accent = templateVisuals[wedding?.templateId ?? defaultTemplateId].Accent;
   return <Accent />;
 }
+
+export function WeddingLoadingIcon() {
+  const wedding=useOptionalWedding();
+  const Icon=templateVisuals[wedding?.templateId??defaultTemplateId].LoadingIcon;
+  return <Icon/>;
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Heart } from "lucide-react";
+import { Heart, Flower2 } from "lucide-react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 
 import type { TemplateOrnamentsProps } from "./ornament-types";
@@ -64,3 +64,4 @@ export function BotanicalClassicBranch() {
     </svg>
   );
 }
+export function BotanicalClassicLoadingIcon(){return <Flower2 size={32} strokeWidth={1}/>;}
