@@ -1,30 +1,30 @@
 "use client";
-import {foreverTheme} from "@/config/brand";
-import {ForeverLogo} from "@/components/forever/ForeverLogo";
 import {useEffect,useState} from "react";
-import {onAuthStateChanged,signInWithEmailAndPassword,signOut,sendPasswordResetEmail} from "firebase/auth";
+import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "firebase/auth";
 import {clientAuth} from "@/lib/firebase/client";
 import {readApiResponse} from "@/lib/api-response";
 import {useRouter} from "next/navigation";
-import {WeddingOrnaments} from "@/components/wedding/WeddingOrnaments";
+import Image from "next/image";
+import {Heart,Mail,KeyRound,ArrowUpRight,LockKeyhole,Eye,EyeOff} from "lucide-react";
+import {foreverTheme} from "@/config/brand";
+import {ForeverLogo} from "@/components/forever/ForeverLogo";
+import {ForeverBackground} from "@/components/forever/ForeverBackground";
 import {AdminContainer} from "@/app/admin/AdminContainer";
-import {Heart,LockKeyhole,Mail,KeyRound,ArrowUpRight,Flower2,Eye,EyeOff} from "lucide-react";
-export function Login(){const router=useRouter();const [showPassword,setShowPassword]=useState(false);const [email,setEmail]=useState(""),[password,setPassword]=useState(""),[error,setError]=useState(""),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false),[ready,setReady]=useState(false),[resolving,setResolving]=useState(true),[authenticated,setAuthenticated]=useState(false);
+import {StudioLoading} from "@/components/forever/StudioLoading";
+export function Login(){
+ const router=useRouter();
+ const [showPassword,setShowPassword]=useState(false),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[error,setError]=useState(""),[busy,setBusy]=useState(false),[ready,setReady]=useState(false),[resolving,setResolving]=useState(true),[authenticated,setAuthenticated]=useState(false);
  useEffect(()=>{let active=true;try{const unsubscribe=onAuthStateChanged(clientAuth(),account=>{if(!active)return;setReady(true);setAuthenticated(!!account);setError("");if(!account){setResolving(false);return;}setResolving(true);void account.getIdToken().then(token=>fetch("/api/auth/destination",{headers:{Authorization:"Bearer "+token}})).then(readApiResponse).then(data=>{if(active)router.replace(data.destination);}).catch(e=>{if(active){setError(e.message);setResolving(false);}});});return ()=>{active=false;unsubscribe();};}catch(e){queueMicrotask(()=>{setReady(true);setResolving(false);setError((e as Error).message);});}},[router]);
- async function action(work:()=>Promise<unknown>){setBusy(true);setError("");setNotice("");try{await work();}catch{setError("Não foi possível entrar. Confira seu e-mail e senha e tente novamente.");}finally{setBusy(false);}}
- return <main style={foreverTheme} className="admin-wedding admin-wedding--login"><div className="admin-background" aria-hidden="true"><div className="admin-floral-layer"><WeddingOrnaments variant="floral" tone="paper"/></div><div className="admin-background-wash"/></div><AdminContainer centered>{!ready||resolving?<div className="admin-loading" role="status"><Flower2 strokeWidth={1}/><p>Preparando nosso espaço…</p></div>:<><div className="admin-login-grid">
-            <aside className="admin-login-scene">
-              <div
-                className="admin-scene-photo"
-                aria-hidden="true"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(160deg, #722F37D9, #4F2027E8), url(" +
-                    "/detalhes/aliancas-florais.jpg" +
-                    ")",
-                }}
-              />
-              <WeddingOrnaments variant="floral" tone="photo" />
+ async function action(work:()=>Promise<unknown>){setBusy(true);setError("");try{await work();}catch{setError("Não foi possível entrar. Confira seu e-mail e senha e tente novamente.");}finally{setBusy(false);}}
+
+ if(!ready||resolving)return <StudioLoading/>;
+ return <main style={foreverTheme} className="relative mx-auto min-h-svh w-full max-w-440 overflow-hidden bg-[#f6f5f2] text-[#161616]">
+  <ForeverBackground/>
+  <AdminContainer centered className="relative">
+<div className="admin-login-grid">
+            <aside className="admin-login-scene after:border-white/20!">
+
+              <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -right-20 opacity-[0.06]"><Image src="/forever/icon_white.svg" alt="" width={350} height={350}/></div>
               <div className="admin-scene-copy">
                 <p className="admin-eyebrow">O amor mora nos detalhes</p>
                 <ForeverLogo light className="my-7 w-56 sm:w-72"/>
@@ -46,7 +46,7 @@ export function Login(){const router=useRouter();const [showPassword,setShowPass
               </div>
             </aside>
             <form
-              className="admin-login-card"
+              className="admin-login-card bg-white!"
               onSubmit={(e) => {
                 e.preventDefault();
                 void action(async () => {
@@ -60,10 +60,10 @@ export function Login(){const router=useRouter();const [showPassword,setShowPass
               }}
             >
               <div className="admin-login-intro">
-                <span className="admin-lock">
+                <span className="admin-lock border-[#722F3720]! bg-[#722F3708]!">
                   <LockKeyhole size={21} strokeWidth={1.2} aria-hidden="true" />
                 </span>
-                <p className="admin-eyebrow">Espaço dos noivos</p>
+                <p className="admin-eyebrow text-[#722F37]!">Seu espaço Forever</p>
                 <h2>
                   Bem-vindos
                   <br />
@@ -119,5 +119,9 @@ export function Login(){const router=useRouter();const [showPassword,setShowPass
               </p>
             </form>
           </div>
- {error&&<p role="alert" className="admin-alert admin-alert--error">{error}</p>}{notice&&<p role="status" className="mt-4 text-center text-sm text-[#722F37]">{notice}</p>}<div className="mt-4 flex flex-wrap justify-center gap-5"><button disabled={busy||!email} onClick={()=>void action(async()=>{await sendPasswordResetEmail(clientAuth(),email);setNotice("Se houver uma conta para este e-mail, enviaremos as instruções.");})} className="text-xs text-[#722F37]">Esqueci minha senha</button>{authenticated&&<button onClick={()=>void signOut(clientAuth())} className="text-xs text-[#722F37]">Entrar com outra conta</button>}</div></>}</AdminContainer></main>;
+
+   {error&&<p role="alert" className="mx-auto w-full max-w-[1060px] rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}
+   {authenticated&&<button disabled={busy} type="button" onClick={()=>void signOut(clientAuth())} className="mt-4 text-center text-xs text-[#722F37] hover:underline">Entrar com outra conta</button>}
+  </AdminContainer>
+ </main>;
 }
