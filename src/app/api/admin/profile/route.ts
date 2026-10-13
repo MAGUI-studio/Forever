@@ -1,3 +1,4 @@
+import {preserveTemplateImages} from "@/lib/template-images";
 import {assertModule} from "@/lib/guest-server";
 import {
   body,
@@ -22,7 +23,11 @@ export async function PUT(request: Request) {
       );
     const ref = services().db.doc("weddings/" + access.wedding.slug);
     await access.db.runTransaction(async (t) => {
-      t.update(ref, { ...data, updatedAt: new Date().toISOString() });
+      const current=await t.get(ref);
+      if(data.expectedUpdatedAt&&data.expectedUpdatedAt!==current.data()?.updatedAt)throw new HttpError(409,"O site foi alterado em outra sessão. Atualize antes de salvar.");
+      const {expectedUpdatedAt,...update}=data;
+      update.config=preserveTemplateImages(update.config,current.data()!.config);
+      t.update(ref, { ...update,siteRevision:(current.data()?.siteRevision??0)+1, updatedAt: new Date().toISOString() });
       audit(
         t,
         access.db,

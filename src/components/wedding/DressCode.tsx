@@ -1,27 +1,29 @@
 "use client";
+import {useSiteCopy} from "./useSiteCopy";
 
 import { WeddingOrnaments } from "./WeddingOrnaments";
 
 
 
 export function DressCode() {
+  const copy=useSiteCopy();
   return (
     <section id="dress-code" className="cinematic-section relative z-10 -mt-[2px] overflow-hidden bg-[#F1F1F1] text-[#3D2501] px-6 sm:px-12 lg:px-20 pt-12 sm:pt-16 pb-16 sm:pb-24">
       <WeddingOrnaments variant="floral" tone="paper" />
       <div className="relative z-10 max-w-6xl mx-auto space-y-12 sm:space-y-16">
         <div className="text-center max-w-3xl mx-auto space-y-5">
-          <p data-cinema-copy className="cinema-eyebrow text-[#5D613C]">Para viver esse dia com leveza</p>
-          <h2 className="font-serif text-5xl sm:text-7xl font-light tracking-[-0.04em] leading-[1.08]">Dress Code <span className="italic text-[#5D613C]">&amp; Estilo</span></h2>
-          <p data-cinema-copy className="font-serif italic text-xl sm:text-2xl text-[#80654E]">Traje obrigatório para celebração - esporte fino</p>
+          <p data-cinema-copy className="cinema-eyebrow text-[#5D613C]">{copy("dressCode.text1")}</p>
+          <h2 className="font-serif text-5xl sm:text-7xl font-light tracking-[-0.04em] leading-[1.08]">{copy("dressCode.heading")}</h2>
+          <p data-cinema-copy className="font-serif italic text-xl sm:text-2xl text-[#80654E]">{copy("dressCode.text4")}</p>
         </div>
 
         <div data-cinema-copy className="text-center max-w-2xl mx-auto space-y-4">
-          <p className="cinema-eyebrow text-[#5D613C]">O traje da celebração</p>
-          <h3 className="font-serif text-4xl sm:text-5xl font-light">Esporte fino</h3>
+          <p className="cinema-eyebrow text-[#5D613C]">{copy("dressCode.text5")}</p>
+          <h3 className="font-serif text-4xl sm:text-5xl font-light">{copy("dressCode.text6")}</h3>
           <div className="pt-5 space-y-6">
-            <p className="font-serif text-2xl sm:text-3xl text-[#3D2501]">Pedimos que não sejam utilizados trajes nas cores branca e marrom.</p>
+            <p className="font-serif text-2xl sm:text-3xl text-[#3D2501]">{copy("dressCode.text7")}</p>
             <div className="grid grid-cols-2 gap-5 sm:gap-8 max-w-md mx-auto">
-              {[{ name: "Branco", fill: "#FFFFFF", stroke: "#AFA493" }, { name: "Marrom", fill: "#80654E", stroke: "#3D2501" }].map(color => (
+              {[{ name: copy("dressCode.color1"), fill: "#FFFFFF", stroke: "#AFA493" }, { name: copy("dressCode.color2"), fill: "#80654E", stroke: "#3D2501" }].map(color => (
                 <div key={color.name} className="space-y-3">
                   <div className="relative rounded-t-full rounded-b-3xl bg-[#E8E4DD]/60 px-3 pt-6 pb-4 ring-1 ring-[#3D2501]/10">
                     <svg aria-hidden="true" viewBox="0 0 160 150" className="w-full h-auto" fill={color.fill} stroke={color.stroke} strokeWidth="1.6" strokeLinejoin="round">
@@ -37,11 +39,11 @@ export function DressCode() {
                       <svg aria-hidden="true" viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="m6 6 12 12 M18 6 6 18" /></svg>
                     </span>
                   </div>
-                  <p className="font-serif text-2xl">{color.name}<span className="block font-sans text-[10px] tracking-[0.18em] uppercase font-medium text-[#9C443D] mt-1">Não usar</span></p>
+                  <p className="font-serif text-2xl">{color.name}<span className="block font-sans text-[10px] tracking-[0.18em] uppercase font-medium text-[#9C443D] mt-1">{copy("dressCode.text8")}</span></p>
                 </div>
               ))}
             </div>
-            <p className="text-sm text-[#80654E] leading-relaxed">As demais cores estão liberadas. Escolha a sua e celebre com a gente!</p>
+            <p className="text-sm text-[#80654E] leading-relaxed">{copy("dressCode.text9")}</p>
           </div>
         </div>
 

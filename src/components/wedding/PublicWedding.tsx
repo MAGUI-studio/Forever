@@ -14,7 +14,7 @@ export async function PublicWedding({
   if (!wedding || wedding.status !== "published") notFound();
   if(requiredModule&&!resolveModules(wedding.modules)[requiredModule])notFound();
   return (
-    <WeddingProvider slug={slug} config={wedding.config} theme={wedding.theme} modules={wedding.modules}>
+    <WeddingProvider slug={slug} config={wedding.config} theme={wedding.theme} modules={wedding.modules} templateId={wedding.templateId}>
       <PageCurtainLoader />
       {children}
     </WeddingProvider>

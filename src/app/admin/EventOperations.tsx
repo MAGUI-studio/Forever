@@ -1,4 +1,5 @@
 "use client";
+import {AdminLoading} from "./AdminLoading";
 import {useWedding} from "@/components/wedding/WeddingProvider";
 import { useEffect, useState } from "react";
 import { WarningCircleIcon } from "@phosphor-icons/react";
@@ -169,6 +170,7 @@ export function EventOperations({
     (row) => !onlyRestrictions || row.restriction?.trim(),
   );
   const pending = loading || pageLoading;
+  if (pending) return <AdminLoading/>;
   return (
     <AdminContainer variant="content">
       <AdminPageHeading

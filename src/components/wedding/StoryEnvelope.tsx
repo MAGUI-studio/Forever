@@ -1,6 +1,7 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { useWedding } from "./WeddingProvider";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Hero } from "./Hero";
@@ -9,6 +10,8 @@ import { CinematicTransition } from "./CinematicTransition";
 import { Events } from "./Events";
 
 export function StoryEnvelope() {
+  const {config} = useWedding();
+  const panelCount = config.couple.story?.text?.length ?? 0;
   const root = useRef<HTMLDivElement>(null);
   const topPath = useRef<SVGPathElement>(null);
   const bottomPath = useRef<SVGPathElement>(null);
@@ -91,7 +94,13 @@ export function StoryEnvelope() {
     }, root);
     document.fonts.ready.then(() => { if (!disposed) ScrollTrigger.refresh(); });
     return () => { disposed = true; media.revert(); };
-  }, []);
+  }, [panelCount]);
+
+  // Text edits can change the pinned section's dimensions without remounting it.
+  useEffect(() => {
+    const timer = setTimeout(() => ScrollTrigger.refresh(), 150);
+    return () => clearTimeout(timer);
+  }, [config]);
 
   return (
     <div ref={root} className="relative bg-[#F1F1F1]">

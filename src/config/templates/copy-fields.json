@@ -1,0 +1,871 @@
+[
+  {
+    "key": "hero.text2",
+    "section": "hero",
+    "label": "Texto",
+    "defaultValue": "Uma história de amor "
+  },
+  {
+    "key": "hero.text3",
+    "section": "hero",
+    "label": "Texto",
+    "defaultValue": "·"
+  },
+  {
+    "key": "hero.text4",
+    "section": "hero",
+    "label": "Texto",
+    "defaultValue": "&"
+  },
+  {
+    "key": "hero.text5",
+    "section": "hero",
+    "label": "Texto",
+    "defaultValue": "11h30"
+  },
+  {
+    "key": "hero.text6",
+    "section": "hero",
+    "label": "Texto do botão",
+    "defaultValue": "Confirmar presença",
+    "module": "rsvp"
+  },
+  {
+    "key": "hero.text7",
+    "section": "hero",
+    "label": "Texto do botão",
+    "defaultValue": "Lista de presentes",
+    "module": "gifts"
+  },
+  {
+    "key": "hero.text8",
+    "section": "hero",
+    "label": "Texto",
+    "defaultValue": "O próximo capítulo"
+  },
+  {
+    "key": "countdown.text1",
+    "section": "countdown",
+    "label": "Texto",
+    "defaultValue": "Hoje é o nosso grande dia"
+  },
+  {
+    "key": "countdown.text2",
+    "section": "countdown",
+    "label": "Texto",
+    "defaultValue": "/"
+  },
+  {
+    "key": "story.text1",
+    "section": "story",
+    "label": "Descrição acessível",
+    "defaultValue": "Nossa história"
+  },
+  {
+    "key": "story.text2",
+    "section": "story",
+    "label": "Texto",
+    "defaultValue": "Nossa história "
+  },
+  {
+    "key": "story.text3",
+    "section": "story",
+    "label": "Texto",
+    "defaultValue": "/"
+  },
+  {
+    "key": "story.text4",
+    "section": "story",
+    "label": "Texto",
+    "defaultValue": "Uma vida. Muitos capítulos. O mesmo amor."
+  },
+  {
+    "key": "transition.text1",
+    "section": "transition",
+    "label": "Descrição acessível",
+    "defaultValue": "O nosso para sempre"
+  },
+  {
+    "key": "transition.text2",
+    "section": "transition",
+    "label": "Texto",
+    "defaultValue": "O capítulo mais bonito está por vir"
+  },
+  {
+    "key": "transition.text3",
+    "section": "transition",
+    "label": "Título",
+    "defaultValue": "O nosso para sempre."
+  },
+  {
+    "key": "transition.text4",
+    "section": "transition",
+    "label": "Texto",
+    "defaultValue": "E queremos viver esse momento com você."
+  },
+  {
+    "key": "events.text1",
+    "section": "events",
+    "label": "Texto",
+    "defaultValue": "O nosso grande dia"
+  },
+  {
+    "key": "events.text2",
+    "section": "events",
+    "label": "Título",
+    "defaultValue": "Cerimônia "
+  },
+  {
+    "key": "events.text3",
+    "section": "events",
+    "label": "Texto",
+    "defaultValue": "&"
+  },
+  {
+    "key": "events.text4",
+    "section": "events",
+    "label": "Título",
+    "defaultValue": "Festa"
+  },
+  {
+    "key": "events.text5",
+    "section": "events",
+    "label": "Texto",
+    "defaultValue": "Um só lugar. Todos os momentos que queremos viver com você."
+  },
+  {
+    "key": "events.text6",
+    "section": "events",
+    "label": "Texto",
+    "defaultValue": "Cerimônia e recepção no mesmo local"
+  },
+  {
+    "key": "events.text7",
+    "section": "events",
+    "label": "Texto",
+    "defaultValue": "Aqui diremos o nosso sim e, logo depois, continuaremos a celebração com as pessoas que amamos."
+  },
+  {
+    "key": "events.text8",
+    "section": "events",
+    "label": "Rótulo",
+    "defaultValue": "Reserve a data"
+  },
+  {
+    "key": "events.text9",
+    "section": "events",
+    "label": "Rótulo",
+    "defaultValue": "O nosso sim"
+  },
+  {
+    "key": "events.text10",
+    "section": "events",
+    "label": "Texto",
+    "defaultValue": "Recepção após a cerimônia"
+  },
+  {
+    "key": "events.text11",
+    "section": "events",
+    "label": "Texto",
+    "defaultValue": "Onde nos encontrar"
+  },
+  {
+    "key": "events.text12",
+    "section": "events",
+    "label": "Texto do botão",
+    "defaultValue": "Conheça o espaço "
+  },
+  {
+    "key": "events.text13",
+    "section": "events",
+    "label": "Texto do botão",
+    "defaultValue": "Como chegar"
+  },
+  {
+    "key": "events.text14",
+    "section": "events",
+    "label": "Texto do botão",
+    "defaultValue": "Abrir no Waze "
+  },
+  {
+    "key": "dressCode.text1",
+    "section": "dressCode",
+    "label": "Texto",
+    "defaultValue": "Para viver esse dia com leveza"
+  },
+  {
+    "key": "dressCode.text2",
+    "section": "dressCode",
+    "label": "Título",
+    "defaultValue": "Dress Code "
+  },
+  {
+    "key": "dressCode.text3",
+    "section": "dressCode",
+    "label": "Texto",
+    "defaultValue": "& Estilo"
+  },
+  {
+    "key": "dressCode.text4",
+    "section": "dressCode",
+    "label": "Texto",
+    "defaultValue": "Traje obrigatório para celebração - esporte fino"
+  },
+  {
+    "key": "dressCode.text5",
+    "section": "dressCode",
+    "label": "Texto",
+    "defaultValue": "O traje da celebração"
+  },
+  {
+    "key": "dressCode.text6",
+    "section": "dressCode",
+    "label": "Título",
+    "defaultValue": "Esporte fino"
+  },
+  {
+    "key": "dressCode.text7",
+    "section": "dressCode",
+    "label": "Texto",
+    "defaultValue": "Pedimos que não sejam utilizados trajes nas cores branca e marrom."
+  },
+  {
+    "key": "dressCode.text8",
+    "section": "dressCode",
+    "label": "Texto",
+    "defaultValue": "Não usar"
+  },
+  {
+    "key": "dressCode.text9",
+    "section": "dressCode",
+    "label": "Texto",
+    "defaultValue": "As demais cores estão liberadas. Escolha a sua e celebre com a gente!"
+  },
+  {
+    "key": "gifts.text1",
+    "section": "gifts",
+    "label": "Texto do botão",
+    "defaultValue": "← Voltar ao início",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text2",
+    "section": "gifts",
+    "label": "Texto",
+    "defaultValue": "Um gesto de carinho",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text3",
+    "section": "gifts",
+    "label": "Título",
+    "defaultValue": "Lista de ",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text4",
+    "section": "gifts",
+    "label": "Texto",
+    "defaultValue": "presentes",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text5",
+    "section": "gifts",
+    "label": "Texto",
+    "defaultValue": "Sua presença é o nosso maior presente.",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text6",
+    "section": "gifts",
+    "label": "Texto",
+    "defaultValue": "Para quem desejar nos presentear, preparamos esta lista com carinho.",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text7",
+    "section": "gifts",
+    "label": "Exemplo do campo",
+    "defaultValue": "Buscar presentes...",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text8",
+    "section": "gifts",
+    "label": "Texto",
+    "defaultValue": "UM PRESENTE NO SEU VALOR",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text9",
+    "section": "gifts",
+    "label": "Título",
+    "defaultValue": "Deseja presentear com outro valor?",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text10",
+    "section": "gifts",
+    "label": "Texto",
+    "defaultValue": "Escolha uma quantia livre de sua preferência para contribuir via PIX ou Cartão de Crédito.",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text11",
+    "section": "gifts",
+    "label": "Texto",
+    "defaultValue": "R$",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text12",
+    "section": "gifts",
+    "label": "Descrição acessível",
+    "defaultValue": "Valor do presente em reais",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text13",
+    "section": "gifts",
+    "label": "Exemplo do campo",
+    "defaultValue": "150",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text14",
+    "section": "gifts",
+    "label": "Texto do botão",
+    "defaultValue": "Presentear",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text15",
+    "section": "gifts",
+    "label": "Texto",
+    "defaultValue": "Nenhum item encontrado para esta busca.",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text16",
+    "section": "gifts",
+    "label": "Texto do botão",
+    "defaultValue": "Ver todos os presentes ",
+    "module": "gifts"
+  },
+  {
+    "key": "rsvp.text1",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Um lugar especial para você",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text2",
+    "section": "rsvp",
+    "label": "Título",
+    "defaultValue": "Confirmação de ",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text3",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "presença",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text4",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Que alegria ter você fazendo parte da nossa história! Estamos preparando esse dia com muito carinho e esperamos celebrar ao seu lado.",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text5",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Informe o código enviado com o convite.",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text6",
+    "section": "rsvp",
+    "label": "Rótulo",
+    "defaultValue": "Código do convite",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text7",
+    "section": "rsvp",
+    "label": "Exemplo do campo",
+    "defaultValue": "Cole aqui o código do seu convite",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text8",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Preparando seu convite…",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text9",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Resposta salva! Obrigado pelo carinho. Você pode revisar sua resposta até o encerramento das confirmações.",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text10",
+    "section": "rsvp",
+    "label": "Texto do botão",
+    "defaultValue": "Consultar outro convite",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text11",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Seu convite",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text12",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Prazo:",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text13",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "(Brasília).",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text14",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "As confirmações estão encerradas. Para alterações, fale com os noivos.",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text15",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Confirmação de presença",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text16",
+    "section": "rsvp",
+    "label": "Exemplo do campo",
+    "defaultValue": "Selecione uma resposta",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text17",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Restrições alimentares (opcional)",
+    "module": "dietaryRestrictions"
+  },
+  {
+    "key": "rsvp.text18",
+    "section": "rsvp",
+    "label": "Exemplo do campo",
+    "defaultValue": "Ex.: alergia a amendoim, intolerância à lactose ou alimentação vegetariana.",
+    "module": "dietaryRestrictions"
+  },
+  {
+    "key": "rsvp.text19",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Recado aos noivos (opcional)",
+    "module": "messages"
+  },
+  {
+    "key": "rsvp.text20",
+    "section": "rsvp",
+    "label": "Exemplo do campo",
+    "defaultValue": "Deixe uma mensagem carinhosa para os noivos…",
+    "module": "messages"
+  },
+  {
+    "key": "rsvp.text21",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Informações anteriores do grupo",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text22",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Restrições: ",
+    "module": "dietaryRestrictions"
+  },
+  {
+    "key": "rsvp.text23",
+    "section": "rsvp",
+    "label": "Texto",
+    "defaultValue": "Recado: ",
+    "module": "messages"
+  },
+  {
+    "key": "checkout.text1",
+    "section": "checkout",
+    "label": "Texto",
+    "defaultValue": "Presentear os noivos",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text2",
+    "section": "checkout",
+    "label": "Descrição acessível",
+    "defaultValue": "Fechar",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text3",
+    "section": "checkout",
+    "label": "Descrição acessível",
+    "defaultValue": "Forma de pagamento",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text4",
+    "section": "checkout",
+    "label": "Texto do botão",
+    "defaultValue": "PIX",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text5",
+    "section": "checkout",
+    "label": "Texto do botão",
+    "defaultValue": "Cartão",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text6",
+    "section": "checkout",
+    "label": "Texto",
+    "defaultValue": "Titular: ",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text7",
+    "section": "checkout",
+    "label": "Texto do botão",
+    "defaultValue": "Copiar código PIX",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text8",
+    "section": "checkout",
+    "label": "Descrição acessível",
+    "defaultValue": "Código PIX",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text9",
+    "section": "checkout",
+    "label": "Texto",
+    "defaultValue": "O PIX estará disponível em breve. Os dados de recebimento ainda estão sendo preparados pelos noivos.",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text10",
+    "section": "checkout",
+    "label": "Texto",
+    "defaultValue": "Continue no checkout do ",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text11",
+    "section": "checkout",
+    "label": "Texto",
+    "defaultValue": ". Confira o valor, o titular, as taxas e as condições de parcelamento antes de pagar.",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text12",
+    "section": "checkout",
+    "label": "Texto",
+    "defaultValue": "Informe ou confira o valor escolhido no checkout. O valor digitado aqui não é enviado automaticamente ao provedor.",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text13",
+    "section": "checkout",
+    "label": "Texto",
+    "defaultValue": "O pagamento com cartão estará disponível em breve. Estamos preparando o link deste presente.",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text14",
+    "section": "checkout",
+    "label": "Texto",
+    "defaultValue": "Os presentes são cotas simbólicas. Sua presença é o nosso maior presente.",
+    "module": "gifts"
+  },
+  {
+    "key": "footer.text1",
+    "section": "footer",
+    "label": "Texto",
+    "defaultValue": "&"
+  },
+  {
+    "key": "footer.text2",
+    "section": "footer",
+    "label": "Texto",
+    "defaultValue": "Agradecemos por caminhar conosco e fazer parte da celebração mais importante de nossas vidas. Nos vemos no altar!"
+  },
+  {
+    "key": "footer.text3",
+    "section": "footer",
+    "label": "Texto",
+    "defaultValue": "Voltar ao Início"
+  },
+  {
+    "key": "footer.text4",
+    "section": "footer",
+    "label": "Texto",
+    "defaultValue": "· "
+  },
+  {
+    "key": "countdown.text4",
+    "section": "countdown",
+    "label": "Unidade do contador",
+    "defaultValue": "DIAS"
+  },
+  {
+    "key": "countdown.text5",
+    "section": "countdown",
+    "label": "Unidade do contador",
+    "defaultValue": "HORAS"
+  },
+  {
+    "key": "countdown.text6",
+    "section": "countdown",
+    "label": "Unidade do contador",
+    "defaultValue": "MIN"
+  },
+  {
+    "key": "countdown.text7",
+    "section": "countdown",
+    "label": "Unidade do contador",
+    "defaultValue": "SEG"
+  },
+  {
+    "key": "story.text6",
+    "section": "story",
+    "label": "Texto da interface",
+    "defaultValue": "O encontro"
+  },
+  {
+    "key": "story.text7",
+    "section": "story",
+    "label": "Texto da interface",
+    "defaultValue": "Uma vida construída juntos"
+  },
+  {
+    "key": "story.text8",
+    "section": "story",
+    "label": "Texto da interface",
+    "defaultValue": "O nosso grande sim"
+  },
+  {
+    "key": "story.text9",
+    "section": "story",
+    "label": "Texto da interface",
+    "defaultValue": "Desde "
+  },
+  {
+    "key": "story.text10",
+    "section": "story",
+    "label": "Texto da interface",
+    "defaultValue": "Nossa jornada"
+  },
+  {
+    "key": "gifts.text18",
+    "section": "gifts",
+    "label": "Texto da interface",
+    "defaultValue": "Todos os Presentes",
+    "module": "gifts"
+  },
+  {
+    "key": "gifts.text19",
+    "section": "gifts",
+    "label": "Texto da interface",
+    "defaultValue": "Em breve",
+    "module": "gifts"
+  },
+  {
+    "key": "rsvp.text25",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Não foi possível consultar o convite.",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text26",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Esse código parece incompleto ou inválido. Copie o código completo do convite enviado por os noivos, sem espaços, ou abra o link que você recebeu.",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text27",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Não encontramos um convite ativo com esse código. Confira se você copiou o código completo ou use o link recebido. Se continuar sem conseguir, fale com os noivos.",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text28",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Não foi possível reconhecer esse código. Copie o código completo do convite ou abra o link enviado pelos noivos.",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text29",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Escolha uma resposta para cada pessoa do convite.",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text30",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Não foi possível salvar. Tente novamente.",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text31",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Consultar convite",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text32",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Presença confirmada",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text33",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Não comparecerá",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text34",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Aguardando resposta",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text35",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Presença de ",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text36",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Vou comparecer",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text37",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Não poderei comparecer",
+    "module": "rsvp"
+  },
+  {
+    "key": "rsvp.text38",
+    "section": "rsvp",
+    "label": "Texto da interface",
+    "defaultValue": "Salvar respostas",
+    "module": "rsvp"
+  },
+  {
+    "key": "checkout.text16",
+    "section": "checkout",
+    "label": "Texto da interface",
+    "defaultValue": "Cota livre",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text17",
+    "section": "checkout",
+    "label": "Texto da interface",
+    "defaultValue": "Código PIX copiado.",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text18",
+    "section": "checkout",
+    "label": "Texto da interface",
+    "defaultValue": "Não foi possível copiar. Selecione o código abaixo.",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text19",
+    "section": "checkout",
+    "label": "Texto da interface",
+    "defaultValue": "Pagar ",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text20",
+    "section": "checkout",
+    "label": "Texto da interface",
+    "defaultValue": " no cartão",
+    "module": "gifts"
+  },
+  {
+    "key": "checkout.text21",
+    "section": "checkout",
+    "label": "Texto da interface",
+    "defaultValue": "Continuar no checkout",
+    "module": "gifts"
+  },
+  {
+    "key": "dressCode.color1",
+    "section": "dressCode",
+    "label": "Nome da primeira cor",
+    "defaultValue": "Branco"
+  },
+  {
+    "key": "dressCode.color2",
+    "section": "dressCode",
+    "label": "Nome da segunda cor",
+    "defaultValue": "Marrom"
+  },
+  {
+    "key": "dressCode.heading",
+    "section": "dressCode",
+    "label": "Título",
+    "defaultValue": "Dress Code & Estilo"
+  },
+  {
+    "key": "gifts.heading",
+    "section": "gifts",
+    "label": "Título",
+    "defaultValue": "Lista de presentes"
+  }
+]

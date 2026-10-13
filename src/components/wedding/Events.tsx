@@ -1,4 +1,5 @@
 "use client";
+import {useSiteCopy} from "./useSiteCopy";
 
 import { useRef } from "react";
 import Image from "next/image";
@@ -8,6 +9,7 @@ import { WeddingOrnaments, WeddingBranch } from "./WeddingOrnaments";
 import {useWedding} from "./WeddingProvider";
 
 export function Events() {
+  const copy=useSiteCopy();
   const {config:weddingConfig,path}=useWedding();
   const section = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: section, offset: ["start end", "end start"] });
@@ -18,9 +20,9 @@ export function Events() {
       <WeddingOrnaments progress={scrollYProgress} variant="venue" />
       <div className="relative z-10 max-w-7xl mx-auto">
         <div className="text-center space-y-5 max-w-4xl mx-auto mb-10 sm:mb-14">
-          <p data-cinema-copy className="cinema-eyebrow text-[#F1F1F1]/80">O nosso grande dia</p>
-          <h2 className="font-serif text-5xl sm:text-7xl lg:text-8xl font-light tracking-[-0.04em] leading-[1.05]">Cerimônia <span className="italic text-[#C7B79D]">&amp;</span> Festa</h2>
-          <p data-cinema-copy className="font-serif italic text-xl sm:text-2xl text-[#F1F1F1]/80 leading-relaxed">Um só lugar. Todos os momentos que queremos viver com você.</p>
+          <p data-cinema-copy className="cinema-eyebrow text-[#F1F1F1]/80">{copy("events.text1")}</p>
+          <h2 className="font-serif text-5xl sm:text-7xl lg:text-8xl font-light tracking-[-0.04em] leading-[1.05]">{copy("events.text2")}<span className="italic text-[#C7B79D]">{copy("events.text3")}</span>{copy("events.text4")}</h2>
+          <p data-cinema-copy className="font-serif italic text-xl sm:text-2xl text-[#F1F1F1]/80 leading-relaxed">{copy("events.text5")}</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-10 sm:gap-12 lg:gap-16 items-center">
@@ -36,32 +38,32 @@ export function Events() {
           </div>
           <div className="space-y-8 sm:space-y-9">
             <div className="space-y-5">
-              <p data-cinema-copy className="cinema-eyebrow text-[#C7B79D]">Cerimônia e recepção no mesmo local</p>
+              <p data-cinema-copy className="cinema-eyebrow text-[#C7B79D]">{copy("events.text6")}</p>
               <h3 className="font-serif text-5xl sm:text-6xl lg:text-7xl font-light tracking-[-0.035em]">{ceremony.placeName}</h3>
-              <p data-cinema-copy className="text-base sm:text-lg font-light text-[#F1F1F1]/80 leading-[1.8] max-w-lg">Aqui diremos o nosso sim e, logo depois, continuaremos a celebração com as pessoas que amamos.</p>
+              <p data-cinema-copy className="text-base sm:text-lg font-light text-[#F1F1F1]/80 leading-[1.8] max-w-lg">{copy("events.text7")}</p>
             </div>
 
             <dl data-cinema-sequence className="grid grid-cols-2 gap-6 sm:gap-10">
               <div className="space-y-3">
-                <dt className="cinema-eyebrow text-[#F1F1F1]/80">Reserve a data</dt>
+                <dt className="cinema-eyebrow text-[#F1F1F1]/80">{copy("events.text8")}</dt>
                 <dd className="font-serif text-3xl sm:text-4xl text-[#C7B79D]">{new Date(weddingConfig.couple.weddingDate).toLocaleDateString("pt-BR",{day:"numeric",month:"short",year:"numeric",timeZone:"America/Sao_Paulo"}).replace(" de "," ").replace(" de "," ").replace(".","")}<span className="block font-sans text-xs sm:text-sm text-[#F1F1F1]/80 mt-2">{new Date(weddingConfig.couple.weddingDate).toLocaleDateString("pt-BR",{weekday:"long",timeZone:"America/Sao_Paulo"}).replace(/^./,c=>c.toUpperCase())}</span></dd>
               </div>
               <div className="space-y-3">
-                <dt className="cinema-eyebrow text-[#F1F1F1]/80">O nosso sim</dt>
-                <dd className="font-serif text-3xl sm:text-4xl text-[#C7B79D]">{ceremony.time}<span className="block font-sans text-xs sm:text-sm text-[#F1F1F1]/80 mt-2">Recepção após a cerimônia</span></dd>
+                <dt className="cinema-eyebrow text-[#F1F1F1]/80">{copy("events.text9")}</dt>
+                <dd className="font-serif text-3xl sm:text-4xl text-[#C7B79D]">{ceremony.time}<span className="block font-sans text-xs sm:text-sm text-[#F1F1F1]/80 mt-2">{copy("events.text10")}</span></dd>
               </div>
             </dl>
 
             <div data-cinema-copy className="space-y-3">
-              <p className="cinema-eyebrow text-[#F1F1F1]/80">Onde nos encontrar</p>
+              <p className="cinema-eyebrow text-[#F1F1F1]/80">{copy("events.text11")}</p>
               <address className="not-italic text-base sm:text-lg font-light leading-[1.8]">{ceremony.address}<br /><span className="text-[#F1F1F1]/80">{ceremony.cityState}</span></address>
-              {ceremony.websiteUrl&&<a href={ceremony.websiteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs text-[#C7B79D] hover:text-[#F1F1F1] py-2">Conheça o espaço <ArrowUpRight size={15} /></a>}
+              {ceremony.websiteUrl&&<a href={ceremony.websiteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs text-[#C7B79D] hover:text-[#F1F1F1] py-2">{copy("events.text12")}<ArrowUpRight size={15} /></a>}
             </div>
 
             <div data-cinema-copy className="space-y-5">
               <div className="flex flex-wrap gap-3">
-                <a href={ceremony.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="cinema-button bg-[#C7B79D] text-[#3D2501] hover:bg-[#F1F1F1] gap-2"><Navigation size={15} /> Como chegar</a>
-                {ceremony.wazeUrl && <a href={ceremony.wazeUrl} target="_blank" rel="noopener noreferrer" className="cinema-button bg-[#C7B79D]/25 text-[#F1F1F1] hover:bg-[#C7B79D]/50 gap-2">Abrir no Waze <ArrowUpRight size={15} /></a>}
+                <a href={ceremony.googleMapsUrl} target="_blank" rel="noopener noreferrer" className="cinema-button bg-[#C7B79D] text-[#3D2501] hover:bg-[#F1F1F1] gap-2"><Navigation size={15} />{copy("events.text13")}</a>
+                {ceremony.wazeUrl && <a href={ceremony.wazeUrl} target="_blank" rel="noopener noreferrer" className="cinema-button bg-[#C7B79D]/25 text-[#F1F1F1] hover:bg-[#C7B79D]/50 gap-2">{copy("events.text14")}<ArrowUpRight size={15} /></a>}
               </div>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import {templateIds,copyDefaults,fixedCopyKeys} from "@/config/templates/registry";
 import { z } from "zod";
 import { validWeddingSlug } from "@/config/forever";
 const text = z.string().trim().max(500);
@@ -26,6 +27,8 @@ const location = z
   .strict();
 export const weddingConfigSchema = z
   .object({
+    giftPaymentLink: z.string().max(2048).refine(value=>!value||/^https:\/\/[^\s]+$/i.test(value),"Use um link de pagamento HTTPS.").optional(),
+    copy:z.record(z.string().max(5000)).refine(value=>Object.keys(value).every(key=>key in copyDefaults),"Texto desconhecido no template.").transform(value=>Object.fromEntries(Object.entries(value).filter(([key])=>!fixedCopyKeys.has(key)&&key!=="hero.text5"))).optional(),
     sections: z
       .object({
         gallery: z.boolean().optional(),
@@ -148,12 +151,16 @@ export const slugSchema = z
   );
 export const weddingUpdateSchema = z
   .object({
+    templateId:z.enum(templateIds).optional(),
+    expectedUpdatedAt:z.string().optional(),
     config: weddingConfigSchema,
     theme: z.enum(["botanical", "rose", "ocean"]),
     status: z.enum(["draft", "published", "suspended", "archived"]),
   })
   .strict()
   .superRefine((value, ctx) => {
+    if(value.config.gifts.some(gift=>!gift.title.trim()||!gift.price||gift.price<=0))ctx.addIssue({code:"custom",path:["config","gifts"],message:"Preencha o nome e um valor sugerido maior que zero para cada presente."});
+    if(value.config.gifts.length>0&&!/^https:\/\/[^\s]+$/i.test(value.config.giftPaymentLink??""))ctx.addIssue({code:"custom",path:["config","giftPaymentLink"],message:"Adicione o link único de pagamento para salvar a lista de presentes."});
     if (
       value.status === "published" &&
       (!value.config.couple.weddingDate || !value.config.ceremony.placeName)

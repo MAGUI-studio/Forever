@@ -83,6 +83,7 @@ function load(filename) {
     },
   }).outputText;
   const localRequire = (name) => {
+    if (name.endsWith(".json")) return JSON.parse(fs.readFileSync(path.resolve(path.dirname(full),name),"utf8"));
     if (name === "server-only") return {};
     if (name === "@/lib/firebase/admin" || name === "./firebase/admin")
       return { services };
@@ -511,6 +512,47 @@ async function check(title, work) {
     store.set("weddings/test-couple",{...original,modules:{...original.modules,guestList:false}});
     assert.equal((await admin.GET(request("GET"))).status,403);assert.equal((await lookup.POST(request("POST",{token:eventInvite.token}))).status,403);
     store.set("weddings/test-couple",original);
+  });
+  await check("editor salva rascunho isolado, publica e bloqueia revisões antigas",async()=>{
+    const site=load("src/app/api/admin/site/route.ts"),{emptyWeddingConfig}=load("src/config/forever.ts"),{copyDefaults}=load("src/config/templates/registry.ts");
+    const existing=store.get("weddings/test-couple");store.set("weddings/test-couple",{...existing,config:clone(emptyWeddingConfig)});
+    const original=clone(store.get("weddings/test-couple"));
+    const config={...clone(emptyWeddingConfig),couple:{...emptyWeddingConfig.couple,partner1:"Ana",partner2:"Pedro",weddingDate:"2027-10-10T12:00:00-03:00"},ceremony:{...emptyWeddingConfig.ceremony,placeName:"Jardim"},copy:{...copyDefaults,"hero.text2":"Texto personalizado"}};
+    const payload={action:"draft",config,templateId:"botanical-classic",expectedRevision:0};
+    assert.equal((await site.PUT(request("PUT",payload))).status,200);
+    assert.deepEqual(store.get("weddings/test-couple").config,original.config);
+    const draft=await (await site.GET(request("GET"))).json();assert.equal(draft.config.copy["hero.text2"],"Texto personalizado");assert.equal(draft.revision,1);
+    assert.equal((await site.PUT(request("PUT",payload))).status,409);
+    assert.equal((await site.PUT(request("PUT",{...payload,action:"publish",expectedRevision:1}))).status,200);
+    assert.equal(store.get("weddings/test-couple").config.copy["hero.text2"],"Texto personalizado");assert.equal(store.get("weddings/test-couple").siteDraft,null);
+    assert.equal((await site.PUT(request("PUT",{...payload,expectedRevision:2,templateId:"unknown"}))).status,400);
+    store.set("weddings/test-couple",{...original,modules:{siteEditor:false}});assert.equal((await site.GET(request("GET"))).status,403);
+    store.set("weddings/test-couple",original);
+  });
+  await check("textos de ações e regras do RSVP permanecem fixos",async()=>{
+    const {copyFields,copyDefaults,siteCopy}=load("src/config/templates/registry.ts");
+    const {weddingConfigSchema}=load("src/lib/wedding-schema.ts"),{emptyWeddingConfig}=load("src/config/forever.ts");
+    assert.deepEqual(copyFields.filter(field=>field.section==="rsvp").map(field=>field.key),["rsvp.text1","rsvp.text4"]);
+    for(const key of ["footer.text3","hero.text6","gifts.text14","rsvp.text38","checkout.text21"]){assert(!copyFields.some(field=>field.key===key));assert.equal(siteCopy({[key]:"Texto adulterado"},key),copyDefaults[key]);}
+    const config=weddingConfigSchema.parse({...emptyWeddingConfig,copy:{"rsvp.text38":"Texto adulterado","rsvp.text1":"Boas-vindas"}});
+    assert.equal(config.copy["rsvp.text38"],undefined);assert.equal(config.copy["rsvp.text1"],"Boas-vindas");
+  });
+  await check("presentes exigem um único link externo ao salvar qualquer template",async()=>{
+    const {emptyWeddingConfig}=load("src/config/forever.ts"),{weddingUpdateSchema}=load("src/lib/wedding-schema.ts"),site=load("src/app/api/admin/site/route.ts");
+    const config={...clone(emptyWeddingConfig),couple:{...emptyWeddingConfig.couple,weddingDate:"2027-10-10T12:00:00-03:00"},ceremony:{...emptyWeddingConfig.ceremony,placeName:"Jardim"},gifts:[{id:"computer",title:"Computador gamer",price:5000,category:"Casa",categoryLabel:"Casa",image:""}]};
+    const update={config,theme:"botanical",status:"published",templateId:"botanical-classic"};
+    assert(!weddingUpdateSchema.safeParse(update).success);
+    assert(!weddingUpdateSchema.safeParse({...update,config:{...config,giftPaymentLink:"javascript:alert(1)"}}).success);
+    assert(weddingUpdateSchema.safeParse({...update,config:{...config,giftPaymentLink:"https://example.com/pay"}}).success);
+    assert(weddingUpdateSchema.safeParse({...update,config:{...config,gifts:[]}}).success);
+    assert.equal((await site.PUT(request("PUT",{action:"publish",config,templateId:"botanical-classic",expectedRevision:0}))).status,400);
+    assert.equal((await site.PUT(request("PUT",{action:"draft",config,templateId:"botanical-classic",expectedRevision:0}))).status,400);
+  });
+  await check("imagens do template são fixas e imagens de presentes continuam editáveis",async()=>{
+    const {preserveTemplateImages}=load("src/lib/template-images.ts"),{emptyWeddingConfig}=load("src/config/forever.ts");
+    const current=clone(emptyWeddingConfig);current.couple.coverImage="/fixed-cover.jpg";current.ceremony.image="/fixed-venue.jpg";
+    const next=clone(current);next.couple.coverImage="/changed.jpg";next.ceremony.image="/changed-venue.jpg";next.gifts=[{id:"one",title:"Presente",price:10,category:"Casa",categoryLabel:"Casa",image:"/gift.jpg"}];
+    const saved=preserveTemplateImages(next,current);assert.equal(saved.couple.coverImage,current.couple.coverImage);assert.equal(saved.ceremony.image,current.ceremony.image);assert.equal(saved.gifts[0].image,"/gift.jpg");
   });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,

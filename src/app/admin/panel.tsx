@@ -1,6 +1,7 @@
 "use client";
 import {resolveModules,sectionModule} from "@/config/modules";
-import {AdminHeaderSkeleton} from "./AdminHeaderSkeleton";
+import {AdminLoading} from "./AdminLoading";
+import { VisualSiteEditor } from "./VisualSiteEditor";
 import { AdminContainer } from "./AdminContainer";
 import { SectionDivider } from "@/components/ui/SectionDivider";
 import { AttendanceBadge } from "@/components/ui/AttendanceBadge";
@@ -53,9 +54,9 @@ export function AdminPanel({
   section = "overview",
 }: {
   view: "entry" | "login" | "dashboard";
-  section?: "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
+  section?: "site" | "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
 }) {
-  const {slug,config:weddingConfig,setConfig,setTheme,modules,setModules,path:weddingPath}=useWedding();
+  const {slug,config:weddingConfig,setConfig,setTheme,modules,setModules,setTemplateId,path:weddingPath}=useWedding();
   const router = useRouter();
   const [modalState, setModalState] = useAdminModal();
   const [user, setUser] = useState<User | null>(null);
@@ -120,7 +121,7 @@ export function AdminPanel({
   }
   async function load(account = user) {
     const session = await api("/api/admin/session", "GET", undefined, account);
-    setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(session.wedding.modules??{});
+    setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(session.wedding.modules??{});setTemplateId(session.wedding.templateId??"botanical-classic");
     const enabled=resolveModules(session.wedding.modules);
     if(sectionModule[section]&&!enabled[sectionModule[section]!]){setLoading(false);router.replace(weddingPath("admin/dashboard"));return;}
     const reception = session.role === "reception";
@@ -158,7 +159,7 @@ export function AdminPanel({
   async function action(work: () => Promise<void>, local = false) {
     if (!local) setBusy(true);
     setError("");
-    if (!local) 
+    if (!local)
     try {
       await work();
     } catch (e) {
@@ -169,7 +170,7 @@ export function AdminPanel({
   }
   function openModal(modal: AdminModalName, convite: string | null = null) {
     setError("");
-    
+
     void setModalState({ modal, convite });
   }
   function open(invite?: Invitation) {
@@ -196,7 +197,7 @@ export function AdminPanel({
       );
       closeModal();
       await load();
-      
+
     });
   }
   const allGuests = invites.filter((i) => i.active).flatMap((i) => i.guests);
@@ -221,6 +222,7 @@ export function AdminPanel({
     {id:"groups", title:"Famílias e grupos", invitations:visible.filter(i => i.kind === "group" || (!i.kind && i.guests.length > 1))},
     {id:"individuals", title:"Convites individuais", invitations:visible.filter(i => i.kind === "individual" || (!i.kind && i.guests.length === 1))},
   ];
+  if (view === "dashboard" && (!ready || (!!user && loading && !authorized))) return <AdminLoading/>;
   return (
     <main className={"admin-wedding " + (!user ? "admin-wedding--login" : "")}>
       <div className="admin-background" aria-hidden="true">
@@ -230,7 +232,7 @@ export function AdminPanel({
         <div className="admin-background-wash" />
       </div>
       <AdminContainer centered={view!=="dashboard"&&!user}>
-        {view==="dashboard"&&!authorized&&loading&&<AdminHeaderSkeleton/>}
+
         {user && view === "dashboard" && authorized && (
           <nav className="admin-nav flex-nowrap! gap-3! lg:flex-wrap! lg:gap-6!" aria-label="Navegação da administração">
             <Link href={weddingPath("admin/dashboard")} className="admin-wordmark">
@@ -248,7 +250,7 @@ export function AdminPanel({
               <DropdownMenu.Portal><DropdownMenu.Content className="admin-profile-menu" align="end" sideOffset={10} collisionPadding={16}>
                 <DropdownMenu.Label className="admin-profile-label">Espaço dos noivos<span>{user.email}</span></DropdownMenu.Label>
                 <DropdownMenu.Separator className="admin-profile-separator" />
-                {role==="admin"&&modules.siteEditor&&<DropdownMenu.Item asChild><Link className="admin-profile-item" href={weddingPath("admin/site")}>Personalizar site</Link></DropdownMenu.Item>}
+
                 {modules.rsvp&&<DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-[var(--wedding-radius)] px-2.5 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none data-highlighted:bg-[#edf0e3] data-disabled:opacity-40" disabled={busy || !authorized || role !== "admin"} onSelect={() => openModal("settings")}><CalendarDays size={16} aria-hidden="true" />Configurações</DropdownMenu.Item>}
                 <DropdownMenu.Item className="admin-profile-item" disabled={busy} onSelect={() => void action(async () => {await signOut(clientAuth());})}><LogOut size={16} aria-hidden="true" /> Sair</DropdownMenu.Item>
               </DropdownMenu.Content></DropdownMenu.Portal>
@@ -273,7 +275,9 @@ export function AdminPanel({
             </div>
             {modules.guestList&&authorized ? <GuestStats guests={allGuests} /> : modules.guestList&&loading ? <GuestStatsSkeleton /> : null}
           </AdminContainer>
+
         )}
+        {authorized && section === "overview" && role === "admin" && modules.siteEditor && <section className="relative mb-6 overflow-hidden rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-6 sm:p-8"><div className="pointer-events-none absolute -right-5 -bottom-8 text-[#5d613c10]" aria-hidden="true"><Flower2 size={180} strokeWidth={1}/></div><div className="relative flex flex-wrap items-center justify-between gap-6"><div className="max-w-xl"><p className="admin-eyebrow">Do seu jeito</p><h2 className="mt-2 font-serif text-3xl text-[var(--forever-ink,#3D2501)]">Seu site</h2><p className="mt-3 text-sm leading-relaxed text-[var(--forever-accent,#80654E)]">Escolha o template, personalize os textos e acompanhe cada alteração na prévia antes de publicar.</p></div><Link href={weddingPath("admin/site")} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--wedding-radius)] bg-[var(--forever-primary,#5D613C)] px-5 py-3 text-sm font-medium text-[#fffdfa] transition-colors hover:bg-[var(--forever-primary-hover,#4e5232)]"><PencilSimpleIcon size={18}/>Personalizar site</Link></div></section>}
         {error && !(authorized && modalState.modal) && (
           <p role="alert" className="admin-alert admin-alert--error">
             {error}
@@ -392,8 +396,8 @@ export function AdminPanel({
           </div>
         ) : (
           <>
-            
-            {(authorized || loading) && (!sectionModule[section]||modules[sectionModule[section]!]) && section !== "overview" && (section === "tables" || section === "buffet" || section === "history" || section === "team" ? <EventOperations pageLoading={!authorized && loading} section={section} invitations={invites} tables={tables} api={api} onRefresh={load} /> : section === "check-in" ? <CheckInList tables={tables} loading={!authorized && loading} invitations={invites} busy={busy} onRefresh={() => void action(async () => {await load();})} onToggle={(invitation, guestIds, checkedIn) => void action(async () => {
+
+            {(authorized || loading) && (!sectionModule[section]||modules[sectionModule[section]!]) && section !== "overview" && (section === "site" ? <VisualSiteEditor/> : section === "tables" || section === "buffet" || section === "history" || section === "team" ? <EventOperations pageLoading={!authorized && loading} section={section} invitations={invites} tables={tables} api={api} onRefresh={load} /> : section === "check-in" ? <CheckInList tables={tables} loading={!authorized && loading} invitations={invites} busy={busy} onRefresh={() => void action(async () => {await load();})} onToggle={(invitation, guestIds, checkedIn) => void action(async () => {
               await api("/api/admin/reception", "PATCH", {id:invitation.id, guestIds, checkedIn, expectedCheckedIn:!checkedIn});
               await load();
             })} /> :
@@ -502,7 +506,7 @@ export function AdminPanel({
                           {modules.invitationTracking&&<ExpandingIconButton aria-pressed={!!i.sentAt} disabled={busy} onClick={() => void action(async () => {
                             const result = await api("/api/admin/invites/sent", "POST", {id:i.id,sent:!i.sentAt});
                             setInvites(current => current.map(item => item.id === i.id ? {...item,sentAt:result.sentAt} : item));
-                            
+
                           })} icon={<PaperPlaneTiltIcon size={17} weight={i.sentAt ? "fill" : "regular"} aria-hidden="true" />} label={i.sentAt ? "Enviado" : "Marcar enviado"} />}
                           <ExpandingIconButton disabled={busy || !!generatingPdf || !i.active} onClick={async () => {setGeneratingPdf(i.id);setError("");try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf");await downloadInvitationPdf(i,weddingConfig,slug);}catch {setError("Não foi possível gerar o convite. Tente novamente.");}finally {setGeneratingPdf(null);}}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={generatingPdf === i.id ? "Gerando convite…" : (i.guests.length > 1 ? "Convite do grupo" : "Baixar convite")} />
                           <ExpandingIconButton disabled={busy} onClick={() => openModal("delete-invitation",i.id)} icon={<TrashIcon size={17} aria-hidden="true" />} label={"Excluir"} />
@@ -583,7 +587,7 @@ export function AdminPanel({
               await api("/api/admin/settings", "PUT", value);
               setSettings(value);
               closeModal();
-              
+
             });
           }}
           onDelete={(invite) => {
@@ -594,7 +598,7 @@ export function AdminPanel({
               });
               closeModal();
               await load();
-              
+
             });
           }}
         />

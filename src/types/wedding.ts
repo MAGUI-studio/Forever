@@ -90,6 +90,8 @@ export interface RsvpConfig {
 }
 
 export interface WeddingConfig {
+  giftPaymentLink?: string;
+  copy?:Record<string,string>;
   sections?: {gallery?:boolean;dressCode?:boolean;gifts?:boolean;rsvp?:boolean};
   couple: CoupleInfo;
   gallery: GalleryPhoto[];
