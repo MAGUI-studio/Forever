@@ -77,3 +77,12 @@ Couples can choose from five distinct gallery styles via the "Estilo da galeria"
 Styles can be used across any template. Default styles fallback naturally (`polaroid` for Botanical Classic, `relicario` for Contemporary Romance). All styles share `GalleryLightbox` for full-screen viewing. `src/config/gallery.ts` defines `MAX_GALLERY_PHOTOS` (6), which also limits the schema, editor and stored data. Until couples can upload photos, six bundled placeholders under `public/gallery/placeholders` are shown when `config.gallery` is empty.
 
 The gallery is the only section that can be hidden. It is shown by default: `galleryEnabled` hides it only when `config.sections.gallery` is explicitly `false`. The editor toggle "Exibir galeria no site" (section "Galeria do casal") controls it, and the schema drops any other section flags.
+
+### Gallery photo uploads via UploadThing
+
+Couples can upload up to 6 custom photos using the custom file input in the visual site editor (`GalleryUploader.tsx`). UploadThing is configured in `src/app/api/uploadthing/` with strict constraints:
+- Maximum file size: 1MB per image (`MAX_GALLERY_FILE_SIZE_BYTES`).
+- Allowed formats: ONLY `image/png` and `image/webp`.
+- Maximum file count: 6 images per batch (`MAX_GALLERY_PHOTOS`).
+- Automated storage cleanup: whenever 6 new photos are uploaded (or when sample photos are restored), previous UploadThing files are deleted via `utapi.deleteFiles` (`POST /api/admin/gallery/cleanup`) to prevent storage clutter.
+- Custom UX: romantic styled dropzone with drag-and-drop, individual file preview cards, progress indicators, and badge constraints matching the Forever design system.

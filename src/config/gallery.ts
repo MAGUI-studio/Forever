@@ -1,5 +1,36 @@
 import type {GalleryPhoto,WeddingConfig,GalleryStyle} from "@/types/wedding";
 export const MAX_GALLERY_PHOTOS=6;
+export const MAX_GALLERY_FILE_SIZE_BYTES=1024*1024; // 1MB
+export const ALLOWED_GALLERY_MIME_TYPES=["image/png","image/webp"] as const;
+export const ALLOWED_GALLERY_EXTENSIONS=[".png",".webp"] as const;
+
+/** Checks if a given image URL belongs to UploadThing storage. */
+export function isUploadThingUrl(urlOrKey: string): boolean {
+  if (!urlOrKey) return false;
+  return urlOrKey.includes("utfs.io") || urlOrKey.includes("ufs.sh") || urlOrKey.includes("uploadthing");
+}
+
+/** Extracts the UploadThing file key from a URL or returns the key if already bare. */
+export function getUploadThingKey(urlOrKey: string): string | null {
+  if (!urlOrKey) return null;
+  if (!urlOrKey.includes("/") && !urlOrKey.startsWith("http")) {
+    return urlOrKey;
+  }
+  if (isUploadThingUrl(urlOrKey)) {
+    const afterF = urlOrKey.split(/\/f\//)[1];
+    if (afterF) {
+      return afterF.split("?")[0] || null;
+    }
+    try {
+      const parsed = new URL(urlOrKey);
+      const parts = parsed.pathname.split("/").filter(Boolean);
+      return parts[parts.length - 1] ?? null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
 
 export interface GalleryStyleOption {
   value: GalleryStyle;

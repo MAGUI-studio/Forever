@@ -605,6 +605,21 @@ async function check(title, work) {
     assert(entries.every(entry=>!entry.url.includes("/admin")&&!entry.url.includes("/rsvp")&&!entry.url.includes("?")));assert.equal(robots().sitemap,SEO_ORIGIN+"/sitemap.xml");
     for(const status of ["published","draft","suspended","archived"])store.delete("weddings/seo-"+status);
   });
+  await check("galeria valida regras do uploadthing e limpeza de storage",async()=>{
+    const {MAX_GALLERY_PHOTOS,MAX_GALLERY_FILE_SIZE_BYTES,ALLOWED_GALLERY_MIME_TYPES,isUploadThingUrl,getUploadThingKey}=load("src/config/gallery.ts");
+    assert.equal(MAX_GALLERY_PHOTOS,6);
+    assert.equal(MAX_GALLERY_FILE_SIZE_BYTES,1024*1024);
+    assert.deepEqual(ALLOWED_GALLERY_MIME_TYPES,["image/png","image/webp"]);
+    assert(isUploadThingUrl("https://utfs.io/f/sample-key-123.png"));
+    assert(isUploadThingUrl("https://k1g7xqtusx.ufs.sh/f/sample-key-456.webp"));
+    assert(!isUploadThingUrl("/gallery/placeholders/01.webp"));
+    assert.equal(getUploadThingKey("https://utfs.io/f/sample-key-123.png"),"sample-key-123.png");
+    assert.equal(getUploadThingKey("https://ufs.sh/f/sample-key-456.webp?download=1"),"sample-key-456.webp");
+    assert.equal(getUploadThingKey("/gallery/placeholders/01.webp"),null);
+    assert.equal(getUploadThingKey("raw-key-789"),"raw-key-789");
+    const cleanup=load("src/app/api/admin/gallery/cleanup/route.ts");
+    assert.equal((await cleanup.POST(new Request("https://example.org/api/admin/gallery/cleanup",{method:"POST"}))).status,401);
+  });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,
   );
