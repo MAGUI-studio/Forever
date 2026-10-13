@@ -16,19 +16,22 @@ import { useUploadThing } from "@/lib/uploadthing";
 import {
   UploadCloud,
   Image as ImageIcon,
-  Trash2,
   X,
   CheckCircle2,
   AlertCircle,
   Loader2,
   RefreshCw,
   Sparkles,
+  Camera,
+  Check,
 } from "lucide-react";
 import { AdminButton } from "./AdminButton";
+import { ConfirmModal } from "./ConfirmModal";
 
 interface GalleryUploaderProps {
   currentPhotos: GalleryPhoto[];
   onPhotosChange: (photos: GalleryPhoto[]) => void;
+  onPhotosSave?: (photos: GalleryPhoto[]) => Promise<void>;
   user: User | null;
   slug: string;
 }
@@ -52,6 +55,7 @@ function isValidFileType(file: File): boolean {
 export function GalleryUploader({
   currentPhotos,
   onPhotosChange,
+  onPhotosSave,
   user,
   slug,
 }: GalleryUploaderProps) {
@@ -62,8 +66,10 @@ export function GalleryUploader({
   const [success, setSuccess] = useState<string>("");
   const [progress, setProgress] = useState<number>(0);
   const [isCleaning, setIsCleaning] = useState(false);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
 
-  // Clean up object URLs when staged files change or component unmounts
+  // Revoke preview object URLs when unmounted or changed
   useEffect(() => {
     return () => {
       staged.forEach((item) => URL.revokeObjectURL(item.previewUrl));
@@ -85,7 +91,7 @@ export function GalleryUploader({
     onClientUploadComplete: async (res) => {
       if (!res || res.length === 0) return;
 
-      // Automatically purge previous UploadThing photos from storage
+      // 1. Purge previous UploadThing files from cloud storage
       const oldUploadThingUrls = currentPhotos
         .map((p) => p.url)
         .filter((url) => isUploadThingUrl(url));
@@ -117,12 +123,27 @@ export function GalleryUploader({
         aspect: "square",
       }));
 
-      onPhotosChange(newPhotos);
-      setStaged([]);
-      setProgress(0);
-      setSuccess(
-        `${newPhotos.length} fotos enviadas com sucesso! As fotos anteriores foram removidas do storage.`,
-      );
+      // 2. Automatically save immediately to Firestore
+      try {
+        setIsAutoSaving(true);
+        if (onPhotosSave) {
+          await onPhotosSave(newPhotos);
+        } else {
+          onPhotosChange(newPhotos);
+        }
+        setSuccess(
+          `${newPhotos.length} fotos enviadas e salvas com sucesso no site!`,
+        );
+      } catch (saveErr) {
+        onPhotosChange(newPhotos);
+        setError(
+          "As fotos foram enviadas, mas houve uma oscilação ao salvar automaticamente. Clique em 'Salvar alterações' no topo para confirmar.",
+        );
+      } finally {
+        setIsAutoSaving(false);
+        setStaged([]);
+        setProgress(0);
+      }
     },
     onUploadError: (err) => {
       setError(
@@ -140,7 +161,6 @@ export function GalleryUploader({
     const fileList = Array.from(incomingFiles);
     if (fileList.length === 0) return;
 
-    // Validate maximum count
     if (fileList.length > MAX_GALLERY_PHOTOS) {
       setError(
         `Selecione no máximo ${MAX_GALLERY_PHOTOS} fotos. Aceitamos até ${MAX_GALLERY_PHOTOS} imagens por vez.`,
@@ -152,13 +172,13 @@ export function GalleryUploader({
     for (const file of fileList) {
       if (!isValidFileType(file)) {
         setError(
-          `O arquivo "${file.name}" não é suportado. Aceitamos APENAS imagens PNG ou WebP.`,
+          `O arquivo "${file.name}" não é suportado. Aceitamos exclusivamente imagens em PNG ou WebP.`,
         );
         return;
       }
       if (file.size > MAX_GALLERY_FILE_SIZE_BYTES) {
         setError(
-          `O arquivo "${file.name}" tem ${(file.size / (1024 * 1024)).toFixed(2)}MB, excedendo o limite de 1MB por foto.`,
+          `O arquivo "${file.name}" tem ${(file.size / (1024 * 1024)).toFixed(2)}MB, ultrapassando o limite de 1MB por foto.`,
         );
         return;
       }
@@ -168,7 +188,6 @@ export function GalleryUploader({
       });
     }
 
-    // Replace staged files
     setStaged((prev) => {
       prev.forEach((item) => URL.revokeObjectURL(item.previewUrl));
       return validated;
@@ -179,7 +198,6 @@ export function GalleryUploader({
     if (e.target.files) {
       processFiles(e.target.files);
     }
-    // reset input value so same files can be chosen again if needed
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
@@ -218,15 +236,8 @@ export function GalleryUploader({
     await startUpload(filesToUpload);
   }
 
-  async function handleResetToSample() {
-    if (
-      !window.confirm(
-        "Deseja restaurar as fotos de exemplo? As fotos enviadas atualmente serão removidas da galeria e do storage.",
-      )
-    ) {
-      return;
-    }
-
+  async function executeResetToSample() {
+    setShowResetModal(false);
     const oldUploadThingUrls = currentPhotos
       .map((p) => p.url)
       .filter((url) => isUploadThingUrl(url));
@@ -251,38 +262,59 @@ export function GalleryUploader({
       }
     }
 
-    onPhotosChange([]);
-    setSuccess("Fotos de exemplo restauradas com sucesso.");
+    try {
+      setIsAutoSaving(true);
+      if (onPhotosSave) {
+        await onPhotosSave([]);
+      } else {
+        onPhotosChange([]);
+      }
+      setSuccess("Fotos de exemplo restauradas e salvas no site.");
+    } catch {
+      onPhotosChange([]);
+    } finally {
+      setIsAutoSaving(false);
+    }
   }
 
   const hasCustomUploads = currentPhotos.some((p) => isUploadThingUrl(p.url));
   const activePhotos = currentPhotos.length ? currentPhotos : placeholderGallery;
+  const isBusy = isUploading || isAutoSaving || isCleaning;
 
   return (
     <div className="space-y-6">
-      {/* Header and Guidelines */}
+      {/* Header and Auto-Save Reassurance Banner */}
       <div>
         <div className="flex items-center justify-between gap-3">
-          <h2 className="font-serif text-2xl text-[var(--forever-ink,#3D2501)]">
-            Fotos do casal
-          </h2>
+          <div className="flex items-center gap-2">
+            <Camera size={20} className="text-[var(--forever-primary,#5D613C)]" />
+            <h2 className="font-serif text-2xl text-[var(--forever-ink,#3D2501)]">
+              Fotos do casal
+            </h2>
+          </div>
           {hasCustomUploads && (
             <button
               type="button"
-              disabled={isUploading || isCleaning}
-              onClick={handleResetToSample}
-              className="inline-flex items-center gap-1.5 text-xs text-[var(--forever-accent,#80654E)] transition-colors hover:text-[var(--forever-primary,#5D613C)]"
+              disabled={isBusy}
+              onClick={() => setShowResetModal(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-[var(--forever-accent,#80654E)] transition-colors hover:text-[var(--forever-primary,#5D613C)] disabled:opacity-50"
             >
               <RefreshCw size={13} className={isCleaning ? "animate-spin" : ""} />
               Restaurar fotos de exemplo
             </button>
           )}
         </div>
-        <p className="mt-1.5 text-xs leading-relaxed text-[var(--forever-accent,#80654E)]">
-          Envie as {MAX_GALLERY_PHOTOS} fotos oficiais do casamento para a galeria.
-          Ao enviar fotos novas, as fotos antigas são removidas automaticamente do
-          storage para não acumular arquivos desnecessários.
+        <p className="mt-1 text-xs leading-relaxed text-[var(--forever-accent,#80654E)]">
+          Envie as {MAX_GALLERY_PHOTOS} fotos oficiais do casamento para ilustrar a galeria dos noivos.
         </p>
+      </div>
+
+      {/* Auto-Save Reassurance Card */}
+      <div className="flex items-start gap-3 rounded-2xl border border-[var(--forever-hover-border,#5d613c25)] bg-[var(--forever-hover-tint,#5d613c08)] p-3.5 text-xs text-[var(--forever-primary,#5D613C)]">
+        <Sparkles size={17} className="mt-0.5 shrink-0 text-[var(--forever-primary,#5D613C)]" />
+        <div className="leading-relaxed">
+          <span className="font-semibold">Salvamento automático:</span> assim que você enviar as fotos, suas alterações serão salvas automaticamente no site.
+        </div>
       </div>
 
       {/* Feedback Messages */}
@@ -320,13 +352,13 @@ export function GalleryUploader({
         </div>
       )}
 
-      {/* Custom Romantic File Dropzone (NOT default HTML) */}
+      {/* Custom Romantic File Dropzone (NOT standard HTML) */}
       <div
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
         onDragOver={handleDrag}
         onDrop={handleDrop}
-        onClick={() => !isUploading && fileInputRef.current?.click()}
+        onClick={() => !isBusy && fileInputRef.current?.click()}
         className={`group relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all cursor-pointer ${
           dragActive
             ? "border-[var(--forever-primary,#5D613C)] bg-[var(--forever-hover-tint,#5d613c0a)] ring-4 ring-[var(--forever-hover-tint,#5d613c12)]"
@@ -338,13 +370,13 @@ export function GalleryUploader({
           type="file"
           accept="image/png,image/webp"
           multiple
-          disabled={isUploading}
+          disabled={isBusy}
           onChange={handleFileSelect}
           className="sr-only"
         />
 
-        <div className="flex size-14 items-center justify-center rounded-full bg-[var(--forever-sand,#EFECE6)] text-[var(--forever-primary,#5D613C)] transition-transform duration-300 group-hover:scale-110">
-          {isUploading ? (
+        <div className="flex size-14 items-center justify-center rounded-full bg-[var(--forever-sand,#EFECE6)] text-[var(--forever-primary,#5D613C)] shadow-xs transition-transform duration-300 group-hover:scale-110">
+          {isBusy ? (
             <Loader2 size={24} className="animate-spin text-[var(--forever-primary,#5D613C)]" />
           ) : (
             <UploadCloud size={26} strokeWidth={1.75} />
@@ -359,18 +391,18 @@ export function GalleryUploader({
         </p>
 
         <p className="mt-1 text-xs text-[var(--forever-accent,#80654E)]">
-          Selecione as fotos que irão estampar a galeria dos noivos
+          Selecione as imagens em alta resolução do casal
         </p>
 
         {/* Requirements Badges */}
         <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-0.5 text-[11px] font-medium text-[var(--forever-accent,#80654E)]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-1 text-[11px] font-medium text-[var(--forever-accent,#80654E)]">
             Apenas PNG ou WebP
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-0.5 text-[11px] font-medium text-[var(--forever-accent,#80654E)]">
-            Máximo 1MB por foto
+          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-1 text-[11px] font-medium text-[var(--forever-accent,#80654E)]">
+            Máximo 1MB por imagem
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-0.5 text-[11px] font-medium text-[var(--forever-accent,#80654E)]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-1 text-[11px] font-medium text-[var(--forever-accent,#80654E)]">
             Até 6 fotos
           </span>
         </div>
@@ -386,7 +418,7 @@ export function GalleryUploader({
                 Fotos prontas para upload ({staged.length}/{MAX_GALLERY_PHOTOS})
               </h3>
             </div>
-            {!isUploading && (
+            {!isBusy && (
               <button
                 type="button"
                 onClick={() => setStaged([])}
@@ -409,6 +441,11 @@ export function GalleryUploader({
                   className="size-full object-cover"
                 />
 
+                {/* Badge number */}
+                <span className="absolute left-1.5 top-1.5 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-semibold text-white backdrop-blur-xs">
+                  Foto {index + 1}
+                </span>
+
                 {/* Badge format + size */}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 text-[10px] text-white">
                   <p className="truncate font-medium">{item.file.name}</p>
@@ -417,8 +454,8 @@ export function GalleryUploader({
                   </p>
                 </div>
 
-                {/* Remove button */}
-                {!isUploading && (
+                {/* Remove individual button */}
+                {!isBusy && (
                   <button
                     type="button"
                     aria-label={`Remover foto ${item.file.name}`}
@@ -435,20 +472,24 @@ export function GalleryUploader({
             ))}
           </div>
 
-          {/* Upload Progress Bar */}
-          {isUploading && (
+          {/* Upload and Auto-Save Progress Bar */}
+          {isBusy && (
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between text-xs text-[var(--forever-primary,#5D613C)]">
                 <span className="flex items-center gap-1.5 font-medium">
                   <Loader2 size={13} className="animate-spin" />
-                  Enviando fotos e sincronizando com o site…
+                  {isUploading
+                    ? "Enviando fotos para a nuvem…"
+                    : isAutoSaving
+                    ? "Salvando alterações automaticamente no site…"
+                    : "Atualizando galeria…"}
                 </span>
-                <span className="font-semibold">{progress}%</span>
+                <span className="font-semibold">{isUploading ? `${progress}%` : <Check size={14} />}</span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--forever-sand,#EFECE6)]">
                 <div
                   className="h-full rounded-full bg-[var(--forever-primary,#5D613C)] transition-all duration-300"
-                  style={{ width: `${progress}%` }}
+                  style={{ width: isUploading ? `${progress}%` : "100%" }}
                 />
               </div>
             </div>
@@ -457,19 +498,19 @@ export function GalleryUploader({
           {/* Action Button */}
           <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
             <AdminButton
-              disabled={isUploading || staged.length === 0}
+              disabled={isBusy || staged.length === 0}
               onClick={handleUploadClick}
               className="w-full sm:w-auto"
             >
-              {isUploading ? (
+              {isBusy ? (
                 <>
                   <Loader2 size={15} className="animate-spin" />
-                  Enviando {staged.length} {staged.length === 1 ? "foto" : "fotos"}…
+                  {isUploading ? "Enviando fotos…" : "Salvando no site…"}
                 </>
               ) : (
                 <>
                   <UploadCloud size={16} />
-                  Enviar {staged.length} {staged.length === 1 ? "foto" : "fotos"} para a galeria
+                  Enviar {staged.length} {staged.length === 1 ? "foto" : "fotos"} e salvar no site
                 </>
               )}
             </AdminButton>
@@ -483,11 +524,18 @@ export function GalleryUploader({
           <div className="flex items-center gap-2">
             <ImageIcon size={16} className="text-[var(--forever-accent,#80654E)]" />
             <span className="text-xs font-medium text-[var(--forever-primary,#5D613C)]">
-              Fotos atuais na galeria ({activePhotos.length}/{MAX_GALLERY_PHOTOS})
+              Fotos ativas no site ({activePhotos.length}/{MAX_GALLERY_PHOTOS})
             </span>
           </div>
-          <span className="text-[11px] text-[var(--forever-accent,#80654E)]">
-            {hasCustomUploads ? "Fotos enviadas pelos noivos" : "Fotos ilustrativas de exemplo"}
+          <span className="inline-flex items-center gap-1 text-[11px] text-[var(--forever-accent,#80654E)]">
+            {hasCustomUploads ? (
+              <>
+                <CheckCircle2 size={12} className="text-emerald-600" />
+                Fotos oficiais do casal
+              </>
+            ) : (
+              "Fotos ilustrativas de exemplo"
+            )}
           </span>
         </div>
 
@@ -512,6 +560,17 @@ export function GalleryUploader({
           ))}
         </div>
       </div>
+
+      {/* Reset Confirmation Modal */}
+      <ConfirmModal
+        open={showResetModal}
+        onOpenChange={setShowResetModal}
+        title="Restaurar fotos de exemplo?"
+        description="As fotos enviadas atualmente serão substituídas pelas fotos de demonstração da galeria e a alteração será salva automaticamente no site."
+        confirmLabel="Restaurar fotos"
+        onConfirm={executeResetToSample}
+        isBusy={isBusy}
+      />
     </div>
   );
 }
