@@ -3,27 +3,23 @@ import {useRouter} from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import {
   onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
   type User,
 } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase/client";
 import { readApiResponse } from "@/lib/api-response";
-import { AdminContainer } from "./AdminContainer";
-import { AdminButton } from "./AdminButton";
-import { SkeletonBlock } from "./skeleton";
+import {StudioShell} from "@/components/forever/StudioShell";
+import {StudioButton} from "@/components/forever/StudioButton";
+import {StudioLoading} from "@/components/forever/StudioLoading";
 import Link from "next/link";
 import { AdminDialog } from "./AdminDialog";
-import { Plus, LogOut, RefreshCw } from "lucide-react";
+import { Plus, RefreshCw, Search, ArrowUpRight, Layers3, Heart, Globe, FileText } from "lucide-react";
 import { parseAsStringEnum, useQueryState } from "nuqs";
 type Wedding = {
   slug: string;
   status: string;
   config: { couple: { partner1: string; partner2: string } };
 };
-const field =
-  "mt-2 h-12 w-full rounded-2xl border border-[#5d613c30] bg-white px-4 text-sm outline-none focus:border-[var(--forever-primary,#5D613C)] focus:ring-2 focus:ring-[#5d613c20]";
+const field="mt-2 h-12 w-full rounded-xl border border-[#16161620] bg-white px-4 text-sm outline-none focus:border-[#722F37] focus:ring-2 focus:ring-[#722F3710]";
 export function PlatformPanel() {
  const router=useRouter();
   const [user, setUser] = useState<User | null>(null),
@@ -32,9 +28,8 @@ export function PlatformPanel() {
     [loading, setLoading] = useState(true),
     [error, setError] = useState(""),
     [notice, setNotice] = useState("");
-  const [email, setEmail] = useState(""),
-    [password, setPassword] = useState(""),
-    [weddings, setWeddings] = useState<Wedding[]>([]),
+  const [query,setQuery]=useState("");
+  const [weddings, setWeddings] = useState<Wedding[]>([]),
     [superadmin, setSuperadmin] = useState(false);
   const [action, setAction] = useQueryState(
     "action",
@@ -104,223 +99,16 @@ export function PlatformPanel() {
     setOwnerPassword("");
     void setAction(null, { history: "replace" });
   }
-  return (
-    <main className="admin-wedding">
-      <AdminContainer>
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-[#5d613c20] py-6">
-          <Link href="/" className="font-serif text-4xl">
-            Forever{" "}
-            <span className="font-sans text-xs text-[var(--forever-primary,#5D613C)]">
-              by MAGUI.studio
-            </span>
-          </Link>
-          {user && (
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-xs text-[var(--forever-accent,#80654E)]">
-                {user.email}
-              </span>
-              <AdminButton
-                variant="ghost"
-                onClick={() => void signOut(clientAuth())}
-              >
-                <LogOut size={16} />
-                Sair
-              </AdminButton>
-            </div>
-          )}
-        </header>
-        <section className="py-8 sm:py-12">
-          {!ready ? (
-            <SkeletonBlock className="h-56 w-full" />
-          ) : !user ? (
-            <form
-              className="mx-auto grid max-w-md gap-5"
-              onSubmit={(e) => {
-                e.preventDefault();
-                void work(() =>
-                  signInWithEmailAndPassword(clientAuth(), email, password),
-                );
-              }}
-            >
-              <h1 className="font-serif text-4xl">Acessar meu espaço</h1>
-              <label className="text-sm">
-                E-mail <span className="text-red-600">*</span>
-                <input
-                  className={field}
-                  required
-                  type="email"
-                  autoComplete="username"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </label>
-              <label className="text-sm">
-                Senha <span className="text-red-600">*</span>
-                <input
-                  className={field}
-                  required
-                  type="password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </label>
-              <AdminButton type="submit" disabled={busy}>
-                Entrar
-              </AdminButton>
-              <AdminButton
-                variant="ghost"
-                disabled={busy || !email}
-                onClick={() =>
-                  void work(async () => {
-                    await sendPasswordResetEmail(clientAuth(), email);
-                    setNotice(
-                      "Se houver uma conta para este e-mail, você receberá as instruções de recuperação.",
-                    );
-                  })
-                }
-              >
-                Esqueci minha senha
-              </AdminButton>
-            </form>
-          ) : (
-            <>
-              <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-widest text-[var(--forever-primary,#5D613C)]">
-                    {superadmin ? "Painel MAGUI.studio" : "Seu espaço"}
-                  </p>
-                  <h1 className="mt-3 font-serif text-5xl">
-                    {superadmin ? "Casamentos" : "Meus casamentos"}
-                  </h1>
-                </div>
-                <div className="flex gap-3">
-                  <AdminButton
-                    variant="ghost"
-                    disabled={busy}
-                    onClick={() => void load()}
-                  >
-                    <RefreshCw size={16} />
-                    Atualizar
-                  </AdminButton>
-                  {superadmin && (
-                    <AdminButton onClick={() => void setAction("new-wedding")}>
-                      <Plus size={16} />
-                      Novo casamento
-                    </AdminButton>
-                  )}
-                </div>
-              </div>
-              <div className="grid gap-5 md:grid-cols-2">
-                {loading
-                  ? [0, 1].map((i) => (
-                      <SkeletonBlock key={i} className="h-52 w-full" />
-                    ))
-                  : weddings.map((wedding) => (
-                      <article
-                        key={wedding.slug}
-                        className="rounded-2xl bg-[#fffdfa] p-6"
-                      >
-                        <p className="text-xs text-[var(--forever-accent,#80654E)]">
-                          {
-                            {
-                              draft: "Rascunho",
-                              published: "Publicado",
-                              suspended: "Suspenso",
-                              archived: "Arquivado",
-                            }[wedding.status]
-                          }
-                        </p>
-                        <h2 className="mt-3 font-serif text-3xl">
-                          {wedding.config.couple.partner1} &amp;{" "}
-                          {wedding.config.couple.partner2}
-                        </h2>
-                        <p className="mt-2 break-all text-xs text-[var(--forever-accent,#80654E)]">
-                          forever.magui.studio/{wedding.slug}
-                        </p>
-                        <div className="mt-5 flex flex-wrap items-center gap-3">
-                          <Link
-                            className="rounded-xl bg-[var(--forever-primary,#5D613C)] px-5 py-3 text-sm text-white hover:bg-[#4b4f30]"
-                            href={"/" + wedding.slug + "/admin/dashboard"}
-                          >
-                            Gerenciar
-                          </Link>
-                          {superadmin&&<Link className="rounded-xl border border-[#5d613c30] px-5 py-3 text-sm text-[#5D613C] hover:bg-[#5d613c10]" href={"/studio/modules?wedding="+wedding.slug}>Módulos</Link>}
-                          {wedding.status === "published" && (
-                            <Link
-                              className="text-sm text-[var(--forever-primary,#5D613C)]"
-                              href={"/" + wedding.slug}
-                            >
-                              Ver site
-                            </Link>
-                          )}
-                          {superadmin && (
-                            <>
-                              <AdminButton
-                                variant="ghost"
-                                onClick={() =>
-                                  void work(async () => {
-                                    await api("PATCH", {
-                                      slug: wedding.slug,
-                                      status:
-                                        wedding.status === "suspended" ||
-                                        wedding.status === "archived"
-                                          ? "draft"
-                                          : "suspended",
-                                    });
-                                    await load();
-                                  })
-                                }
-                              >
-                                {wedding.status === "suspended" ||
-                                wedding.status === "archived"
-                                  ? "Restaurar rascunho"
-                                  : "Suspender"}
-                              </AdminButton>
-                              <AdminButton
-                                variant="ghost"
-                                disabled={wedding.status === "archived"}
-                                onClick={() =>
-                                  void work(async () => {
-                                    await api("PATCH", {
-                                      slug: wedding.slug,
-                                      status: "archived",
-                                    });
-                                    await load();
-                                  })
-                                }
-                              >
-                                Arquivar
-                              </AdminButton>
-                            </>
-                          )}
-                        </div>
-                      </article>
-                    ))}
-              </div>
-              {!loading && !weddings.length && (
-                <p className="py-10 text-center text-[var(--forever-accent,#80654E)]">
-                  Nenhum casamento vinculado à sua conta. Solicite o acesso à
-                  MAGUI.studio.
-                </p>
-              )}
-            </>
-          )}
-          {error && (
-            <p role="alert" className="mt-5 text-sm text-red-700">
-              {error}
-            </p>
-          )}
-          {notice && (
-            <p
-              role="status"
-              className="mt-5 text-sm text-[var(--forever-primary,#5D613C)]"
-            >
-              {notice}
-            </p>
-          )}
-        </section>
-      </AdminContainer>
+  const filtered=weddings.filter(wedding=>(wedding.config.couple.partner1+" "+wedding.config.couple.partner2+" "+wedding.slug).toLowerCase().includes(query.toLowerCase()));
+  return <StudioShell email={user?.email??undefined}>
+   {!ready||loading?<StudioLoading/>:<>
+    <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="text-[10px] font-medium uppercase tracking-[0.24em] text-[#77736c]">Administração interna</p><h1 className="mt-3 font-serif text-5xl leading-none sm:text-6xl">Histórias que começam aqui.</h1><p className="mt-4 text-sm text-[#77736c]">Gerencie os casamentos, os acessos e as funções de cada espaço.</p></div><div className="flex flex-wrap gap-2"><StudioButton variant="ghost" disabled={busy} onClick={()=>void load()}><RefreshCw size={16}/>Atualizar</StudioButton>{superadmin&&<StudioButton onClick={()=>void setAction("new-wedding")}><Plus size={16}/>Novo casamento</StudioButton>}</div></div>
+    <div className="my-8 grid gap-4 sm:grid-cols-3">{[{label:"Casamentos",value:weddings.length,Icon:Heart},{label:"Sites publicados",value:weddings.filter(item=>item.status==="published").length,Icon:Globe},{label:"Em preparação",value:weddings.filter(item=>item.status==="draft").length,Icon:FileText}].map(({label,value,Icon},index)=><article key={label} className={"relative overflow-hidden rounded-2xl border p-5 "+(index===0?"border-[#722F37] bg-[#722F37] text-white":"border-[#1616160d] bg-white text-[#161616]")}><Icon size={92} strokeWidth={1} aria-hidden="true" className="absolute -bottom-5 -right-3 opacity-[0.06]"/><p className="relative text-xs opacity-60">{label}</p><p className="relative mt-4 font-serif text-5xl">{value}</p></article>)}</div>
+    <section aria-label="Casamentos"><div className="mb-5 flex flex-wrap items-center justify-between gap-4"><h2 className="font-serif text-3xl">Seus casamentos</h2><label className="relative w-full sm:w-80"><Search size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#77736c]"/><input aria-label="Buscar casamentos" placeholder="Buscar casal ou endereço" value={query} onChange={event=>setQuery(event.target.value)} className="h-12 w-full rounded-xl border border-[#16161615] bg-white pr-4 pl-11 text-sm outline-none focus:border-[#722F37] focus:ring-2 focus:ring-[#722F3710]"/></label></div>
+     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{filtered.map(wedding=><article key={wedding.slug} className="group rounded-2xl border border-[#1616160d] bg-white p-5 transition-shadow hover:shadow-[0_8px_28px_#16161606] sm:p-6"><div className="flex items-center justify-between gap-3"><span className={"rounded-full px-3 py-1 text-[11px] "+(wedding.status==="published"?"bg-[#edf3ee] text-[#496451]":wedding.status==="suspended"?"bg-[#f9eee8] text-[#986343]":"bg-[#16161606] text-[#77736c]")}>{{draft:"Rascunho",published:"Publicado",suspended:"Suspenso",archived:"Arquivado"}[wedding.status]}</span><Heart size={19} strokeWidth={1} className="text-[#16161630]"/></div><h3 className="mt-5 font-serif text-3xl leading-tight">{wedding.config.couple.partner1} <span className="italic text-[#a39e95]">&</span> {wedding.config.couple.partner2}</h3><p className="mt-2 break-all text-xs text-[#77736c]">forever.magui.studio/{wedding.slug}</p><div className="mt-6 grid grid-cols-2 gap-2"><Link href={"/"+wedding.slug+"/admin/dashboard"} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#722F37] px-3 text-xs font-medium text-white transition-colors hover:bg-[#5B252C]">Abrir painel<ArrowUpRight size={14}/></Link><Link href={"/studio/modules?wedding="+wedding.slug} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#16161615] px-3 text-xs text-[#722F37] transition-colors hover:bg-[#722F3705]"><Layers3 size={14}/>Módulos</Link></div><div className="mt-4 flex flex-wrap items-center gap-1 border-t border-[#16161608] pt-3"><StudioButton variant="ghost" disabled={busy} className="min-h-9! px-2! text-xs!" onClick={()=>void work(async()=>{await api("PATCH",{slug:wedding.slug,status:["suspended","archived"].includes(wedding.status)?"draft":"suspended"});await load();})}>{["suspended","archived"].includes(wedding.status)?"Restaurar rascunho":"Suspender"}</StudioButton><StudioButton variant="ghost" disabled={busy||wedding.status==="archived"} className="min-h-9! px-2! text-xs!" onClick={()=>void work(async()=>{await api("PATCH",{slug:wedding.slug,status:"archived"});await load();})}>Arquivar</StudioButton><Link href={"/"+wedding.slug} target="_blank" rel="noopener noreferrer" className="ml-auto px-2 py-2 text-xs text-[#77736c] hover:text-[#722F37]">Ver site ↗</Link></div></article>)}</div>{!filtered.length&&<p className="rounded-2xl border border-dashed border-[#16161620] py-12 text-center text-sm text-[#77736c]">{query?"Nenhum casamento encontrado.":"Cadastre o primeiro casamento para começar."}</p>}
+    </section>
+   </>}
+   {error&&<p role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700">{error}</p>}{notice&&<p role="status" className="mt-5 text-sm text-[#62605b]">{notice}</p>}
       <AdminDialog
         open={superadmin && action === "new-wedding"}
         onClose={close}
@@ -388,11 +176,10 @@ export function PlatformPanel() {
               {error}
             </p>
           )}
-          <AdminButton type="submit" disabled={busy}>
+          <StudioButton type="submit" disabled={busy}>
             {busy ? "Criando…" : "Criar casamento"}
-          </AdminButton>
+          </StudioButton>
         </form>
       </AdminDialog>
-    </main>
-  );
+  </StudioShell>;
 }

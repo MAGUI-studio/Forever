@@ -223,6 +223,7 @@ export function AdminPanel({
     {id:"individuals", title:"Convites individuais", invitations:visible.filter(i => i.kind === "individual" || (!i.kind && i.guests.length === 1))},
   ];
   if (view === "dashboard" && (!ready || (!!user && loading && !authorized))) return <AdminLoading/>;
+  if(authorized&&section==="site"&&modules.siteEditor)return <VisualSiteEditor/>;
   return (
     <main className={"admin-wedding " + (!user ? "admin-wedding--login" : "")}>
       <div className="admin-background" aria-hidden="true">

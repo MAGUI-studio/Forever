@@ -8,7 +8,7 @@ import {useWedding} from "./WeddingProvider";
 import {formatCurrency} from "@/lib/utils";
 import type {GiftItem} from "@/types/wedding";
 import {PixModal} from "./PixModal";
-import {ArrowUpRight,Gift,Plus} from "lucide-react";
+import {ArrowUpRight,Plus} from "lucide-react";
 
 export function GiftList(){
  const copy=useSiteCopy();
@@ -45,26 +45,16 @@ export function GiftList(){
                 whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 viewport={{ once: true, margin: "-40px" }}
                 transition={{ duration: reduced ? 0 : 0.55, delay: reduced ? 0 : (index % 6) * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                className="cinema-gift group flex flex-col justify-between space-y-4"
+                className="gift-card group flex flex-col justify-between gap-6 rounded-[var(--wedding-radius)] border border-[#5d613c15] bg-[#fffdfa] p-6"
               >
                 <div className="space-y-3">
-
-                  {/* Foto com Zoom Suave */}
-                  <div className="relative rounded-t-[3.5rem] rounded-b-2xl aspect-[4/3] overflow-hidden bg-[#C7B79D]/15">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    {gift.image ? <img
-                      src={gift.image}
-                      alt={gift.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                    /> : <div className="flex h-full items-center justify-center text-[#5D613C]"><Gift size={48} strokeWidth={1} aria-hidden="true"/></div>}
-                  </div>
 
                   {/* Categoria & Título */}
                   <div className="space-y-1">
                     <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-[#5D613C] block font-semibold">
                       {gift.categoryLabel}
                     </span>
-                    <h4 className="font-serif text-xl sm:text-2xl font-light text-[#3D2501] line-clamp-2 group-hover:text-[#5D613C] transition-colors">
+                    <h4 className="font-serif text-xl sm:text-2xl font-light text-[#3D2501] group-hover:text-[#5D613C] transition-colors">
                       {gift.title}
                     </h4>
                     <p className="text-xs text-[#80654E] font-light line-clamp-2 leading-relaxed">
@@ -76,7 +66,7 @@ export function GiftList(){
                 {/* Preço e Botão */}
                 <div className="pt-3 flex items-baseline justify-between">
                   <span className="font-serif text-xl font-light text-[#80654E]">
-                    {gift.price ? formatCurrency(gift.price) : copy("gifts.text19")}
+                    {formatCurrency(gift.price??0)}
                   </span>
 
                   <button
