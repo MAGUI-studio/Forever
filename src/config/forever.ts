@@ -28,6 +28,7 @@ export function weddingPath(slug: string, path = "") {
   return "/" + slug + (path ? "/" + path.replace(/^\/+/, "") : "");
 }
 export const emptyWeddingConfig: WeddingConfig = {
+  sections: {gallery:true},
   couple: {
     partner1: "Primeira pessoa",
     partner2: "Segunda pessoa",

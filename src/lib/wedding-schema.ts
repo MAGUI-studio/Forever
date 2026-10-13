@@ -1,4 +1,5 @@
 import {templateIds,copyDefaults,fixedCopyKeys} from "@/config/templates/registry";
+import {MAX_GALLERY_PHOTOS} from "@/config/gallery";
 import { z } from "zod";
 import { validWeddingSlug } from "@/config/forever";
 const text = z.string().trim().max(500);
@@ -37,7 +38,9 @@ export const weddingConfigSchema = z
         rsvp: z.boolean().optional(),
       })
       .strict()
+      .transform(value=>({gallery:value.gallery??true}))
       .optional(),
+    galleryStyle: z.enum(["polaroid", "relicario", "varal", "filme", "mural", "editorial"]).transform(v => v === "editorial" ? "varal" : v).optional(),
     couple: z
       .object({
         partner1: z.string().trim().min(1).max(80),
@@ -73,7 +76,7 @@ export const weddingConfigSchema = z
           })
           .strict(),
       )
-      .max(100),
+      .max(MAX_GALLERY_PHOTOS,`A galeria permite no máximo ${MAX_GALLERY_PHOTOS} fotos.`),
     ceremony: location,
     party: location,
     dressCode: z

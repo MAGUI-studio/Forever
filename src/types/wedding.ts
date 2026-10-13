@@ -89,10 +89,13 @@ export interface RsvpConfig {
   contactWhatsApp: string;
 }
 
+export type GalleryStyle = "polaroid" | "relicario" | "varal" | "filme" | "mural";
+
 export interface WeddingConfig {
   giftPaymentLink?: string;
   copy?:Record<string,string>;
-  sections?: {gallery?:boolean;dressCode?:boolean;gifts?:boolean;rsvp?:boolean};
+  sections?: {gallery?:boolean};
+  galleryStyle?: GalleryStyle;
   couple: CoupleInfo;
   gallery: GalleryPhoto[];
   ceremony: EventLocation;

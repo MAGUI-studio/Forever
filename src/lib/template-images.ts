@@ -1,4 +1,5 @@
 import type { WeddingConfig } from "@/types/wedding";
+import { MAX_GALLERY_PHOTOS } from "@/config/gallery";
 
 /** Template artwork is fixed; gift images belong to the couple's catalog. */
 export function preserveTemplateImages<T extends WeddingConfig>(next: T, current: WeddingConfig) {
@@ -11,7 +12,7 @@ export function preserveTemplateImages<T extends WeddingConfig>(next: T, current
     },
     ceremony: {...next.ceremony, image: current.ceremony.image ?? ""},
     party: {...next.party, image: current.party.image ?? ""},
-    gallery: current.gallery,
+    gallery: current.gallery.slice(0,MAX_GALLERY_PHOTOS),
     dressCode: {...next.dressCode, gallery: current.dressCode.gallery},
   };
 }
