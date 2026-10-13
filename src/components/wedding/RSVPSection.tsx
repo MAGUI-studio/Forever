@@ -8,6 +8,7 @@ import { WeddingSelect } from "@/components/ui/WeddingSelect";
 import confetti from "canvas-confetti";
 import { WeddingOrnaments } from "./WeddingOrnaments";
 import {romanceAssets} from "@/config/templates/romance-assets";
+import {resolveTemplateImage} from "@/lib/template-images";
 import {RomancePhoto} from "./templates/RomanceMotion";
 import type { Attendance, RSVPSettings } from "@/types/guests";
 type PublicInvite = {
@@ -21,7 +22,8 @@ type PublicInvite = {
 };
 export function RSVPSection() {
   const copy=useSiteCopy();
- const {slug,modules,templateId}=useWedding();
+ const {slug,modules,templateId,config}=useWedding();
+ const rsvpImage=resolveTemplateImage(config,"contemporary-romance","rsvp");
  const romance=templateId==="contemporary-romance";
   const [code, setCode] = useState("");
   const [invite, setInvite] = useState<PublicInvite | null>(null);
@@ -135,7 +137,7 @@ export function RSVPSection() {
       <WeddingOrnaments variant="vows" tone="paper" />
       <div className={romance?"rsvp-shell relative z-10 w-full max-w-none! space-y-10 sm:space-y-12":"rsvp-shell relative z-10 mx-auto max-w-2xl space-y-8"}>
         <div className="text-center">
-          {romance&&<div className="relative mb-14"><RomancePhoto src={romanceAssets.rsvp} className="aspect-[2/1] rounded-t-[3rem] sm:aspect-[3/1] sm:rounded-t-[5rem]" sizes="100vw"/><span aria-hidden="true" className="absolute -bottom-7 left-1/2 flex size-16 -translate-x-1/2 items-center justify-center rounded-full border-[6px] border-[var(--forever-paper)] bg-[var(--forever-primary)] text-white"><EnvelopeOpenIcon size={25} weight="thin"/></span></div>}
+          {romance&&<div className="relative mb-14"><RomancePhoto src={rsvpImage} className="aspect-[2/1] rounded-t-[3rem] sm:aspect-[3/1] sm:rounded-t-[5rem]" sizes="100vw"/><span aria-hidden="true" className="absolute -bottom-7 left-1/2 flex size-16 -translate-x-1/2 items-center justify-center rounded-full border-[6px] border-[var(--forever-paper)] bg-[var(--forever-primary)] text-white"><EnvelopeOpenIcon size={25} weight="thin"/></span></div>}
           {!romance&&<span className="rsvp-emblem"><EnvelopeOpenIcon size={30} weight="duotone" aria-hidden="true" /></span>}<p className="cinema-eyebrow">{copy("rsvp.text1")}</p>
           <h2 className="font-serif text-5xl sm:text-7xl">{copy("rsvp.text2")}<em className="text-[var(--forever-primary,#5D613C)]">{copy("rsvp.text3")}</em>
           </h2>

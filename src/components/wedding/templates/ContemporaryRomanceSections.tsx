@@ -9,16 +9,19 @@ import {formatCurrency} from "@/lib/utils";
 import type {GiftItem} from "@/types/wedding";
 import {PixModal} from "../PixModal";
 import {romanceAssets} from "@/config/templates/romance-assets";
+import {resolveTemplateImage} from "@/lib/template-images";
 import {ContemporaryRomanceAccent,ContemporaryRomanceOrnaments} from "./ContemporaryRomanceOrnaments";
 import {RomanceFooterHearts} from "./RomanceFooterHearts";
 import {RomancePhoto,RomanceReveal} from "./RomanceMotion";
 
 export function ContemporaryRomanceDressCode(){
+ const {config}=useWedding();
  const copy=useSiteCopy();
+ const dressImage=resolveTemplateImage(config,"contemporary-romance","dress");
  return <section id="dress-code" className="relative isolate overflow-hidden px-6 py-20 sm:px-12 sm:py-32 lg:px-20">
   <ContemporaryRomanceOrnaments pattern="dress"/>
   <div className="relative mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-12 lg:gap-16">
-   <div className="relative lg:col-span-5 lg:col-start-1 lg:row-start-1"><RomancePhoto src={romanceAssets.dress} className="aspect-[4/5] w-[90%] grayscale"/><span aria-hidden="true" className="absolute -bottom-8 right-0 w-32 -rotate-12 text-[var(--forever-primary)]"><ContemporaryRomanceAccent/></span></div>
+   <div className="relative lg:col-span-5 lg:col-start-1 lg:row-start-1"><RomancePhoto src={dressImage} className="aspect-[4/5] w-[90%] grayscale"/><span aria-hidden="true" className="absolute -bottom-8 right-0 w-32 -rotate-12 text-[var(--forever-primary)]"><ContemporaryRomanceAccent/></span></div>
    <RomanceReveal className="lg:col-span-6 lg:col-start-7 lg:row-start-1"><p className="mb-6 text-[10px] uppercase tracking-[0.25em] text-[var(--forever-accent)]">{copy("romance.dress.eyebrow")}</p><h2 className="font-serif text-5xl font-light leading-[1.02] tracking-[-0.035em] sm:text-7xl">{copy("romance.dress.title")}</h2><p className="mt-8 max-w-xl font-serif text-2xl font-light leading-relaxed sm:text-3xl">{copy("romance.dress.description")}</p><div className="mt-10 flex items-start gap-4 border-t border-[var(--forever-primary)]/20 pt-7"><Heart aria-hidden="true" size={18} strokeWidth={1} className="mt-1 shrink-0 text-[var(--forever-primary)]"/><p className="max-w-md text-sm leading-7 text-[var(--forever-accent)]">{copy("romance.dress.note")}</p></div></RomanceReveal>
   </div>
  </section>;
@@ -43,8 +46,9 @@ export function ContemporaryRomanceGifts(){
 
 export function ContemporaryRomanceFooter(){
  const {config}=useWedding();const copy=useSiteCopy();
+ const footerImage=resolveTemplateImage(config,"contemporary-romance","footer");
  return <footer className="cinema-footer relative isolate overflow-hidden bg-[#32151C] px-6 pb-6 pt-20 text-white sm:px-12 sm:pt-28 lg:px-20">
-  <div aria-hidden="true" className="absolute inset-0 -z-20"><RomancePhoto src={romanceAssets.footer} className="h-full w-full" sizes="100vw"/></div><div aria-hidden="true" className="absolute inset-0 -z-10 bg-[#2A1119]/80"/><RomanceFooterHearts/>
+  <div aria-hidden="true" className="absolute inset-0 -z-20"><RomancePhoto src={footerImage} className="h-full w-full" sizes="100vw"/></div><div aria-hidden="true" className="absolute inset-0 -z-10 bg-[#2A1119]/80"/><RomanceFooterHearts/>
   <div className="relative mx-auto max-w-7xl"><RomanceReveal className="mx-auto py-12 text-center"><p className="mx-auto max-w-2xl font-serif text-4xl font-light italic leading-[1.12] tracking-[-0.025em] sm:text-6xl lg:text-7xl">{copy("romance.footer.message")}</p><p className="mt-12 font-serif text-[clamp(2.5rem,6.8vw,8rem)] font-light leading-[1.1] tracking-[-0.04em]">{config.couple.partner1} <span className="mx-2 italic text-white/55">&</span> {config.couple.partner2}</p>{config.couple.hashtag&&<p className="mt-4 text-[10px] uppercase tracking-[0.2em] text-white/60">{config.couple.hashtag}</p>}</RomanceReveal><div className="mt-10 flex flex-wrap items-center justify-between gap-5 border-t border-white/25 pt-6 text-[10px] tracking-wide text-white/70"><p>{config.couple.locationSummary}</p><button type="button" onClick={()=>window.scrollTo({top:0,behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"})} className="inline-flex min-h-11 items-center gap-3 text-white/85 transition-colors hover:text-white">Voltar ao início<ArrowUp size={14}/></button></div></div>
  </footer>;
 }

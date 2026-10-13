@@ -7,6 +7,7 @@ import { useScroll } from "framer-motion";
 import { ArrowUpRight, Heart, Navigation } from "lucide-react";
 import { WeddingOrnaments, WeddingBranch } from "./WeddingOrnaments";
 import {useWedding} from "./WeddingProvider";
+import { resolveTemplateImage } from "@/lib/template-images";
 
 export function Events() {
   const copy=useSiteCopy();
@@ -14,6 +15,7 @@ export function Events() {
   const section = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: section, offset: ["start end", "end start"] });
   const { ceremony } = weddingConfig;
+  const venueImage = resolveTemplateImage(weddingConfig, "botanical-classic", "venue");
 
   return (
     <section ref={section} id="eventos" className="cinematic-section relative overflow-hidden w-full pt-8 sm:pt-12 pb-16 sm:pb-24 px-6 sm:px-12 lg:px-20 bg-[#5D613C] text-[#F1F1F1] [&_a:focus-visible]:outline-[#F1F1F1] [&_button:focus-visible]:outline-[#F1F1F1] [&_[tabindex]:focus-visible]:outline-[#F1F1F1]">
@@ -31,7 +33,7 @@ export function Events() {
               className="relative w-full max-w-xl mx-auto rounded-t-[45%] rounded-b-[2rem] border border-[#C7B79D]/65 bg-white/5 p-3 sm:p-4 shadow-[0_24px_70px_-30px_#17130D80]">
               <div aria-hidden="true" className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[#C7B79D] z-10"><Heart size={20} strokeWidth={1.2} /></div>
               <div className="relative aspect-[4/5] w-full rounded-t-[45%] rounded-b-[1.5rem] overflow-hidden ring-1 ring-[#F1F1F1]/25 bg-[#C7B79D]/20">
-                <Image src={ceremony.image || "/detalhes/mesa.jpg"} unoptimized alt={ceremony.placeName} fill sizes="(min-width: 1024px) 42vw, 90vw" className="object-cover" />
+                <Image src={venueImage} unoptimized alt={ceremony.placeName} fill sizes="(min-width: 1024px) 42vw, 90vw" className="object-cover" />
               </div>
               <div aria-hidden="true" className="absolute -left-7 -bottom-3 w-16 sm:w-20 -rotate-[30deg] text-[#C7B79D] pointer-events-none z-10"><WeddingBranch /></div>
             </div>

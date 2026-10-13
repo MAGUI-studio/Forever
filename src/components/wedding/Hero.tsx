@@ -9,6 +9,7 @@ import {useWedding} from "./WeddingProvider";
 import { formatDateBR } from "@/lib/utils";
 import { WeddingOrnaments } from "./WeddingOrnaments";
 import { Countdown } from "./Countdown";
+import { resolveTemplateImage } from "@/lib/template-images";
 
 import { ArrowDown } from "lucide-react";
 
@@ -23,10 +24,11 @@ export function Hero() {
   const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
   const contentY = useTransform(scrollYProgress, [0, 1], [0, 65]);
   const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0.15]);
+  const heroImage = resolveTemplateImage(weddingConfig, "botanical-classic", "hero");
   return <section ref={section} id="inicio" className="relative w-full overflow-hidden bg-[#17130D] px-6 sm:px-12 lg:px-20 pt-8 sm:pt-12 pb-24 sm:pb-36 text-[#F1F1F1]">
     <motion.div style={reducedMotion ? undefined : { y: imageY, scale: imageScale }} className="absolute inset-x-0 -inset-y-[20%] origin-center">
       <Image unoptimized
-        src={couple.coverImage}
+        src={heroImage}
         alt=""
         fill
         preload
