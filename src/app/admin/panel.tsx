@@ -63,6 +63,7 @@ export function AdminPanel({
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState("Verificando seu acesso…");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => () => { if (copyTimer.current) clearTimeout(copyTimer.current); }, []);
@@ -121,13 +122,17 @@ export function AdminPanel({
     return result;
   }
   async function load(account = user) {
+    setLoadingMessage("Buscando os detalhes do seu casamento…");
     const session = await api("/api/admin/session", "GET", undefined, account);
     setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(session.wedding.modules??{});setTemplateId(session.wedding.templateId??"botanical-classic");
     const enabled=resolveModules(session.wedding.modules);
     if(sectionModule[section]&&!enabled[sectionModule[section]!]){setLoading(false);router.replace(weddingPath("admin/dashboard"));return;}
     const reception = session.role === "reception";
+    if (enabled.guestList) setLoadingMessage("Carregando sua lista de convidados…");
     const list = enabled.guestList?await api(reception || section === "check-in" ? "/api/admin/reception" : "/api/admin/invites", "GET", undefined, account):{invitations:[]};
+    if (!reception && enabled.rsvp) setLoadingMessage("Buscando as configurações de confirmação de presença…");
     const config = reception||!enabled.rsvp ? null : await api("/api/admin/settings", "GET", undefined, account);
+    if (!reception) setLoadingMessage("Carregando a organização do grande dia…");
     const operations = reception ? list : await api("/api/admin/operations", "GET", undefined, account);
     setRole(session.role); setTables(operations.tables); setInvites(list.invitations);
     if(config) setSettings(config.settings);
@@ -223,7 +228,7 @@ export function AdminPanel({
     {id:"groups", title:"Famílias e grupos", invitations:visible.filter(i => i.kind === "group" || (!i.kind && i.guests.length > 1))},
     {id:"individuals", title:"Convites individuais", invitations:visible.filter(i => i.kind === "individual" || (!i.kind && i.guests.length === 1))},
   ];
-  if (view === "dashboard" && (!ready || (!!user && loading && !authorized))) return <AdminLoading/>;
+  if (view === "dashboard" && (!ready || (!!user && loading && !authorized))) return <AdminLoading description={!ready ? "Verificando seu acesso…" : loadingMessage}/>;
   if(authorized&&section==="site"&&modules.siteEditor)return <VisualSiteEditor/>;
   return (
     <main className={"admin-wedding " + (!user ? "admin-wedding--login" : "")}>

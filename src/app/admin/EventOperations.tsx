@@ -170,7 +170,7 @@ export function EventOperations({
     (row) => !onlyRestrictions || row.restriction?.trim(),
   );
   const pending = loading || pageLoading;
-  if (pending) return <AdminLoading/>;
+  if (pending) return <AdminLoading description={`Carregando ${titles[section].toLocaleLowerCase("pt-BR")}…`}/>;
   return (
     <AdminContainer variant="content">
       <AdminPageHeading
