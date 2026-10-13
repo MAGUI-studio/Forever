@@ -51,3 +51,29 @@ Background artwork belongs to the selected template. The botanical branches, flo
 ### SEO and link previews
 
 `src/lib/seo.ts` defines the production origin, canonical URLs, Open Graph and Twitter cards. All share cards use `public/SEO/og-image.png` (1200 × 630). Public wedding pages generate couple-specific titles and descriptions; confirmation links never expose guest names or invitation tokens in metadata. Private pages declare noindex for both general crawlers and Googlebot. `robots.txt` advertises `sitemap.xml`, which lists only the home page and published wedding slugs. Drafts, suspended weddings, archived weddings, admin routes and RSVP URLs are excluded. JSON-LD identifies the Forever website and MAGUI.studio publisher; wedding pages have WebPage data. New public routes should call `pageMetadata` with their own path, and private routes must set `index: false`. The image becomes available on the production URL after deployment.
+
+
+### Independent site templates
+
+`botanical-classic` remains the fallback for existing weddings. New weddings start with `contemporary-romance` (Romance contemporâneo). Each template has its own page composition, section list, editable copy and ornament/loading components. Romance adds a day schedule and its own animated countdown cards, and does not use the botanical envelope transition; attire, gifts, venue and footer use separate layouts. RSVP retains the shared authenticated invitation workflow with template-specific presentation.
+
+The editor exposes only fields belonging to the selected template. Switching preserves authored content and gift data, fills missing or empty text from the destination defaults, and replaces inherited source defaults. The save API applies the same fallback. Switching does not publish until Save changes is used. Artwork is fixed, and the shared external payment link remains mandatory for nonempty catalogs.
+
+Romance photography is bundled as optimized WebP artwork under `public/templates/contemporary-romance`, generated exclusively for this template with the built-in image generation tool. The immutable `romance-assets.ts` manifest supplies the public site and live preview. Photographs are decorative template artwork, independent of the couple's image fields. Hearts, bows and sparkles replace the original geometric emblem. Photo parallax and reveals honor reduced-motion preferences; no background gradients are added.
+
+Romance now bundles eight exclusive photographs, with a different asset for each image placement. Eight section-specific background compositions use sixteen distinct hand-drawn motifs: silk, stars, letters, linked hearts, garlands, bells, glasses, confetti, bows, pearls, presents, arrows, envelopes, keys, moon and rings. Source prompts are documented in `public/templates/contemporary-romance/ARTWORK.md`.
+
+The Romance hero has no navigation/header, fits the couple names onto one line and uses a narrower headline. Its countdown uses animated paper cards. The full-width heart garland is a separate divider before the venue; the small corner garland, moon and flowing silk motifs have been removed. RSVP cards align to their content height instead of stretching to the adjacent photo/text column.
+
+### Couple gallery
+
+Couples can choose from five distinct gallery styles via the "Estilo da galeria" select in the site editor:
+- `polaroid` (Polaroid Clássica): tilted handmade paper frames without captions and soft levelling hover.
+- `relicario` (Relicário Romântico): keepsake album with arch and oval frames, satin bows, heart emblems, and floating hearts.
+- `varal` (Varal de Fotos): suspended string with miniature wooden clothespins and glowing fairy lights.
+- `filme` (Película Vintage): 35mm photo booth strips with retro sprockets and nostalgic timestamps.
+- `mural` (Mural Afetivo): scrapbook memory wall with pastel washi tape strips and gentle shadows.
+
+Styles can be used across any template. Default styles fallback naturally (`polaroid` for Botanical Classic, `relicario` for Contemporary Romance). All styles share `GalleryLightbox` for full-screen viewing. `src/config/gallery.ts` defines `MAX_GALLERY_PHOTOS` (6), which also limits the schema, editor and stored data. Until couples can upload photos, six bundled placeholders under `public/gallery/placeholders` are shown when `config.gallery` is empty.
+
+The gallery is the only section that can be hidden. It is shown by default: `galleryEnabled` hides it only when `config.sections.gallery` is explicitly `false`. The editor toggle "Exibir galeria no site" (section "Galeria do casal") controls it, and the schema drops any other section flags.

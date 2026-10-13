@@ -463,6 +463,7 @@ async function check(title, work) {
     assert.equal((await platform.POST(request("POST",payload))).status,403);
     process.env.MAGUI_ADMIN_UIDS="bride";
     assert.equal((await platform.POST(request("POST",payload))).status,201);
+    assert.equal(store.get("weddings/new-couple").templateId,"contemporary-romance");
     assert.equal((await platform.POST(request("POST",payload))).status,409);
     process.env.MAGUI_ADMIN_UIDS="";
     const own=request("GET",null,"managed");own.headers.set("x-wedding-slug","new-couple");assert.equal((await admin.GET(own)).status,200);
@@ -530,6 +531,18 @@ async function check(title, work) {
     store.set("weddings/test-couple",{...original,modules:{siteEditor:false}});assert.equal((await site.GET(request("GET"))).status,403);
     store.set("weddings/test-couple",original);
   });
+  await check("templates têm seções próprias e a troca preserva conteúdo personalizado",async()=>{
+    const {templateIds,templateSections,templateCopyFields,switchTemplateCopy,siteCopy,defaultTemplateId}=load("src/config/templates/registry.ts");
+    assert.equal(defaultTemplateId,"botanical-classic");assert(templateIds.includes("contemporary-romance"));
+    assert(templateSections["contemporary-romance"].includes("schedule"));assert(!templateSections["botanical-classic"].includes("schedule"));assert(templateSections["contemporary-romance"].includes("countdown"));
+    assert(!templateCopyFields("contemporary-romance").some(field=>field.key.startsWith("dressCode.")));assert(!templateCopyFields("botanical-classic").some(field=>field.key.startsWith("romance.")));
+    const copy={"hero.text2":"Nosso texto","rsvp.text4":siteCopy(undefined,"rsvp.text4"),"romance.dress.note":""};
+    const next=switchTemplateCopy(copy,"botanical-classic","contemporary-romance");assert.equal(next["hero.text2"],"Nosso texto");assert(next["romance.dress.note"]);assert.equal(next["rsvp.text4"],siteCopy(undefined,"rsvp.text4","contemporary-romance"));assert.notEqual(next["rsvp.text4"],copy["rsvp.text4"]);
+    const site=load("src/app/api/admin/site/route.ts"),{emptyWeddingConfig}=load("src/config/forever.ts");const original=clone(store.get("weddings/test-couple"));
+    try{store.set("weddings/test-couple",{...original,siteRevision:0,config:clone(emptyWeddingConfig)});const config={...clone(emptyWeddingConfig),copy:{"rsvp.text4":"Minha mensagem"},couple:{...emptyWeddingConfig.couple,partner1:"Ana",partner2:"Pedro",weddingDate:"2027-10-10T12:00:00-03:00"},ceremony:{...emptyWeddingConfig.ceremony,placeName:"Salão"}};
+    assert.equal((await site.PUT(request("PUT",{action:"publish",config,templateId:"contemporary-romance",expectedRevision:0}))).status,200);const saved=store.get("weddings/test-couple");assert.equal(saved.templateId,"contemporary-romance");assert.equal(saved.config.copy["rsvp.text4"],"Minha mensagem");assert(saved.config.copy["romance.schedule.title"]);assert.deepEqual(saved.config.gifts,config.gifts);
+    }finally{store.set("weddings/test-couple",original);}
+  });
   await check("textos de ações e regras do RSVP permanecem fixos",async()=>{
     const {copyFields,copyDefaults,siteCopy}=load("src/config/templates/registry.ts");
     const {weddingConfigSchema}=load("src/lib/wedding-schema.ts"),{emptyWeddingConfig}=load("src/config/forever.ts");
@@ -554,6 +567,25 @@ async function check(title, work) {
     const current=clone(emptyWeddingConfig);current.couple.coverImage="/fixed-cover.jpg";current.ceremony.image="/fixed-venue.jpg";
     const next=clone(current);next.couple.coverImage="/changed.jpg";next.ceremony.image="/changed-venue.jpg";next.gifts=[{id:"one",title:"Presente",price:10,category:"Casa",categoryLabel:"Casa",image:"/gift.jpg"}];
     const saved=preserveTemplateImages(next,current);assert.equal(saved.couple.coverImage,current.couple.coverImage);assert.equal(saved.ceremony.image,current.ceremony.image);assert.equal(saved.gifts[0].image,"/gift.jpg");
+  });
+  await check("galeria permite até 6 fotos e é a única seção ocultável",async()=>{
+    const {galleryPhotos,placeholderGallery,MAX_GALLERY_PHOTOS}=load("src/config/gallery.ts"),{emptyWeddingConfig}=load("src/config/forever.ts"),{weddingConfigSchema}=load("src/lib/wedding-schema.ts"),{templateSections,templateCopyFields}=load("src/config/templates/registry.ts");
+    assert.equal(MAX_GALLERY_PHOTOS,6);assert.equal(placeholderGallery.length,6);assert.equal(galleryPhotos(emptyWeddingConfig).length,6);assert.equal(emptyWeddingConfig.sections.gallery,true);{const {galleryEnabled}=load("src/config/gallery.ts");assert(galleryEnabled({}));assert(galleryEnabled({sections:{}}));assert(!galleryEnabled({sections:{gallery:false}}));}for(const photo of placeholderGallery)assert(fs.existsSync("public"+photo.url));
+    const ten={...clone(emptyWeddingConfig),gallery:clone(placeholderGallery)};assert(weddingConfigSchema.safeParse(ten).success);assert(!weddingConfigSchema.safeParse({...ten,gallery:[...ten.gallery,{...ten.gallery[0],id:"seventh"}]}).success);assert.equal(galleryPhotos({...ten,gallery:[...ten.gallery,...ten.gallery]}).length,6);
+    assert.deepEqual(weddingConfigSchema.parse({...ten,sections:{gallery:true,dressCode:false,gifts:false,rsvp:false}}).sections,{gallery:true});
+    for(const id of ["botanical-classic","contemporary-romance"]){assert(templateSections[id].includes("gallery"));assert(templateCopyFields(id).some(field=>field.section==="gallery"));}
+    const {galleryStyles,resolveGalleryStyle}=load("src/config/gallery.ts");
+    assert.deepEqual(galleryStyles.map(s=>s.value),["polaroid","relicario","varal","filme","mural"]);
+    assert.equal(resolveGalleryStyle({},"botanical-classic"),"polaroid");
+    assert.equal(resolveGalleryStyle({},"contemporary-romance"),"relicario");
+    assert.equal(resolveGalleryStyle({galleryStyle:"filme"}),"filme");
+    assert(weddingConfigSchema.safeParse({...ten,galleryStyle:"varal"}).success);
+    assert(!weddingConfigSchema.safeParse({...ten,galleryStyle:"invalido"}).success);
+    const site=load("src/app/api/admin/site/route.ts"),original=clone(store.get("weddings/test-couple"));
+    try{store.set("weddings/test-couple",{...original,siteRevision:0,config:ten});const config={...ten,sections:{gallery:true},galleryStyle:"mural",couple:{...ten.couple,partner1:"Ana",partner2:"Pedro",weddingDate:"2027-10-10T12:00:00-03:00"},ceremony:{...ten.ceremony,placeName:"Salão"}};
+      assert.equal((await site.PUT(request("PUT",{action:"publish",config,templateId:"botanical-classic",expectedRevision:0}))).status,200);assert.equal(store.get("weddings/test-couple").config.sections.gallery,true);assert.equal(store.get("weddings/test-couple").config.galleryStyle,"mural");
+      assert.equal((await site.PUT(request("PUT",{action:"publish",config:{...config,sections:{gallery:false},galleryStyle:"filme"},templateId:"contemporary-romance",expectedRevision:1}))).status,200);const saved=store.get("weddings/test-couple");assert.equal(saved.config.sections.gallery,false);assert.equal(saved.config.galleryStyle,"filme");assert.deepEqual(saved.config.gallery,ten.gallery);
+    }finally{store.set("weddings/test-couple",original);}
   });
   await check("SEO usa URLs públicas, imagem OG real e protege páginas privadas",async()=>{
     const {pageMetadata,weddingMetadata,jsonLd,SEO_ORIGIN,SEO_IMAGE}=load("src/lib/seo.ts");
