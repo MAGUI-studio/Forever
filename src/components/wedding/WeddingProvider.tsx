@@ -1,4 +1,5 @@
 "use client";
+import {templatePalettes,weddingThemeStyle} from "@/config/templates/theme";
 import {defaultTemplateId,type TemplateId} from "@/config/templates/registry";
 import {resolveModules,type WeddingModules} from "@/config/modules";
 import {
@@ -65,14 +66,9 @@ export function WeddingProvider({
   const [current, setConfig] = useState(config);
   const [currentTheme, setTheme] = useState(theme);
   const path=useCallback((path="")=>weddingPath(slug,path),[slug]);
-  const colors = themes[currentTheme];
-  const themeStyle = {
-    "--forever-primary": colors.primary,
-    "--forever-ink": colors.ink,
-    "--forever-accent": colors.accent,
-    "--forever-sand": colors.sand,
-    "--forever-paper": "var(--page-background, #F1F1F1)",
-  } as CSSProperties;
+  const activeTemplate=preview?templateId:selectedTemplate;
+  const colors=activeTemplate==="contemporary-romance"?templatePalettes[activeTemplate]:{...themes[currentTheme],hover:currentTheme==="botanical"?"#4b4f30":`color-mix(in srgb, ${themes[currentTheme].primary} 80%, black)`};
+  const themeStyle=weddingThemeStyle(colors);
   return (
     <WeddingContext.Provider
       value={{

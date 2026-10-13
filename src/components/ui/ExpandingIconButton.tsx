@@ -62,7 +62,7 @@ export function ExpandingIconButton({
       {...props}
       type={type}
       className={
-        "group/expanding inline-flex min-h-[42px] min-w-[42px] w-auto shrink-0 cursor-pointer items-center justify-center gap-0 rounded-[var(--wedding-radius,12px)] border-0 bg-transparent px-3 py-2.5 text-xs text-[var(--forever-primary,#5D613C)] transition-colors duration-200 enabled:hover:bg-[#edf0e3] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--forever-primary,#5D613C)] disabled:cursor-not-allowed disabled:opacity-45 [&>svg]:shrink-0 [&>svg]:transition-transform [&>svg]:duration-[550ms] [&>svg]:ease-[cubic-bezier(.4,0,.2,1)] hover:[&>svg]:-translate-y-px motion-reduce:[&>svg]:transition-none " +
+        "group/expanding inline-flex min-h-[42px] min-w-[42px] w-auto shrink-0 cursor-pointer items-center justify-center gap-0 rounded-[var(--wedding-radius,12px)] border-0 bg-transparent px-3 py-2.5 text-xs text-[var(--forever-primary,#5D613C)] transition-colors duration-200 enabled:hover:bg-[var(--forever-hover-tint,#edf0e3)] focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-[var(--forever-primary,#5D613C)] disabled:cursor-not-allowed disabled:opacity-45 [&>svg]:shrink-0 [&>svg]:transition-transform [&>svg]:duration-[550ms] [&>svg]:ease-[cubic-bezier(.4,0,.2,1)] hover:[&>svg]:-translate-y-px motion-reduce:[&>svg]:transition-none " +
         className
       }
       data-expanded={group ? group.expanded.has(id) : expanded}

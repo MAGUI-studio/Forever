@@ -7,6 +7,8 @@ import { EnvelopeOpenIcon, CheckCircleIcon, PaperPlaneTiltIcon, UsersIcon, Caret
 import { WeddingSelect } from "@/components/ui/WeddingSelect";
 import confetti from "canvas-confetti";
 import { WeddingOrnaments } from "./WeddingOrnaments";
+import {romanceAssets} from "@/config/templates/romance-assets";
+import {RomancePhoto} from "./templates/RomanceMotion";
 import type { Attendance, RSVPSettings } from "@/types/guests";
 type PublicInvite = {
   personal?: boolean;
@@ -19,7 +21,8 @@ type PublicInvite = {
 };
 export function RSVPSection() {
   const copy=useSiteCopy();
- const {slug,modules}=useWedding();
+ const {slug,modules,templateId}=useWedding();
+ const romance=templateId==="contemporary-romance";
   const [code, setCode] = useState("");
   const [invite, setInvite] = useState<PublicInvite | null>(null);
   const [settings, setSettings] = useState<RSVPSettings>({
@@ -130,15 +133,16 @@ export function RSVPSection() {
       className="rsvp-section relative overflow-hidden bg-none! px-6 py-20 text-[var(--forever-ink,#3D2501)]"
     >
       <WeddingOrnaments variant="vows" tone="paper" />
-      <div className="rsvp-shell relative z-10 mx-auto max-w-2xl space-y-8">
+      <div className={romance?"rsvp-shell relative z-10 w-full max-w-none! space-y-10 sm:space-y-12":"rsvp-shell relative z-10 mx-auto max-w-2xl space-y-8"}>
         <div className="text-center">
-          <span className="rsvp-emblem"><EnvelopeOpenIcon size={30} weight="duotone" aria-hidden="true" /></span><p className="cinema-eyebrow">{copy("rsvp.text1")}</p>
+          {romance&&<div className="relative mb-14"><RomancePhoto src={romanceAssets.rsvp} className="aspect-[2/1] rounded-t-[3rem] sm:aspect-[3/1] sm:rounded-t-[5rem]" sizes="100vw"/><span aria-hidden="true" className="absolute -bottom-7 left-1/2 flex size-16 -translate-x-1/2 items-center justify-center rounded-full border-[6px] border-[var(--forever-paper)] bg-[var(--forever-primary)] text-white"><EnvelopeOpenIcon size={25} weight="thin"/></span></div>}
+          {!romance&&<span className="rsvp-emblem"><EnvelopeOpenIcon size={30} weight="duotone" aria-hidden="true" /></span>}<p className="cinema-eyebrow">{copy("rsvp.text1")}</p>
           <h2 className="font-serif text-5xl sm:text-7xl">{copy("rsvp.text2")}<em className="text-[var(--forever-primary,#5D613C)]">{copy("rsvp.text3")}</em>
           </h2>
-          <p className="mt-5 text-[var(--forever-accent,#80654E)]">{copy("rsvp.text4")}</p>
+          <p className={(romance?"mx-auto max-w-xl leading-7 ":"")+"mt-5 text-[var(--forever-accent,#80654E)]"}>{copy("rsvp.text4")}</p>
           {!invite && !busy && <p className="mt-5 text-[var(--forever-accent,#80654E)]">{copy("rsvp.text5")}</p>}
         </div>
-        <div className="rsvp-card">
+        <div className={romance?"rsvp-card w-full rounded-2xl! border-0! bg-transparent! p-6! shadow-none! sm:p-8! [&_.guest-input]:rounded-xl! [&_.guest-button]:rounded-xl! [&_.guest-button]:text-white! [&_.rsvp-person]:rounded-xl! [&_.rsvp-person]:border-[var(--forever-primary)]/20! [&_.rsvp-person]:bg-transparent!":"rsvp-card"}>
           {!invite && <form onSubmit={lookup} className="space-y-4">
             <label className="block text-sm" htmlFor="invite-code">{copy("rsvp.text6")}</label>
             <input

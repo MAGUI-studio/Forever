@@ -40,6 +40,7 @@ import {
 import {
   WeddingOrnaments,
   WeddingBranch,
+  WeddingLoadingIcon,
 } from "@/components/wedding/WeddingOrnaments";
 import {
   onAuthStateChanged,
@@ -56,7 +57,7 @@ export function AdminPanel({
   view: "entry" | "login" | "dashboard";
   section?: "site" | "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
 }) {
-  const {slug,config:weddingConfig,setConfig,setTheme,modules,setModules,setTemplateId,path:weddingPath}=useWedding();
+  const {slug,config:weddingConfig,setConfig,setTheme,modules,setModules,setTemplateId,themeStyle,path:weddingPath}=useWedding();
   const router = useRouter();
   const [modalState, setModalState] = useAdminModal();
   const [user, setUser] = useState<User | null>(null);
@@ -239,11 +240,11 @@ export function AdminPanel({
               {weddingConfig.couple.partner1} <em>&</em> {weddingConfig.couple.partner2}<span>O nosso grande dia</span>
             </Link>
             <div className="hidden! lg:flex! order-last flex w-full items-center justify-center gap-2 lg:order-none lg:w-auto lg:flex-1" aria-label="Seções do painel">
-              {role === "admin" && modules.guestList && <Link href={weddingPath("admin/guests")} aria-current={section === "guests" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "guests" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><Users size={16} aria-hidden="true" />Lista de convidados</Link>}
-              {modules.checkIn&&<Link href={weddingPath("admin/check-in")} aria-current={section === "check-in" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "check-in" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><CheckIcon size={16} aria-hidden="true" />Controle de chegada</Link>}
-              {role === "admin" && modules.organization && ["tables","buffet","history","team"].some(key=>modules[sectionModule[key]!]) && <DropdownMenu.Root><DropdownMenu.Trigger className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs text-[var(--forever-primary,#5D613C)] hover:bg-[#5d613c10]">Organização<CaretDownIcon size={14} /></DropdownMenu.Trigger><DropdownMenu.Portal><DropdownMenu.Content sideOffset={8} className="z-50 min-w-48 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-2 shadow-lg">{[{href:"tables",label:"Mesas e lugares"},{href:"buffet",label:"Alimentação e buffet"},{href:"history",label:"Histórico de alterações"},{href:"team",label:"Equipe da recepção"}].filter(item=>modules[sectionModule[item.href]!]).map(item=><DropdownMenu.Item asChild key={item.href}><Link className="block rounded-lg px-4 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none hover:bg-[#5d613c10] focus:bg-[#5d613c10]" href={weddingPath("admin/"+item.href)}>{item.label}</Link></DropdownMenu.Item>)}</DropdownMenu.Content></DropdownMenu.Portal></DropdownMenu.Root>}
+              {role === "admin" && modules.guestList && <Link href={weddingPath("admin/guests")} aria-current={section === "guests" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] " + (section === "guests" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><Users size={16} aria-hidden="true" />Lista de convidados</Link>}
+              {modules.checkIn&&<Link href={weddingPath("admin/check-in")} aria-current={section === "check-in" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] " + (section === "check-in" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><CheckIcon size={16} aria-hidden="true" />Controle de chegada</Link>}
+              {role === "admin" && modules.organization && ["tables","buffet","history","team"].some(key=>modules[sectionModule[key]!]) && <DropdownMenu.Root><DropdownMenu.Trigger className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs text-[var(--forever-primary,#5D613C)] hover:bg-[var(--forever-hover-tint,#5d613c10)]">Organização<CaretDownIcon size={14} /></DropdownMenu.Trigger><DropdownMenu.Portal><DropdownMenu.Content style={themeStyle} sideOffset={8} className="z-50 min-w-48 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-2 shadow-lg">{[{href:"tables",label:"Mesas e lugares"},{href:"buffet",label:"Alimentação e buffet"},{href:"history",label:"Histórico de alterações"},{href:"team",label:"Equipe da recepção"}].filter(item=>modules[sectionModule[item.href]!]).map(item=><DropdownMenu.Item asChild key={item.href}><Link className="block rounded-lg px-4 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none hover:bg-[var(--forever-hover-tint,#5d613c10)] focus:bg-[var(--forever-hover-tint,#5d613c10)]" href={weddingPath("admin/"+item.href)}>{item.label}</Link></DropdownMenu.Item>)}</DropdownMenu.Content></DropdownMenu.Portal></DropdownMenu.Root>}
             </div>
-            <Link href={weddingPath()} target="_blank" rel="noopener noreferrer" className="hidden min-h-11 shrink-0 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[#5d613c10] lg:inline-flex"><ArrowUpRight size={16} aria-hidden="true"/>Ver site</Link>
+            <Link href={weddingPath()} target="_blank" rel="noopener noreferrer" className="hidden min-h-11 shrink-0 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] lg:inline-flex"><ArrowUpRight size={16} aria-hidden="true"/>Ver site</Link>
             <div className="hidden lg:block">
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild><button type="button" className="admin-profile-trigger" aria-label="Abrir menu da conta"><span className="admin-account-avatar" aria-hidden="true">{user.email?.slice(0,1).toUpperCase() || "G"}</span><span className="admin-profile-name">{user.displayName || user.email}</span><CaretDownIcon size={13} aria-hidden="true" /></button></DropdownMenu.Trigger>
@@ -277,7 +278,7 @@ export function AdminPanel({
           </AdminContainer>
 
         )}
-        {authorized && section === "overview" && role === "admin" && modules.siteEditor && <section className="relative mb-6 overflow-hidden rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-6 sm:p-8"><div className="pointer-events-none absolute -right-5 -bottom-8 text-[#5d613c10]" aria-hidden="true"><Flower2 size={180} strokeWidth={1}/></div><div className="relative flex flex-wrap items-center justify-between gap-6"><div className="max-w-xl"><p className="admin-eyebrow">Do seu jeito</p><h2 className="mt-2 font-serif text-3xl text-[var(--forever-ink,#3D2501)]">Seu site</h2><p className="mt-3 text-sm leading-relaxed text-[var(--forever-accent,#80654E)]">Escolha o template, personalize os textos e acompanhe cada alteração na prévia antes de publicar.</p></div><Link href={weddingPath("admin/site")} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--wedding-radius)] bg-[var(--forever-primary,#5D613C)] px-5 py-3 text-sm font-medium text-[#fffdfa] transition-colors hover:bg-[var(--forever-primary-hover,#4e5232)]"><PencilSimpleIcon size={18}/>Personalizar site</Link></div></section>}
+        {authorized && section === "overview" && role === "admin" && modules.siteEditor && <section className="relative mb-6 overflow-hidden rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-6 sm:p-8"><div className="pointer-events-none absolute -right-5 -bottom-8 text-[#5d613c10]" aria-hidden="true"><span className="block w-44"><WeddingBranch/></span></div><div className="relative flex flex-wrap items-center justify-between gap-6"><div className="max-w-xl"><p className="admin-eyebrow">Do seu jeito</p><h2 className="mt-2 font-serif text-3xl text-[var(--forever-ink,#3D2501)]">Seu site</h2><p className="mt-3 text-sm leading-relaxed text-[var(--forever-accent,#80654E)]">Escolha o template, personalize os textos e acompanhe cada alteração na prévia antes de publicar.</p></div><Link href={weddingPath("admin/site")} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--wedding-radius)] bg-[var(--forever-primary,#5D613C)] px-5 py-3 text-sm font-medium text-[#fffdfa] transition-colors hover:bg-[var(--forever-primary-hover,#4e5232)]"><PencilSimpleIcon size={18}/>Personalizar site</Link></div></section>}
         {error && !(authorized && modalState.modal) && (
           <p role="alert" className="admin-alert admin-alert--error">
             {error}
@@ -285,7 +286,7 @@ export function AdminPanel({
         )}
         {!ready || view !== (user ? "dashboard" : "login") ? (
           <div className="admin-loading" role="status">
-            <Flower2 aria-hidden="true" strokeWidth={1} />
+            <WeddingLoadingIcon />
             <p>Preparando nosso espaço…</p>
           </div>
         ) : !user ? (
@@ -425,10 +426,10 @@ export function AdminPanel({
                       <Search size={19} className="shrink-0" aria-hidden="true" />
                       <input aria-label="Buscar convidados" className="h-12 w-full min-w-0 rounded-lg bg-transparent text-sm text-[var(--forever-ink,#3D2501)] border-0! outline-none! ring-0! shadow-none! placeholder:text-[#8a887b] focus:outline-none! focus-visible:outline-none!" placeholder="Buscar nome, família ou grupo" value={query} onChange={event => setQuery(event.target.value)} />
                     </label>
-                    <WeddingSelect label="Filtrar situação" className="h-12! min-h-12! border! border-[#5d613c30]! bg-[#fffdfa]! px-3! text-sm! shadow-none! focus-visible:border-[#5d613c70]!" value={filter} onValueChange={setFilter} options={[{value:"todos",label:"Todos os convites"},{value:"pendente",label:"Com pendentes"},{value:"confirmado",label:"Com confirmados"},{value:"recusado",label:"Com recusas"},{value:"abertos",label:"Convites abertos"},{value:"nao-respondidos",label:"Com respostas pendentes"},{value:"respondidos",label:"Totalmente respondidos"},{value:"enviados",label:"Convites enviados"},{value:"nao-enviados",label:"Ainda não enviados"},{value:"inativos",label:"Inativos"}].filter(option=>modules.invitationTracking||!["abertos","enviados","nao-enviados","nao-respondidos","respondidos"].includes(option.value))} />
+                    <WeddingSelect label="Filtrar situação" className="h-12! min-h-12! border! border-[#5d613c30]! bg-[#fffdfa]! px-3! text-sm! shadow-none! focus-visible:border-[var(--forever-hover-border,#5d613c70)]!" value={filter} onValueChange={setFilter} options={[{value:"todos",label:"Todos os convites"},{value:"pendente",label:"Com pendentes"},{value:"confirmado",label:"Com confirmados"},{value:"recusado",label:"Com recusas"},{value:"abertos",label:"Convites abertos"},{value:"nao-respondidos",label:"Com respostas pendentes"},{value:"respondidos",label:"Totalmente respondidos"},{value:"enviados",label:"Convites enviados"},{value:"nao-enviados",label:"Ainda não enviados"},{value:"inativos",label:"Inativos"}].filter(option=>modules.invitationTracking||!["abertos","enviados","nao-enviados","nao-respondidos","respondidos"].includes(option.value))} />
                   </div>
                   <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
-                    <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[#5d613c0d] disabled:opacity-50" disabled={busy} onClick={() => void action(async () => {await load();})}>
+                    <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[var(--forever-hover-tint,#5d613c0d)] disabled:opacity-50" disabled={busy} onClick={() => void action(async () => {await load();})}>
                       <RefreshCw size={16} aria-hidden="true" className={busy ? "animate-spin" : ""} />Atualizar
                     </button>
                     <AdminButton disabled={busy} onClick={() => open()}><Plus size={17} aria-hidden="true" />Adicionar convite</AdminButton>
@@ -445,11 +446,7 @@ export function AdminPanel({
                   {!authorized && loading ? <DashboardSkeleton /> : visible.length === 0 && (
                     <div className="admin-empty">
                       <span className="admin-empty-icon">
-                        <Flower2
-                          size={34}
-                          strokeWidth={0.8}
-                          aria-hidden="true"
-                        />
+                        <WeddingLoadingIcon />
                       </span>
                       <h3>
                         {query || filter !== "todos"
@@ -476,7 +473,7 @@ export function AdminPanel({
                   {invitationSections.filter(section => section.invitations.length > 0).map(section => (
                     <section key={section.id} className="space-y-5">
                       <SectionDivider title={section.title} count={section.invitations.length} actions={
-                        <button type="button" className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--wedding-radius)] px-2 text-xs transition-colors hover:bg-[#5d613c10] focus-visible:outline-2 focus-visible:outline-[var(--forever-primary,#5D613C)]" onClick={() => setCollapsed(current => {
+                        <button type="button" className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--wedding-radius)] px-2 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] focus-visible:outline-2 focus-visible:outline-[var(--forever-primary,#5D613C)]" onClick={() => setCollapsed(current => {
                           const allExpanded = section.invitations.every(invite => !current[invite.id]);
                           return {...current, ...Object.fromEntries(section.invitations.map(invite => [invite.id, allExpanded]))};
                         })}>

@@ -10,7 +10,7 @@ export function Story() {
   const {config:weddingConfig,path}=useWedding();
   const story = weddingConfig.couple.story;
   const moments=story?.moments??[copy("story.text6"),copy("story.text7"),copy("story.text8")];
-  if (!story?.enabled) return null;
+  if (!story) return null;
   return (
     <section id="historia" aria-label={copy("story.text1")} className="cinematic-section relative overflow-hidden z-10 bg-[var(--page-background,#F1F1F1)] text-[#3D2501] px-6 sm:px-12 lg:px-20 py-24 sm:py-28">
       <WeddingOrnaments variant="floral" tone="paper" />

@@ -51,10 +51,8 @@ export function WeddingPreview() {
       ) : wedding ? (
         <WeddingProvider
           slug={slug}
-          config={{
-            ...wedding.config,
-            sections: { ...wedding.config.sections, rsvp: false },
-          }}
+          config={wedding.config}
+          templateId={wedding.templateId}
           theme={wedding.theme} modules={wedding.modules}
         >
           <WeddingSite />

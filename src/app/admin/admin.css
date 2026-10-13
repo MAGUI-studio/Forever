@@ -305,7 +305,7 @@
   color: #fffdfb;
 }
 .admin-wedding .guest-button:hover:not(:disabled) {
-  background: #44492c;
+  background: var(--forever-primary-hover,#44492c);
   transform: translateY(-1px);
 }
 .admin-wedding .guest-secondary {
@@ -1539,7 +1539,7 @@
 @media(max-width:900px){.admin-nav .admin-session{width:100%;border-top:1px solid #c7b79d40;padding-top:18px}.admin-nav .admin-account{margin-right:auto}}
 @media(max-width:480px){.admin-nav .admin-account{width:100%;flex-basis:100%}.admin-nav .admin-session .guest-secondary{flex:1}}
 
-.admin-profile-trigger{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:#697046;border-radius:var(--wedding-radius);padding:5px;background:#f8f7ef;border:1px solid #d9d7c6;flex-shrink:0}.admin-profile-trigger .admin-account-avatar{width:34px;height:34px;font-size:22px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:#eaeddc}.admin-profile-trigger:focus-visible{outline:2px solid #858b65;outline-offset:3px}.admin-profile-menu{z-index:260;min-width:240px;max-width:calc(100vw - 32px);padding:7px;border-radius:var(--wedding-radius);background:#fffdf9;border:1px solid #e3dccf;box-shadow:0 14px 45px #3d25011c;animation:admin-modal-fade .16s ease-out}.admin-profile-label{padding:12px 10px;color:#6c724c;font-size:11px}.admin-profile-label span{display:block;margin-top:7px;color:var(--forever-accent,#80654e);overflow-wrap:anywhere;font-size:12px}.admin-profile-separator{height:1px;background:#e9e2d5;margin:4px 0}.admin-profile-item{display:flex;gap:9px;align-items:center;padding:12px 10px;color:#8c4a4c;font-size:12px;border-radius:var(--wedding-radius);cursor:pointer;outline:none}.admin-profile-item[data-highlighted]{background:#f9eded}.admin-profile-item[data-disabled]{opacity:.4;cursor:not-allowed}.admin-toolbar .admin-toolbar-refresh{flex-shrink:0;white-space:nowrap;min-height:48px;padding:12px 14px;font-size:11px}@media(max-width:600px){.admin-toolbar .admin-toolbar-refresh{width:100%}}
+.admin-profile-trigger{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:#697046;border-radius:var(--wedding-radius);padding:5px;background:#f8f7ef;border:1px solid #d9d7c6;flex-shrink:0}.admin-profile-trigger .admin-account-avatar{width:34px;height:34px;font-size:22px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:#eaeddc}.admin-profile-trigger:focus-visible{outline:2px solid var(--forever-focus,#858b65);outline-offset:3px}.admin-profile-menu{z-index:260;min-width:240px;max-width:calc(100vw - 32px);padding:7px;border-radius:var(--wedding-radius);background:#fffdf9;border:1px solid #e3dccf;box-shadow:0 14px 45px #3d25011c;animation:admin-modal-fade .16s ease-out}.admin-profile-label{padding:12px 10px;color:#6c724c;font-size:11px}.admin-profile-label span{display:block;margin-top:7px;color:var(--forever-accent,#80654e);overflow-wrap:anywhere;font-size:12px}.admin-profile-separator{height:1px;background:#e9e2d5;margin:4px 0}.admin-profile-item{display:flex;gap:9px;align-items:center;padding:12px 10px;color:#8c4a4c;font-size:12px;border-radius:var(--wedding-radius);cursor:pointer;outline:none}.admin-profile-item[data-highlighted]{background:#f9eded}.admin-profile-item[data-disabled]{opacity:.4;cursor:not-allowed}.admin-toolbar .admin-toolbar-refresh{flex-shrink:0;white-space:nowrap;min-height:48px;padding:12px 14px;font-size:11px}@media(max-width:600px){.admin-toolbar .admin-toolbar-refresh{width:100%}}
 
 .admin-profile-trigger{background:transparent;border:0;padding:0;gap:10px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:transparent;color:var(--forever-ink,#3d2501)}.admin-profile-name{font-size:11px;color:#66563e;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:480px){.admin-profile-name{max-width:150px}.admin-nav .admin-back{margin-left:0}.admin-profile-trigger{margin-left:auto}}
 
@@ -1581,7 +1581,7 @@
 .admin-guest-accordion .admin-person-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; width:100%; }
 .admin-guest-accordion .admin-person-actions .admin-action { width:100%; justify-content:center; border:1px solid #5d613c30; background:transparent; box-shadow:none; color:var(--forever-primary,#5D613C); transition:background-color .2s,color .2s; }
 .admin-guest-accordion .admin-person-actions .admin-action:hover:not(:disabled),
-.admin-guest-quick-actions .admin-action-icon:hover:not(:disabled) { background:#edf0e3; color:#3f5628; }
+.admin-guest-quick-actions .admin-action-icon:hover:not(:disabled) { background:var(--forever-hover-tint,#edf0e3); color:var(--forever-primary-hover,#3f5628); }
 @media(max-width:540px) {
   .admin-guest-legend { align-items:flex-start; flex-direction:column; gap:12px; }
   .admin-guest-accordion .admin-person-actions { grid-template-columns:1fr; }
@@ -1597,8 +1597,8 @@
 }
 .admin-invite-actions .admin-action:hover:not(:disabled),
 .admin-guest-accordion .admin-person-actions .admin-action:hover:not(:disabled) {
-  background:#edf0e3;
-  border-color:#5d613c60;
+  background:var(--forever-hover-tint,#edf0e3);
+  border-color:var(--forever-hover-border,#5d613c60);
   color:var(--forever-primary,#5D613C);
 }
 
@@ -1614,7 +1614,7 @@
 
 .admin-guest-quick-actions .admin-action-icon { width:auto; min-width:42px; height:42px; padding:10px 12px; border:1px solid #5d613c30; background:transparent; gap:0; }
 .admin-guest-quick-actions .admin-action-icon:hover,
-.admin-guest-quick-actions .admin-action-icon:active { border:1px solid #5d613c60; background:#edf0e3; }
+.admin-guest-quick-actions .admin-action-icon:active { border:1px solid var(--forever-hover-border,#5d613c60); background:var(--forever-hover-tint,#edf0e3); }
 .admin-guest-quick-actions .admin-action-icon>svg { flex-shrink:0; }
 @media(max-width:600px) {
   .admin-guest-accordion summary { display:grid; grid-template-columns:minmax(0,1fr) auto 18px; gap:14px 10px; padding:20px 0; }

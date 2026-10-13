@@ -24,7 +24,7 @@ export function GiftListEditor({gifts,paymentLink,onGiftsChange,onPaymentLinkCha
       <p className="mt-3 text-xs leading-relaxed text-[#80654E]">Crie no Mercado Pago ou em outro provedor um link sem valor fixo e sem prazo de validade. Todos os presentes usarão esse link, e o convidado informará o valor ao pagar.</p>
       <p className="mt-2 text-xs leading-relaxed text-[#80654E]">Você administra os recebimentos e as taxas diretamente no provedor.</p>
     </div>
-    <details className="group/gift-list rounded-[var(--wedding-radius)] border border-[#5d613c20]"><summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5D613C] [&::-webkit-details-marker]:hidden">
+    <details className="group/gift-list rounded-[var(--wedding-radius)] border border-[#5d613c20]"><summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--forever-focus,#5D613C)] [&::-webkit-details-marker]:hidden">
       <div><p className="text-[10px] uppercase tracking-[0.2em] text-[#80654E]">Escolhidos com carinho</p><h2 className="mt-2 font-serif text-2xl text-[#3D2501]">Lista de presentes</h2></div>
       <span className="flex shrink-0 items-center gap-2"><span className="inline-flex items-center gap-2 rounded-full bg-[#5d613c08] px-3 py-2 text-xs text-[#5D613C]"><Gift size={14}/>{gifts.length} {gifts.length===1?"presente":"presentes"}</span><ChevronDown size={17} className="text-[#5D613C] transition-transform duration-300 group-open/gift-list:rotate-180" aria-hidden="true"/></span>
     </summary><div className="space-y-5 border-t border-[#5d613c15] p-4">

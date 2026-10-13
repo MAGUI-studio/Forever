@@ -68,11 +68,11 @@ export function PageCurtainLoader() {
           <div aria-hidden="true" className="wedding-loader-left absolute inset-y-0 left-0 w-[50.5%] bg-[var(--page-background,#F1F1F1)] z-10" />
           <div aria-hidden="true" className="wedding-loader-right absolute inset-y-0 right-0 w-[50.5%] bg-[var(--page-background,#F1F1F1)] z-10" />
           <div aria-hidden="true" className="wedding-loader-logo relative z-20 px-6 text-center font-serif text-4xl sm:text-6xl md:text-7xl font-light tracking-tight leading-none select-none">
-            <div className="text-[#3D2501]/20">
+            <div className="text-[var(--forever-ink,#3D2501)]/20">
               <span>{couple.partner1}</span><span className="italic px-3">&amp;</span><span>{couple.partner2}</span>
             </div>
-            <div ref={fill} className="absolute inset-0 px-6 text-[#3D2501]" style={{ clipPath: "inset(0 100% 0 0)" }}>
-              <span>{couple.partner1}</span><span className="italic px-3 text-[#80654E]">&amp;</span><span>{couple.partner2}</span>
+            <div ref={fill} className="absolute inset-0 px-6 text-[var(--forever-ink,#3D2501)]" style={{ clipPath: "inset(0 100% 0 0)" }}>
+              <span>{couple.partner1}</span><span className="italic px-3 text-[var(--forever-accent,#80654E)]">&amp;</span><span>{couple.partner2}</span>
             </div>
           </div>
         </div>

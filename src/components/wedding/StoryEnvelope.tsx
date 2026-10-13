@@ -28,7 +28,7 @@ export function StoryEnvelope() {
       const bottomGroup = root.current?.querySelector<HTMLElement>("[data-envelope-bottom]");
       const content = root.current?.querySelector<HTMLElement>("[data-story-content]");
       const panels = gsap.utils.toArray<HTMLElement>("[data-story-panel]", root.current);
-      if (!hero || !story || !bottom || !bottomGroup || !content || !root.current) return;
+      if (!hero || !story || !bottom || !bottomGroup || !content || !root.current || !panels.length) return;
 
       if (!context.conditions?.desktop) {
         panels.forEach(panel => gsap.from(panel, { y: 30, opacity: 0, duration: 1.2, scrollTrigger: { trigger: panel, start: "top 88%", once: true } }));
