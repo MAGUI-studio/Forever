@@ -1,4 +1,5 @@
 "use client";
+import {defaultTemplateId,type TemplateId} from "@/config/templates/registry";
 import {resolveModules,type WeddingModules} from "@/config/modules";
 import {
   createContext,
@@ -36,6 +37,7 @@ const themes = {
 };
 const WeddingContext = createContext<{
   slug: string;
+  templateId:TemplateId;setTemplateId:(id:TemplateId)=>void;preview:boolean;
   modules:WeddingModules;
   setModules:(modules:Partial<WeddingModules>)=>void;
   config: WeddingConfig;
@@ -48,17 +50,18 @@ export function WeddingProvider({
   slug,
   config = emptyWeddingConfig,
   theme = "botanical",
-  modules,
+  modules,templateId=defaultTemplateId,preview=false,
   children,
 }: {
   slug: string;
   config?: WeddingConfig;
   theme?: WeddingTheme;
-  modules?:Partial<WeddingModules>;
+  modules?:Partial<WeddingModules>;templateId?:TemplateId;preview?:boolean;
   children: ReactNode;
 }) {
   const [enabledModules,updateModules]=useState(()=>resolveModules(modules));
   const setModules=useCallback((value:Partial<WeddingModules>)=>updateModules(resolveModules(value)),[]);
+  const [selectedTemplate,setTemplateId]=useState(templateId);
   const [current, setConfig] = useState(config);
   const [currentTheme, setTheme] = useState(theme);
   const path=useCallback((path="")=>weddingPath(slug,path),[slug]);
@@ -75,7 +78,8 @@ export function WeddingProvider({
       value={{
         slug,
         modules:enabledModules,setModules,
-        config: current,
+        config: preview?config:current,
+        templateId:preview?templateId:selectedTemplate,setTemplateId,preview,
         setConfig,
         setTheme,
         themeStyle,

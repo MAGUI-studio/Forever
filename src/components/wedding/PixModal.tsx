@@ -1,42 +1,23 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { QRCodeSVG } from "qrcode.react";
+import {useEffect,useRef} from "react";
 import {useWedding} from "./WeddingProvider";
-import { generatePixPayload } from "@/lib/pix";
-import { formatCurrency } from "@/lib/utils";
-import { GiftItem } from "@/types/wedding";
-import { X, CreditCard, QrCode } from "lucide-react";
+import {formatCurrency} from "@/lib/utils";
+import type {GiftItem} from "@/types/wedding";
+import {ExternalLink,Gift,X} from "lucide-react";
+
+/** Gifts always use the couple's single external, open-amount payment link. */
 export function PixModal({gift,customAmount,onClose}:{gift:GiftItem|null;customAmount?:number|null;onClose:()=>void}) {
-  const {config:weddingConfig,path}=useWedding();
-  const [tab,setTab]=useState<"pix"|"card">("pix");
-  const [notice,setNotice]=useState("");
-  const dialog=useRef<HTMLDialogElement>(null);
-  useEffect(()=>{ const el=dialog.current; el?.showModal(); return ()=>el?.close(); },[]);
-  const {pix,creditCard}=weddingConfig;
-  const amount=customAmount ?? gift?.price ?? 0;
-  // Fixed-price gifts require their own links; a generic link must not claim to charge this amount.
-  const candidate=creditCard?.enabled ? (gift ? gift.creditCardUrl : creditCard.defaultPaymentLink) : undefined;
-  const cardUrl=candidate && /^https:\/\/[^\s]+$/i.test(candidate) ? candidate : undefined;
-  const payload=pix.key && amount>0 ? generatePixPayload({pixKey:pix.key,receiverName:pix.receiverName,city:pix.city,amount,description:(gift?.title ?? "Presente").slice(0,25)}) : "";
-  return <dialog ref={dialog} onCancel={onClose} onClick={e=>{if(e.target===e.currentTarget)onClose();}} className="m-auto w-[calc(100%-2rem)] max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl p-0 bg-[#F1F1F1] text-[#3D2501] backdrop:bg-black/70">
-    <div className="p-6 sm:p-8 space-y-6">
-      <div className="flex justify-between gap-4"><div><p className="text-xs tracking-widest uppercase text-[#5D613C]">Presentear os noivos</p><h3 className="font-serif text-3xl mt-2">{gift?.title ?? "Cota livre"}</h3><p className="font-serif text-3xl mt-2">{formatCurrency(amount)}</p></div><button onClick={onClose} aria-label="Fechar"><X/></button></div>
-      <div className="grid grid-cols-2 gap-2" role="group" aria-label="Forma de pagamento">
-        <button aria-pressed={tab==="pix"} onClick={()=>setTab("pix")} className="border border-[#C7B79D] rounded-full p-3 flex justify-center gap-2"><QrCode size={18}/>PIX</button>
-        <button aria-pressed={tab==="card"} onClick={()=>setTab("card")} className="border border-[#C7B79D] rounded-full p-3 flex justify-center gap-2"><CreditCard size={18}/>Cartão</button>
-      </div>
-      {tab==="pix" ? payload ? <div className="space-y-5 text-center">
-        <QRCodeSVG value={payload} size={180} marginSize={4} className="mx-auto"/>
-        <p className="text-sm">Titular: {pix.receiverName}</p>
-        <button className="bg-[#3D2501] text-[#F5F5DA] rounded-full py-3 px-6" onClick={async()=>{try{await navigator.clipboard.writeText(payload);setNotice("Código PIX copiado.");}catch{setNotice("Não foi possível copiar. Selecione o código abaixo.");}}}>Copiar código PIX</button>
-        <textarea readOnly aria-label="Código PIX" value={payload} className="guest-input text-xs"/>
-        <p role="status">{notice}</p>
-      </div> : <p className="text-[#80654E] leading-relaxed">O PIX estará disponível em breve. Os dados de recebimento ainda estão sendo preparados pelos noivos.</p> : cardUrl ? <div className="space-y-5">
-        <p className="text-[#80654E] text-sm leading-relaxed">Continue no checkout do {creditCard?.providerName}. Confira o valor, o titular, as taxas e as condições de parcelamento antes de pagar.</p>
-        <a href={cardUrl} target="_blank" rel="noopener noreferrer" className="block text-center bg-[#3D2501] text-[#F5F5DA] rounded-full py-4">{gift ? "Pagar " + formatCurrency(amount) + " no cartão" : "Continuar no checkout"}</a>
-        {!gift && <p className="text-sm text-[#80654E]">Informe ou confira o valor escolhido no checkout. O valor digitado aqui não é enviado automaticamente ao provedor.</p>}
-      </div> : <p className="text-[#80654E] leading-relaxed">O pagamento com cartão estará disponível em breve. Estamos preparando o link deste presente.</p>}
-      <p className="text-xs text-[#80654E] border-t border-[#C7B79D] pt-4">Os presentes são cotas simbólicas. Sua presença é o nosso maior presente.</p>
-    </div>
-  </dialog>;
+ const {config}=useWedding();
+ const dialog=useRef<HTMLDialogElement>(null);
+ useEffect(()=>{const element=dialog.current;element?.showModal();return ()=>element?.close();},[]);
+ const amount=customAmount??gift?.price;
+ const link=config.giftPaymentLink;
+ const validLink=link&&/^https:\/\/[^\s]+$/i.test(link)?link:undefined;
+ return <dialog id="pagamento-presente" ref={dialog} onCancel={onClose} onClick={event=>{if(event.target===event.currentTarget)onClose();}} className="m-auto w-[calc(100%-2rem)] max-w-lg max-h-[90vh] overflow-y-auto rounded-[var(--wedding-radius)] bg-[#fffdfa] p-6 text-[#3D2501] backdrop:bg-black/60 sm:p-8">
+  <header className="flex items-start justify-between gap-4"><div><Gift size={24} strokeWidth={1} className="mb-4 text-[#5D613C]"/><p className="text-[10px] uppercase tracking-[0.2em] text-[#80654E]">Um presente com carinho</p><h3 className="mt-2 font-serif text-3xl">{gift?.title||"Presente de valor livre"}</h3></div><button type="button" aria-label="Fechar" onClick={onClose} className="rounded-full p-2 text-[#80654E] hover:bg-[#5d613c08]"><X size={20}/></button></header>
+  {amount!==undefined&&amount>0&&<div className="mt-6 rounded-[var(--wedding-radius)] bg-[#5d613c08] p-4"><p className="text-xs text-[#80654E]">Valor sugerido para este presente</p><p className="mt-1 font-serif text-3xl text-[#5D613C]">{formatCurrency(amount)}</p></div>}
+  <p className="my-6 text-sm leading-relaxed text-[#80654E]">Você será direcionado para o link de pagamento dos noivos. Informe {amount!==undefined&&amount>0?formatCurrency(amount):"o valor desejado"} na página de pagamento e escolha uma das formas disponíveis.</p>
+  {validLink?<a href={validLink} target="_blank" rel="noopener noreferrer" className="flex min-h-12 items-center justify-center gap-2 rounded-[var(--wedding-radius)] bg-[#5D613C] px-5 py-3 text-sm text-white transition-colors hover:bg-[#4b4f30]">Ir para o pagamento<ExternalLink size={16}/></a>:<p role="status" className="rounded-xl bg-[#5d613c08] p-4 text-sm text-[#80654E]">O link de pagamento ainda não foi configurado pelos noivos.</p>}
+  <p className="mt-4 text-xs leading-relaxed text-[#80654E]">O pagamento é realizado diretamente no provedor escolhido pelos noivos.</p>
+ </dialog>;
 }

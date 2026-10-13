@@ -1,4 +1,5 @@
 "use client";
+import {useSiteCopy} from "./useSiteCopy";
 import {useWedding} from "./WeddingProvider";
 import { AttendanceBadge } from "@/components/ui/AttendanceBadge";
 import { useEffect, useState } from "react";
@@ -17,6 +18,7 @@ type PublicInvite = {
   dietaryRestrictions: string;
 };
 export function RSVPSection() {
+  const copy=useSiteCopy();
  const {slug,modules}=useWedding();
   const [code, setCode] = useState("");
   const [invite, setInvite] = useState<PublicInvite | null>(null);
@@ -34,7 +36,7 @@ export function RSVPSection() {
       const value = window.location.hash.slice(1);
       if (/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(value)) {
         setCode(value); setBusy(true); setError("");
-        fetch("/api/rsvp/lookup", {method:"POST",headers:{"Content-Type":"application/json","x-wedding-slug":slug},body:JSON.stringify({token:value})}).then(async response => { const result = await response.json(); if (!response.ok) throw new Error(result.error); if (!active) return; setInvite(result.invitation);setSettings(result.settings);setClosed(!result.settings.enabled || (!!result.settings.deadline && Date.now() > Date.parse(result.settings.deadline))); }).catch(e => {if(active) setError(e.message || "Não foi possível consultar o convite.");}).finally(() => {if(active) setBusy(false);});
+        fetch("/api/rsvp/lookup", {method:"POST",headers:{"Content-Type":"application/json","x-wedding-slug":slug},body:JSON.stringify({token:value})}).then(async response => { const result = await response.json(); if (!response.ok) throw new Error(result.error); if (!active) return; setInvite(result.invitation);setSettings(result.settings);setClosed(!result.settings.enabled || (!!result.settings.deadline && Date.now() > Date.parse(result.settings.deadline))); }).catch(e => {if(active) setError(e.message || copy("rsvp.text25"));}).finally(() => {if(active) setBusy(false);});
       }
     };
     window.addEventListener("hashchange", syncHash);
@@ -45,7 +47,7 @@ export function RSVPSection() {
   async function lookup(event: React.FormEvent) {
     event.preventDefault();
     const token = code.trim().toLowerCase();
-    if (!/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(token)) {setError("Esse código parece incompleto ou inválido. Copie o código completo do convite enviado por os noivos, sem espaços, ou abra o link que você recebeu."); return;}
+    if (!/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(token)) {setError(copy("rsvp.text26")); return;}
     setBusy(true);
     setError("");
     setSaved(false);
@@ -57,7 +59,7 @@ export function RSVPSection() {
         body: JSON.stringify({ token: code.trim().toLowerCase() }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(response.status === 404 ? "Não encontramos um convite ativo com esse código. Confira se você copiou o código completo ou use o link recebido. Se continuar sem conseguir, fale com os noivos." : response.status === 400 ? "Não foi possível reconhecer esse código. Copie o código completo do convite ou abra o link enviado pelos noivos." : result.error);
+      if (!response.ok) throw new Error(response.status === 404 ? copy("rsvp.text27") : response.status === 400 ? copy("rsvp.text28") : result.error);
       setCode(token);
       window.history.replaceState(window.history.state, "", window.location.pathname + window.location.search + "#" + token);
       setInvite(result.invitation);
@@ -71,7 +73,7 @@ export function RSVPSection() {
       setError(
         e instanceof Error
           ? e.message
-          : "Não foi possível consultar o convite.",
+          : copy("rsvp.text25"),
       );
     } finally {
       setBusy(false);
@@ -84,7 +86,7 @@ export function RSVPSection() {
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     if (!invite) return;
-    if (invite.guests.some(g => g.status === "pendente")) {setError("Escolha uma resposta para cada pessoa do convite."); return;}
+    if (invite.guests.some(g => g.status === "pendente")) {setError(copy("rsvp.text29")); return;}
     setBusy(true);
     setError("");
     setSaved(false);
@@ -116,7 +118,7 @@ export function RSVPSection() {
       setError(
         e instanceof Error
           ? e.message
-          : "Não foi possível salvar. Tente novamente.",
+          : copy("rsvp.text30"),
       );
     } finally {
       setBusy(false);
@@ -125,28 +127,20 @@ export function RSVPSection() {
   return (
     <section
       id="rsvp"
-      className="rsvp-section relative overflow-hidden px-6 py-20 text-[var(--forever-ink,#3D2501)]"
+      className="rsvp-section relative overflow-hidden bg-none! px-6 py-20 text-[var(--forever-ink,#3D2501)]"
     >
       <WeddingOrnaments variant="vows" tone="paper" />
       <div className="rsvp-shell relative z-10 mx-auto max-w-2xl space-y-8">
         <div className="text-center">
-          <span className="rsvp-emblem"><EnvelopeOpenIcon size={30} weight="duotone" aria-hidden="true" /></span><p className="cinema-eyebrow">Um lugar especial para você</p>
-          <h2 className="font-serif text-5xl sm:text-7xl">
-            Confirmação de <em className="text-[var(--forever-primary,#5D613C)]">presença</em>
+          <span className="rsvp-emblem"><EnvelopeOpenIcon size={30} weight="duotone" aria-hidden="true" /></span><p className="cinema-eyebrow">{copy("rsvp.text1")}</p>
+          <h2 className="font-serif text-5xl sm:text-7xl">{copy("rsvp.text2")}<em className="text-[var(--forever-primary,#5D613C)]">{copy("rsvp.text3")}</em>
           </h2>
-          <p className="mt-5 text-[var(--forever-accent,#80654E)]">
-            Que alegria ter você fazendo parte da nossa história! Estamos
-            preparando esse dia com muito carinho e esperamos celebrar ao seu lado.
-          </p>
-          {!invite && !busy && <p className="mt-5 text-[var(--forever-accent,#80654E)]">
-            Informe o código enviado com o convite.
-          </p>}
+          <p className="mt-5 text-[var(--forever-accent,#80654E)]">{copy("rsvp.text4")}</p>
+          {!invite && !busy && <p className="mt-5 text-[var(--forever-accent,#80654E)]">{copy("rsvp.text5")}</p>}
         </div>
         <div className="rsvp-card">
           {!invite && <form onSubmit={lookup} className="space-y-4">
-            <label className="block text-sm" htmlFor="invite-code">
-              Código do convite
-            </label>
+            <label className="block text-sm" htmlFor="invite-code">{copy("rsvp.text6")}</label>
             <input
               id="invite-code"
               aria-invalid={!!error}
@@ -162,13 +156,13 @@ export function RSVPSection() {
               }}
               className="guest-input"
               disabled={busy}
-              placeholder="Cole aqui o código do seu convite"
+              placeholder={copy("rsvp.text7")}
             />
             <button className="guest-button w-full" disabled={busy}>
-              {busy ? "Aguarde…" : "Consultar convite"}
+              {busy ? "Aguarde…" : copy("rsvp.text31")}
             </button>
           </form>}
-          {busy && !invite && <div className="rsvp-loading" role="status"><span className="wedding-skeleton" /><span className="wedding-skeleton" /><p>Preparando seu convite…</p></div>}
+          {busy && !invite && <div className="rsvp-loading" role="status"><span className="wedding-skeleton" /><span className="wedding-skeleton" /><p>{copy("rsvp.text8")}</p></div>}
           {error && (
             <p
               role="alert"
@@ -183,53 +177,45 @@ export function RSVPSection() {
               role="status"
               className="mt-5 mb-6 rounded-xl bg-green-50 p-4 text-green-800"
             >
-              <CheckCircleIcon size={22} className="inline mr-2" aria-hidden="true" />Resposta salva! Obrigado pelo carinho. Você pode revisar sua
-              resposta até o encerramento das confirmações.
-            </p>
+              <CheckCircleIcon size={22} className="inline mr-2" aria-hidden="true" />{copy("rsvp.text9")}</p>
           )}
           {invite && (
             <form onSubmit={submit} className="rsvp-response space-y-6">
               <div>
-                <button type="button" className="rsvp-change" disabled={busy} onClick={() => {setInvite(null);setCode("");setSaved(false);setError("");if (/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(window.location.hash.slice(1))) window.history.replaceState(null,"",window.location.pathname + window.location.search);}}>Consultar outro convite</button><p className="rsvp-card-eyebrow"><UsersIcon size={16} aria-hidden="true" /> Seu convite</p><h3 className="font-serif text-3xl">{invite.label}</h3>
+                <button type="button" className="rsvp-change" disabled={busy} onClick={() => {setInvite(null);setCode("");setSaved(false);setError("");if (/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(window.location.hash.slice(1))) window.history.replaceState(null,"",window.location.pathname + window.location.search);}}>{copy("rsvp.text10")}</button><p className="rsvp-card-eyebrow"><UsersIcon size={16} aria-hidden="true" />{copy("rsvp.text11")}</p><h3 className="font-serif text-3xl">{invite.label}</h3>
                 {settings.deadline && (
-                  <p className="mt-2 text-sm">
-                    Prazo:{" "}
+                  <p className="mt-2 text-sm">{copy("rsvp.text12")}{" "}
                     {new Date(settings.deadline).toLocaleString("pt-BR", {
                       timeZone: "America/Sao_Paulo",
-                    })}{" "}
-                    (Brasília).
-                  </p>
+                    })}{" "}{copy("rsvp.text13")}</p>
                 )}
               </div>
               {closed ? (
-                <p role="status">
-                  As confirmações estão encerradas. Para alterações, fale com os
-                  noivos.
-                </p>
+                <p role="status">{copy("rsvp.text14")}</p>
               ) : (
                 <fieldset disabled={busy} className="space-y-5">
                   {invite.guests.map((g) => (
                     <details key={g.id} className="rsvp-guest-accordion" open={invite.guests.length === 1 ? true : undefined}>
-                      <summary><span>{g.name}</span><span className="rsvp-guest-summary-status"><AttendanceBadge status={g.status} label={g.status === "confirmado" ? "Presença confirmada" : g.status === "recusado" ? "Não comparecerá" : "Aguardando resposta"} /><CaretDownIcon className="rsvp-accordion-caret" size={18} aria-hidden="true" /></span></summary>
+                      <summary><span>{g.name}</span><span className="rsvp-guest-summary-status"><AttendanceBadge status={g.status} label={g.status === "confirmado" ? copy("rsvp.text32") : g.status === "recusado" ? copy("rsvp.text33") : copy("rsvp.text34")} /><CaretDownIcon className="rsvp-accordion-caret" size={18} aria-hidden="true" /></span></summary>
                       <div className="rsvp-guest-accordion-fields">
                         <label className="flex flex-col gap-3">
-                          <span>Confirmação de presença</span>
-                          <WeddingSelect label={"Presença de " + g.name} disabled={busy} placeholder="Selecione uma resposta" value={g.status === "pendente" ? "" : g.status} onValueChange={value => updateGuest(g.id, {status: value as Attendance})} options={[{value:"confirmado",label:"Vou comparecer"},{value:"recusado",label:"Não poderei comparecer"}]} />
+                          <span>{copy("rsvp.text15")}</span>
+                          <WeddingSelect label={copy("rsvp.text35") + g.name} disabled={busy} placeholder={copy("rsvp.text16")} value={g.status === "pendente" ? "" : g.status} onValueChange={value => updateGuest(g.id, {status: value as Attendance})} options={[{value:"confirmado",label:copy("rsvp.text36")},{value:"recusado",label:copy("rsvp.text37")}]} />
                         </label>
                         {modules.dietaryRestrictions&&<label className="flex flex-col gap-3">
-                          <span>Restrições alimentares (opcional)</span>
-                          <textarea className="guest-input" maxLength={500} rows={3} placeholder="Ex.: alergia a amendoim, intolerância à lactose ou alimentação vegetariana." value={g.dietaryRestrictions} onChange={e => updateGuest(g.id, {dietaryRestrictions: e.target.value})} />
+                          <span>{copy("rsvp.text17")}</span>
+                          <textarea className="guest-input" maxLength={500} rows={3} placeholder={copy("rsvp.text18")} value={g.dietaryRestrictions} onChange={e => updateGuest(g.id, {dietaryRestrictions: e.target.value})} />
                         </label>}
                         {modules.messages&&<label className="flex flex-col gap-3">
-                          <span>Recado aos noivos (opcional)</span>
-                          <textarea className="guest-input" maxLength={500} rows={3} placeholder="Deixe uma mensagem carinhosa para os noivos…" value={g.message} onChange={e => updateGuest(g.id, {message: e.target.value})} />
+                          <span>{copy("rsvp.text19")}</span>
+                          <textarea className="guest-input" maxLength={500} rows={3} placeholder={copy("rsvp.text20")} value={g.message} onChange={e => updateGuest(g.id, {message: e.target.value})} />
                         </label>}
                       </div>
                     </details>
                   ))}
-                  {(!invite.personal && ((modules.messages&&invite.message) || (modules.dietaryRestrictions&&invite.dietaryRestrictions))) && <div className="text-sm space-y-2"><p>Informações anteriores do grupo</p>{modules.dietaryRestrictions&&invite.dietaryRestrictions && <p>Restrições: {invite.dietaryRestrictions}</p>}{modules.messages&&invite.message && <p>Recado: {invite.message}</p>}</div>}
+                  {(!invite.personal && ((modules.messages&&invite.message) || (modules.dietaryRestrictions&&invite.dietaryRestrictions))) && <div className="text-sm space-y-2"><p>{copy("rsvp.text21")}</p>{modules.dietaryRestrictions&&invite.dietaryRestrictions && <p>{copy("rsvp.text22")}{invite.dietaryRestrictions}</p>}{modules.messages&&invite.message && <p>{copy("rsvp.text23")}{invite.message}</p>}</div>}
                   <button className="guest-button w-full" disabled={busy}>
-                    <PaperPlaneTiltIcon size={18} aria-hidden="true" />{busy ? "Salvando…" : "Salvar respostas"}
+                    <PaperPlaneTiltIcon size={18} aria-hidden="true" />{busy ? "Salvando…" : copy("rsvp.text38")}
                   </button>
                 </fieldset>
               )}

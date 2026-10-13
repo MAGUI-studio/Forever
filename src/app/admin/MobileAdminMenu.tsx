@@ -8,7 +8,7 @@ import {AnimatePresence, motion, useReducedMotion} from "framer-motion";
 import {Menu, X, Users, Check, LayoutDashboard, Settings, LogOut, ArrowUpRight} from "lucide-react";
 
 type MobileAdminMenuProps = {
-  section: "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
+  section: "site" | "site-settings" | "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
   role: "admin" | "reception";
   email: string | null;
   busy: boolean;

@@ -41,3 +41,8 @@ No production migration, DNS change, Storage configuration or deployment is perf
 Use the authenticated export in the site editor to download a wedding snapshot. Treat exports as confidential: they include invitations and access codes. Configure scheduled Firestore backups in the Firebase/Google Cloud project before commercial launch; the export is not a substitute for infrastructure backups. Restoring production data should be rehearsed in a separate environment.
 
 Commercial follow-ups: automated billing/plan enforcement, contractual privacy and retention policy, monitoring/alerts, and offline reception synchronization require operational configuration and further implementation. The current check-in still requires connectivity. Third-party image URLs are accepted for content, but uploads to Firebase Storage are the supported image-hosting workflow.
+
+
+### Template backgrounds
+
+Background artwork belongs to the selected template. The botanical branches, flowers and hearts live in `BotanicalClassicOrnaments.tsx`. `visual-registry.ts` requires background and accent renderers for every template ID. Public pages, the live preview, admin pages, dialogs and loading screens resolve their artwork through `WeddingOrnaments` and `WeddingBranch`, using the wedding template ID. Generic platform screens use the default template. Add each new template’s own renderers to this registry rather than changing the shared botanical artwork.
