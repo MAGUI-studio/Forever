@@ -1,3 +1,4 @@
+import {isPlatformAdmin} from "./platform-access";
 import "server-only";
 import { services } from "./firebase/admin";
 import { HttpError, sameOrigin } from "./guest-server";
@@ -13,9 +14,6 @@ export async function platformIdentity(request: Request) {
   } catch {
     throw new HttpError(401, "Sua sessão expirou.");
   }
-  const superadmin = (process.env.MAGUI_ADMIN_UIDS ?? "")
-    .split(",")
-    .map((v) => v.trim())
-    .includes(identity.uid);
+  const superadmin=await isPlatformAdmin(identity.uid);
   return { identity, superadmin };
 }

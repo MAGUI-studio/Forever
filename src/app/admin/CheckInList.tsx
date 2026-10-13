@@ -1,4 +1,5 @@
 "use client";
+import {useWedding} from "@/components/wedding/WeddingProvider";
 
 import {DashboardSkeleton} from "./skeleton";
 import {AdminContainer} from "./AdminContainer";
@@ -22,6 +23,7 @@ type CheckInListProps = {
 const normalize = (value:string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
 
 export function CheckInList({invitations,tables,busy,loading = false,onToggle,onRefresh}:CheckInListProps) {
+  const {modules}=useWedding();
   const [query,setQuery] = useState("");
   const [filter,setFilter] = useState("all");
   const active = invitations.filter(i => i.active);
@@ -55,7 +57,7 @@ export function CheckInList({invitations,tables,busy,loading = false,onToggle,on
           <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-serif text-3xl text-[var(--forever-ink,#3D2501)]">{invitation.label}</h2>{guests.filter(g=>!g.checkedIn).length>1&&<button disabled={busy} type="button" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] hover:bg-[#5d613c10] disabled:opacity-40" onClick={()=>onToggle(invitation,guests.filter(g=>!g.checkedIn).map(g=>g.id),true)}><Check size={16}/>Registrar chegada de {guests.filter(g=>!g.checkedIn).length} pessoas</button>}</div>
           <p className="mt-2 text-xs text-[var(--forever-accent,#80654E)]">{guests.length} {guests.length === 1 ? "pessoa" : "pessoas"} nesta lista</p>
           <div className="mt-4 divide-y divide-[#c7b79d40]">{guests.map(guest=><div key={guest.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-4 last:pb-0 sm:flex sm:justify-between">
-            <div className="min-w-0"><p className="text-sm break-words text-[var(--forever-primary,#5D613C)]">{guest.name}{guest.child ? " · Criança" : ""}</p><p className="mt-1 text-xs text-[var(--forever-accent,#80654E)]">{tables.find(t=>t.id===guest.tableId)?.name??"Mesa ainda não definida"}{guest.seat?" · Lugar "+guest.seat:""}</p>{guest.checkedInAt&&<p className="mt-1 text-[10px] text-[var(--forever-accent,#80654E)]">Chegada às {new Date(guest.checkedInAt).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</p>}</div>
+            <div className="min-w-0"><p className="text-sm break-words text-[var(--forever-primary,#5D613C)]">{guest.name}{guest.child ? " · Criança" : ""}</p>{modules.tables&&<p className="mt-1 text-xs text-[var(--forever-accent,#80654E)]">{tables.find(t=>t.id===guest.tableId)?.name??"Mesa ainda não definida"}{guest.seat?" · Lugar "+guest.seat:""}</p>}{guest.checkedInAt&&<p className="mt-1 text-[10px] text-[var(--forever-accent,#80654E)]">Chegada às {new Date(guest.checkedInAt).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</p>}</div>
             <div className="contents sm:flex sm:items-center sm:gap-3">
               <AttendanceBadge status={guest.checkedIn ? "confirmado" : "pendente"} label={guest.checkedIn ? "Já chegou" : "Aguardando chegada"} className="w-[145px]! text-[11px]!" />
               <ExpandingIconButtonGroup className="col-span-2 flex justify-end"><ExpandingIconButton icon={guest.checkedIn ? <Undo2 size={17} aria-hidden="true" /> : <Check size={17} aria-hidden="true" />} label={guest.checkedIn ? "Desfazer chegada" : "Registrar chegada"} aria-label={(guest.checkedIn ? "Desfazer chegada de " : "Registrar chegada de ") + guest.name} aria-pressed={guest.checkedIn} disabled={busy} onClick={()=>onToggle(invitation,[guest.id],!guest.checkedIn)} /></ExpandingIconButtonGroup>

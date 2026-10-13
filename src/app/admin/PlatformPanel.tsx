@@ -245,6 +245,7 @@ export function PlatformPanel() {
                           >
                             Gerenciar
                           </Link>
+                          {superadmin&&<Link className="rounded-xl border border-[#5d613c30] px-5 py-3 text-sm text-[#5D613C] hover:bg-[#5d613c10]" href={"/studio/modules?wedding="+wedding.slug}>Módulos</Link>}
                           {wedding.status === "published" && (
                             <Link
                               className="text-sm text-[var(--forever-primary,#5D613C)]"

@@ -1,4 +1,5 @@
 "use client";
+import {resolveModules} from "@/config/modules";
 import { AdminDialog } from "./AdminDialog";
 import { useQueryState, parseAsStringEnum } from "nuqs";
 import { useEffect, useState } from "react";
@@ -47,7 +48,7 @@ export function WeddingEditor() {
   const {
       slug,
       config,
-      setConfig,
+      setConfig,setModules,modules,
       setTheme: setWeddingTheme,
       path,
     } = useWedding(),
@@ -106,11 +107,12 @@ export function WeddingEditor() {
     const read=async(endpoint:string)=>readApiResponse(await fetch(endpoint,{headers:{Authorization:"Bearer "+await account.getIdToken(),"x-wedding-slug":slug}}));
     void read("/api/admin/session").then(async data=>{
      if(data.role!=="admin"){router.replace(path("admin/check-in"));return;}
-     setDraft(data.wedding.config);setTheme(data.wedding.theme);setWeddingTheme(data.wedding.theme);setStatus(data.wedding.status);setConfig(data.wedding.config);
+     if(!resolveModules(data.wedding.modules).siteEditor){router.replace(path("admin/dashboard"));return;}
+     setDraft(data.wedding.config);setTheme(data.wedding.theme);setWeddingTheme(data.wedding.theme);setStatus(data.wedding.status);setConfig(data.wedding.config);setModules(data.wedding.modules??{});
      setMembers((await read("/api/admin/members")).members);
     }).catch(e=>setError(e.message)).finally(()=>setLoading(false));
    });}catch(e){queueMicrotask(()=>{setError((e as Error).message);setLoading(false);});}
-  },[slug,router,path,setConfig,setWeddingTheme]);
+  },[slug,router,path,setConfig,setWeddingTheme,setModules]);
   function couple(key: string, value: unknown) {
     setDraft((d) => ({ ...d, couple: { ...d.couple, [key]: value } }));
   }
@@ -563,7 +565,7 @@ export function WeddingEditor() {
                     Adicionar presente
                   </AdminButton>
                 </section>
-                <section className="grid gap-5 rounded-2xl bg-[#fffdfa] p-5 sm:grid-cols-2">
+                {modules.gifts&&                <section className="grid gap-5 rounded-2xl bg-[#fffdfa] p-5 sm:grid-cols-2">
                   <h2 className="font-serif text-3xl sm:col-span-2">
                     Pix e contato
                   </h2>
@@ -624,7 +626,7 @@ export function WeddingEditor() {
                       }))
                     }
                   />
-                </section>
+                </section>}
                 <section className="space-y-5 rounded-2xl bg-[#fffdfa] p-5">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <h2 className="font-serif text-3xl">
@@ -678,7 +680,7 @@ export function WeddingEditor() {
                 </section>
                 <section className="space-y-5 rounded-2xl bg-[#fffdfa] p-5">
                   <h2 className="font-serif text-3xl">Seções do site</h2>
-                  {(["gallery", "dressCode", "gifts", "rsvp"] as const).map(
+                  {(["gallery", "dressCode", "gifts", "rsvp"] as const).filter(key=>key==="gifts"?modules.gifts:key==="rsvp"?modules.rsvp:true).map(
                     (key, index) => (
                       <label
                         key={key}

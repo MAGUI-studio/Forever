@@ -10,7 +10,7 @@ export const dynamic="force-dynamic";
 export default async function RSVPPage({params}:{params:Promise<{slug:string}>}) {
  const {slug}=await params;
   return (
-    <PublicWedding slug={slug}><main>
+    <PublicWedding slug={slug} requiredModule="rsvp"><main>
       <RSVPSection />
     </main></PublicWedding>
   );

@@ -16,7 +16,7 @@ export const dynamic="force-dynamic";
 export default async function GiftsPage({params}:{params:Promise<{slug:string}>}) {
  const {slug}=await params;
   return (
-    <PublicWedding slug={slug}><main className="w-full bg-[var(--forever-paper,#F1F1F1)] overflow-x-hidden relative">
+    <PublicWedding slug={slug} requiredModule="gifts"><main className="w-full bg-[var(--forever-paper,#F1F1F1)] overflow-x-hidden relative">
       <ScrollToTopOnMount />
       <CinematicExperience>
         <h1 className="sr-only">Lista de presentes</h1>

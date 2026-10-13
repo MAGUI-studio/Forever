@@ -1,4 +1,5 @@
 "use client";
+import {useWedding} from "@/components/wedding/WeddingProvider";
 import { useEffect, useState } from "react";
 import { WarningCircleIcon } from "@phosphor-icons/react";
 import { AdminDialog } from "./AdminDialog";
@@ -72,6 +73,7 @@ export function EventOperations({
   api,
   onRefresh,
 }: Props) {
+  const {modules}=useWedding();
   const [tableModal, setTableModal] = useOperationsModal();
   const tableModalOpen =
     section === "tables" &&
@@ -374,7 +376,7 @@ export function EventOperations({
               </p>
             </div>
             <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <div className="sm:w-64">
+              {modules.tables&&<div className="sm:w-64">
                 <WeddingSelect
                   label="Filtrar mesa"
                   value={tableFilter}
@@ -385,7 +387,7 @@ export function EventOperations({
                     ...tables.map((t) => ({ value: t.id, label: t.name })),
                   ]}
                 />
-              </div>
+              </div>}
               <label className="flex items-center gap-2 text-xs text-[var(--forever-primary,#5D613C)]">
                 <input
                   type="checkbox"
@@ -417,10 +419,7 @@ export function EventOperations({
                         </h2>
                       </div>
                       <p className="mt-2 text-xs text-[var(--forever-accent,#80654E)]">
-                        {invitation.label} ·{" "}
-                        {tables.find((t) => t.id === guest.tableId)?.name ??
-                          "Sem mesa"}
-                        {guest.seat ? " · Lugar " + guest.seat : ""}
+                        {invitation.label}{modules.tables&&<> · {tables.find((t)=>t.id===guest.tableId)?.name??"Sem mesa"}{guest.seat?" · Lugar "+guest.seat:""}</>}
                       </p>
                       <p className="mt-3 whitespace-pre-wrap text-sm text-[var(--forever-primary,#5D613C)]">
                         {restriction || "Nenhuma restrição informada."}

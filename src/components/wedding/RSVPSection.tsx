@@ -17,7 +17,7 @@ type PublicInvite = {
   dietaryRestrictions: string;
 };
 export function RSVPSection() {
- const {slug}=useWedding();
+ const {slug,modules}=useWedding();
   const [code, setCode] = useState("");
   const [invite, setInvite] = useState<PublicInvite | null>(null);
   const [settings, setSettings] = useState<RSVPSettings>({
@@ -95,7 +95,7 @@ export function RSVPSection() {
         body: JSON.stringify({
           token: code.trim().toLowerCase(),
           revision: invite.revision,
-          responses: invite.guests.map((g) => ({ id: g.id, status: g.status, message: g.message, dietaryRestrictions: g.dietaryRestrictions })),
+          responses: invite.guests.map((g) => ({ id: g.id, status: g.status, ...(modules.messages?{message:g.message}:{}),...(modules.dietaryRestrictions?{dietaryRestrictions:g.dietaryRestrictions}:{}) })),
         }),
       });
       const result = await response.json();
@@ -216,18 +216,18 @@ export function RSVPSection() {
                           <span>Confirmação de presença</span>
                           <WeddingSelect label={"Presença de " + g.name} disabled={busy} placeholder="Selecione uma resposta" value={g.status === "pendente" ? "" : g.status} onValueChange={value => updateGuest(g.id, {status: value as Attendance})} options={[{value:"confirmado",label:"Vou comparecer"},{value:"recusado",label:"Não poderei comparecer"}]} />
                         </label>
-                        <label className="flex flex-col gap-3">
+                        {modules.dietaryRestrictions&&<label className="flex flex-col gap-3">
                           <span>Restrições alimentares (opcional)</span>
                           <textarea className="guest-input" maxLength={500} rows={3} placeholder="Ex.: alergia a amendoim, intolerância à lactose ou alimentação vegetariana." value={g.dietaryRestrictions} onChange={e => updateGuest(g.id, {dietaryRestrictions: e.target.value})} />
-                        </label>
-                        <label className="flex flex-col gap-3">
+                        </label>}
+                        {modules.messages&&<label className="flex flex-col gap-3">
                           <span>Recado aos noivos (opcional)</span>
                           <textarea className="guest-input" maxLength={500} rows={3} placeholder="Deixe uma mensagem carinhosa para os noivos…" value={g.message} onChange={e => updateGuest(g.id, {message: e.target.value})} />
-                        </label>
+                        </label>}
                       </div>
                     </details>
                   ))}
-                  {(!invite.personal && (invite.message || invite.dietaryRestrictions)) && <div className="text-sm space-y-2"><p>Informações anteriores do grupo</p>{invite.dietaryRestrictions && <p>Restrições: {invite.dietaryRestrictions}</p>}{invite.message && <p>Recado: {invite.message}</p>}</div>}
+                  {(!invite.personal && ((modules.messages&&invite.message) || (modules.dietaryRestrictions&&invite.dietaryRestrictions))) && <div className="text-sm space-y-2"><p>Informações anteriores do grupo</p>{modules.dietaryRestrictions&&invite.dietaryRestrictions && <p>Restrições: {invite.dietaryRestrictions}</p>}{modules.messages&&invite.message && <p>Recado: {invite.message}</p>}</div>}
                   <button className="guest-button w-full" disabled={busy}>
                     <PaperPlaneTiltIcon size={18} aria-hidden="true" />{busy ? "Salvando…" : "Salvar respostas"}
                   </button>

@@ -1,3 +1,5 @@
+import {isPlatformAdmin} from "./platform-access";
+import {resolveModules,type WeddingModule} from "@/config/modules";
 import "server-only";
 import {scopedDatabase,findWedding} from "./wedding-server";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
@@ -48,19 +50,20 @@ export async function requireAccess(request: Request) {
   catch { throw new HttpError(401, "Sua sessão expirou. Entre novamente."); }
   const wedding=await requestWedding(request);
   const scope=scopedDatabase(db,wedding.slug);
-  if((process.env.MAGUI_ADMIN_UIDS??"").split(",").map(v=>v.trim()).includes(identity.uid))return {db:scope,uid:identity.uid,email:identity.email??"MAGUI.studio",role:"admin" as const,wedding};
+  if(await isPlatformAdmin(identity.uid))return {db:scope,uid:identity.uid,email:identity.email??"MAGUI.studio",role:"admin" as const,wedding};
   if(wedding.status==="suspended"||wedding.status==="archived")throw new HttpError(403,"Este casamento está suspenso ou arquivado.");
   const member=await db.doc("weddings/"+wedding.slug+"/members/"+identity.uid).get();
   if(member.data()?.active===true && member.data()?.role==="admin")return {db:scope,uid:identity.uid,email:identity.email??"Administrador",role:"admin" as const,wedding};
   const email=identity.email?.toLowerCase();
-  if(email){const reception=await scope.collection("receptionTeam").doc(tokenId(email)).get();
+  if(email&&resolveModules(wedding.modules).team){const reception=await scope.collection("receptionTeam").doc(tokenId(email)).get();
     if(reception.data()?.active===true && (identity.email_verified||reception.data()?.uid===identity.uid))return {db:scope,uid:identity.uid,email,role:"reception" as const,wedding};
   }
   throw new HttpError(403, "Esta conta não tem acesso ao painel.");
 }
-export async function requireAdmin(request: Request) {
+export async function requireAdmin(request: Request,module?:WeddingModule) {
   const access = await requireAccess(request);
   if (access.role !== "admin") throw new HttpError(403, "Esta ação é exclusiva da administração.");
+  if(module)assertModule(access.wedding,module);
   return access.db;
 }
 export const tokenSchema = z.string().regex(/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/);
@@ -131,3 +134,5 @@ export async function requestWedding(request:Request,publicOnly=false){
  return wedding;
 }
 export async function publicWeddingDatabase(request:Request){const wedding=await requestWedding(request,true);return scopedDatabase(services().db,wedding.slug);}
+
+export function assertModule(wedding:{modules?:Partial<import("@/config/modules").WeddingModules>},module:WeddingModule){if(!resolveModules(wedding.modules)[module])throw new HttpError(403,"Este recurso não está disponível para este casamento.");}

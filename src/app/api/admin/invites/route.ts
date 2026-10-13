@@ -1,3 +1,4 @@
+import {resolveModules,redactModuleData} from "@/config/modules";
 import { audit } from "@/lib/event-audit";
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
@@ -15,23 +16,26 @@ import {
 export const runtime = "nodejs";
 export async function GET(request: Request) {
   try {
-    const db = await requireAdmin(request);
+    const db = await requireAdmin(request,"guestList");
+    const {wedding}=await requireAccess(request);
     const snap = await db
       .collection("invitations")
       .orderBy("updatedAt", "desc")
       .get();
-    return reply({
+    return reply(redactModuleData({
       invitations: snap.docs.map((d) => ({ sentAt: null, ...d.data(), id: d.id, personalTokens: Object.fromEntries((d.data().guests ?? []).map((g: {id: string}) => [g.id, personalToken(d.id, d.data().token, g.id)])) })),
-    });
+    },resolveModules(wedding.modules)));
   } catch (e) {
     return failure(e);
   }
 }
 export async function POST(request: Request) {
   try {
-    const db = await requireAdmin(request);
-    const {email:actor} = await requireAccess(request);
+    const db = await requireAdmin(request,"guestList");
+    const {email:actor,wedding} = await requireAccess(request);
     const data = inviteSchema.parse(await body(request));
+    if(!resolveModules(wedding.modules).checkIn&&data.guests.some(g=>g.checkedIn))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
+    if(data.guests.some(g=>g.tableId||g.seat))throw new HttpError(400,"Distribua os lugares na página de mesas.");
     const token = randomBytes(24).toString("hex");
     const id = tokenId(token);
     await db.runTransaction(async t => {
@@ -59,8 +63,8 @@ const updateSchema = z.object({
 });
 export async function PATCH(request: Request) {
   try {
-    const db = await requireAdmin(request);
-    const {email:actor} = await requireAccess(request);
+    const db = await requireAdmin(request,"guestList");
+    const {email:actor,wedding} = await requireAccess(request);
     const data = updateSchema.parse(await body(request));
     const ref = db.collection("invitations").doc(data.id);
     await db.runTransaction(async (t) => {
@@ -72,6 +76,7 @@ export async function PATCH(request: Request) {
           "O convite mudou. Atualize a lista antes de editar novamente.",
         );
       const previous = snap.data()!;
+      if(!resolveModules(wedding.modules).checkIn&&data.invitation.guests.some(g=>g.checkedIn!==(previous.guests.find((old:{id:string})=>old.id===g.id)?.checkedIn??false)))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
       for (const guest of data.invitation.guests) {
         const old = previous.guests.find((g: {id:string}) => g.id === guest.id);
         if ((guest.tableId ?? "") !== (old?.tableId ?? "") || (guest.seat ?? "") !== (old?.seat ?? "")) throw new HttpError(400,"Altere os lugares na página de mesas.");
@@ -90,8 +95,8 @@ export async function PATCH(request: Request) {
 }
 export async function DELETE(request: Request) {
   try {
-    const db = await requireAdmin(request);
-    const {email:actor} = await requireAccess(request);
+    const db = await requireAdmin(request,"guestList");
+    const {email:actor,wedding} = await requireAccess(request);
     const data = updateSchema
       .pick({ id: true, revision: true })
       .parse(await body(request));

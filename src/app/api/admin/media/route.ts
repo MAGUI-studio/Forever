@@ -1,3 +1,4 @@
+import {assertModule} from "@/lib/guest-server";
 import { getStorage } from "firebase-admin/storage";
 import { randomUUID } from "node:crypto";
 import {
@@ -10,7 +11,7 @@ import {
 import { services } from "@/lib/firebase/admin";
 export async function POST(request: Request) {
   try {
-    const { role, wedding } = await requireAccess(request);
+    const { role, wedding } = await requireAccess(request);assertModule(wedding,"siteEditor");
     if (role !== "admin")
       throw new HttpError(403, "Acesso exclusivo da administração.");
     const length = Number(request.headers.get("content-length") ?? 0);

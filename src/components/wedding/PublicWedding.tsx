@@ -1,18 +1,20 @@
+import {resolveModules,type WeddingModule} from "@/config/modules";
 import { findWedding } from "@/lib/wedding-server";
 import { notFound } from "next/navigation";
 import { WeddingProvider } from "./WeddingProvider";
 import { PageCurtainLoader } from "./PageCurtainLoader";
 export async function PublicWedding({
   slug,
-  children,
+  children,requiredModule,
 }: {
   slug: string;
-  children: React.ReactNode;
+  children: React.ReactNode;requiredModule?:WeddingModule;
 }) {
   const wedding = await findWedding(slug);
   if (!wedding || wedding.status !== "published") notFound();
+  if(requiredModule&&!resolveModules(wedding.modules)[requiredModule])notFound();
   return (
-    <WeddingProvider slug={slug} config={wedding.config} theme={wedding.theme}>
+    <WeddingProvider slug={slug} config={wedding.config} theme={wedding.theme} modules={wedding.modules}>
       <PageCurtainLoader />
       {children}
     </WeddingProvider>

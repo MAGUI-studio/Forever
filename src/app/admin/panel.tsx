@@ -1,4 +1,6 @@
 "use client";
+import {resolveModules,sectionModule} from "@/config/modules";
+import {AdminHeaderSkeleton} from "./AdminHeaderSkeleton";
 import { AdminContainer } from "./AdminContainer";
 import { SectionDivider } from "@/components/ui/SectionDivider";
 import { AttendanceBadge } from "@/components/ui/AttendanceBadge";
@@ -53,7 +55,7 @@ export function AdminPanel({
   view: "entry" | "login" | "dashboard";
   section?: "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
 }) {
-  const {slug,config:weddingConfig,setConfig,setTheme,path:weddingPath}=useWedding();
+  const {slug,config:weddingConfig,setConfig,setTheme,modules,setModules,path:weddingPath}=useWedding();
   const router = useRouter();
   const [modalState, setModalState] = useAdminModal();
   const [user, setUser] = useState<User | null>(null);
@@ -118,10 +120,12 @@ export function AdminPanel({
   }
   async function load(account = user) {
     const session = await api("/api/admin/session", "GET", undefined, account);
-    setConfig(session.wedding.config);setTheme(session.wedding.theme);
+    setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(session.wedding.modules??{});
+    const enabled=resolveModules(session.wedding.modules);
+    if(sectionModule[section]&&!enabled[sectionModule[section]!]){setLoading(false);router.replace(weddingPath("admin/dashboard"));return;}
     const reception = session.role === "reception";
-    const list = await api(reception || section === "check-in" ? "/api/admin/reception" : "/api/admin/invites", "GET", undefined, account);
-    const config = reception ? null : await api("/api/admin/settings", "GET", undefined, account);
+    const list = enabled.guestList?await api(reception || section === "check-in" ? "/api/admin/reception" : "/api/admin/invites", "GET", undefined, account):{invitations:[]};
+    const config = reception||!enabled.rsvp ? null : await api("/api/admin/settings", "GET", undefined, account);
     const operations = reception ? list : await api("/api/admin/operations", "GET", undefined, account);
     setRole(session.role); setTables(operations.tables); setInvites(list.invitations);
     if(config) setSettings(config.settings);
@@ -225,16 +229,17 @@ export function AdminPanel({
         </div>
         <div className="admin-background-wash" />
       </div>
-      <AdminContainer centered={!user}>
-        {user && view === "dashboard" && (
+      <AdminContainer centered={view!=="dashboard"&&!user}>
+        {view==="dashboard"&&!authorized&&loading&&<AdminHeaderSkeleton/>}
+        {user && view === "dashboard" && authorized && (
           <nav className="admin-nav flex-nowrap! gap-3! lg:flex-wrap! lg:gap-6!" aria-label="Navegação da administração">
             <Link href={weddingPath("admin/dashboard")} className="admin-wordmark">
               {weddingConfig.couple.partner1} <em>&</em> {weddingConfig.couple.partner2}<span>O nosso grande dia</span>
             </Link>
             <div className="hidden! lg:flex! order-last flex w-full items-center justify-center gap-2 lg:order-none lg:w-auto lg:flex-1" aria-label="Seções do painel">
-              {role === "admin" && <Link href={weddingPath("admin/guests")} aria-current={section === "guests" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "guests" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><Users size={16} aria-hidden="true" />Lista de convidados</Link>}
-              <Link href={weddingPath("admin/check-in")} aria-current={section === "check-in" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "check-in" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><CheckIcon size={16} aria-hidden="true" />Controle de chegada</Link>
-              {role === "admin" && <DropdownMenu.Root><DropdownMenu.Trigger className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs text-[var(--forever-primary,#5D613C)] hover:bg-[#5d613c10]">Organização<CaretDownIcon size={14} /></DropdownMenu.Trigger><DropdownMenu.Portal><DropdownMenu.Content sideOffset={8} className="z-50 min-w-48 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-2 shadow-lg">{[{href:"site",label:"Personalizar site"},{href:"tables",label:"Mesas e lugares"},{href:"buffet",label:"Alimentação e buffet"},{href:"history",label:"Histórico de alterações"},{href:"team",label:"Equipe da recepção"}].map(item=><DropdownMenu.Item asChild key={item.href}><Link className="block rounded-lg px-4 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none hover:bg-[#5d613c10] focus:bg-[#5d613c10]" href={weddingPath("admin/"+item.href)}>{item.label}</Link></DropdownMenu.Item>)}</DropdownMenu.Content></DropdownMenu.Portal></DropdownMenu.Root>}
+              {role === "admin" && modules.guestList && <Link href={weddingPath("admin/guests")} aria-current={section === "guests" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "guests" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><Users size={16} aria-hidden="true" />Lista de convidados</Link>}
+              {modules.checkIn&&<Link href={weddingPath("admin/check-in")} aria-current={section === "check-in" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[#5d613c10] " + (section === "check-in" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><CheckIcon size={16} aria-hidden="true" />Controle de chegada</Link>}
+              {role === "admin" && modules.organization && ["tables","buffet","history","team"].some(key=>modules[sectionModule[key]!]) && <DropdownMenu.Root><DropdownMenu.Trigger className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs text-[var(--forever-primary,#5D613C)] hover:bg-[#5d613c10]">Organização<CaretDownIcon size={14} /></DropdownMenu.Trigger><DropdownMenu.Portal><DropdownMenu.Content sideOffset={8} className="z-50 min-w-48 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-2 shadow-lg">{[{href:"tables",label:"Mesas e lugares"},{href:"buffet",label:"Alimentação e buffet"},{href:"history",label:"Histórico de alterações"},{href:"team",label:"Equipe da recepção"}].filter(item=>modules[sectionModule[item.href]!]).map(item=><DropdownMenu.Item asChild key={item.href}><Link className="block rounded-lg px-4 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none hover:bg-[#5d613c10] focus:bg-[#5d613c10]" href={weddingPath("admin/"+item.href)}>{item.label}</Link></DropdownMenu.Item>)}</DropdownMenu.Content></DropdownMenu.Portal></DropdownMenu.Root>}
             </div>
             <Link href={weddingPath()} target="_blank" rel="noopener noreferrer" className="hidden min-h-11 shrink-0 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[#5d613c10] lg:inline-flex"><ArrowUpRight size={16} aria-hidden="true"/>Ver site</Link>
             <div className="hidden lg:block">
@@ -243,7 +248,8 @@ export function AdminPanel({
               <DropdownMenu.Portal><DropdownMenu.Content className="admin-profile-menu" align="end" sideOffset={10} collisionPadding={16}>
                 <DropdownMenu.Label className="admin-profile-label">Espaço dos noivos<span>{user.email}</span></DropdownMenu.Label>
                 <DropdownMenu.Separator className="admin-profile-separator" />
-                <DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-[var(--wedding-radius)] px-2.5 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none data-highlighted:bg-[#edf0e3] data-disabled:opacity-40" disabled={busy || !authorized || role !== "admin"} onSelect={() => openModal("settings")}><CalendarDays size={16} aria-hidden="true" />Configurações</DropdownMenu.Item>
+                {role==="admin"&&modules.siteEditor&&<DropdownMenu.Item asChild><Link className="admin-profile-item" href={weddingPath("admin/site")}>Personalizar site</Link></DropdownMenu.Item>}
+                {modules.rsvp&&<DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-[var(--wedding-radius)] px-2.5 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none data-highlighted:bg-[#edf0e3] data-disabled:opacity-40" disabled={busy || !authorized || role !== "admin"} onSelect={() => openModal("settings")}><CalendarDays size={16} aria-hidden="true" />Configurações</DropdownMenu.Item>}
                 <DropdownMenu.Item className="admin-profile-item" disabled={busy} onSelect={() => void action(async () => {await signOut(clientAuth());})}><LogOut size={16} aria-hidden="true" /> Sair</DropdownMenu.Item>
               </DropdownMenu.Content></DropdownMenu.Portal>
             </DropdownMenu.Root>
@@ -265,7 +271,7 @@ export function AdminPanel({
                 lado.
               </p>
             </div>
-            {authorized ? <GuestStats guests={allGuests} /> : loading ? <GuestStatsSkeleton /> : null}
+            {modules.guestList&&authorized ? <GuestStats guests={allGuests} /> : modules.guestList&&loading ? <GuestStatsSkeleton /> : null}
           </AdminContainer>
         )}
         {error && !(authorized && modalState.modal) && (
@@ -387,7 +393,7 @@ export function AdminPanel({
         ) : (
           <>
             
-            {(authorized || loading) && section !== "overview" && (section === "tables" || section === "buffet" || section === "history" || section === "team" ? <EventOperations pageLoading={!authorized && loading} section={section} invitations={invites} tables={tables} api={api} onRefresh={load} /> : section === "check-in" ? <CheckInList tables={tables} loading={!authorized && loading} invitations={invites} busy={busy} onRefresh={() => void action(async () => {await load();})} onToggle={(invitation, guestIds, checkedIn) => void action(async () => {
+            {(authorized || loading) && (!sectionModule[section]||modules[sectionModule[section]!]) && section !== "overview" && (section === "tables" || section === "buffet" || section === "history" || section === "team" ? <EventOperations pageLoading={!authorized && loading} section={section} invitations={invites} tables={tables} api={api} onRefresh={load} /> : section === "check-in" ? <CheckInList tables={tables} loading={!authorized && loading} invitations={invites} busy={busy} onRefresh={() => void action(async () => {await load();})} onToggle={(invitation, guestIds, checkedIn) => void action(async () => {
               await api("/api/admin/reception", "PATCH", {id:invitation.id, guestIds, checkedIn, expectedCheckedIn:!checkedIn});
               await load();
             })} /> :
@@ -415,7 +421,7 @@ export function AdminPanel({
                       <Search size={19} className="shrink-0" aria-hidden="true" />
                       <input aria-label="Buscar convidados" className="h-12 w-full min-w-0 rounded-lg bg-transparent text-sm text-[var(--forever-ink,#3D2501)] border-0! outline-none! ring-0! shadow-none! placeholder:text-[#8a887b] focus:outline-none! focus-visible:outline-none!" placeholder="Buscar nome, família ou grupo" value={query} onChange={event => setQuery(event.target.value)} />
                     </label>
-                    <WeddingSelect label="Filtrar situação" className="h-12! min-h-12! border! border-[#5d613c30]! bg-[#fffdfa]! px-3! text-sm! shadow-none! focus-visible:border-[#5d613c70]!" value={filter} onValueChange={setFilter} options={[{value:"todos",label:"Todos os convites"},{value:"pendente",label:"Com pendentes"},{value:"confirmado",label:"Com confirmados"},{value:"recusado",label:"Com recusas"},{value:"abertos",label:"Convites abertos"},{value:"nao-respondidos",label:"Com respostas pendentes"},{value:"respondidos",label:"Totalmente respondidos"},{value:"enviados",label:"Convites enviados"},{value:"nao-enviados",label:"Ainda não enviados"},{value:"inativos",label:"Inativos"}]} />
+                    <WeddingSelect label="Filtrar situação" className="h-12! min-h-12! border! border-[#5d613c30]! bg-[#fffdfa]! px-3! text-sm! shadow-none! focus-visible:border-[#5d613c70]!" value={filter} onValueChange={setFilter} options={[{value:"todos",label:"Todos os convites"},{value:"pendente",label:"Com pendentes"},{value:"confirmado",label:"Com confirmados"},{value:"recusado",label:"Com recusas"},{value:"abertos",label:"Convites abertos"},{value:"nao-respondidos",label:"Com respostas pendentes"},{value:"respondidos",label:"Totalmente respondidos"},{value:"enviados",label:"Convites enviados"},{value:"nao-enviados",label:"Ainda não enviados"},{value:"inativos",label:"Inativos"}].filter(option=>modules.invitationTracking||!["abertos","enviados","nao-enviados","nao-respondidos","respondidos"].includes(option.value))} />
                   </div>
                   <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
                     <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[#5d613c0d] disabled:opacity-50" disabled={busy} onClick={() => void action(async () => {await load();})}>
@@ -424,13 +430,13 @@ export function AdminPanel({
                     <AdminButton disabled={busy} onClick={() => open()}><Plus size={17} aria-hidden="true" />Adicionar convite</AdminButton>
                   </div>
                 </div>
-                <aside className="admin-guest-legend" aria-label="Legenda dos alertas de convidados confirmados">
+                {(modules.dietaryRestrictions||modules.messages)&&<aside className="admin-guest-legend" aria-label="Legenda dos alertas de convidados confirmados">
                   <strong>Legenda</strong>
                   <div className="admin-guest-legend-items">
-                    <span><WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" aria-hidden="true" />Restrição alimentar</span>
-                    <span><ChatTextIcon size={19} weight="fill" className="admin-message-alert" aria-hidden="true" />Recado aos noivos</span>
+                    {modules.dietaryRestrictions&&<span><WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" aria-hidden="true" />Restrição alimentar</span>}
+                    {modules.messages&&<span><ChatTextIcon size={19} weight="fill" className="admin-message-alert" aria-hidden="true" />Recado aos noivos</span>}
                   </div>
-                </aside>
+                </aside>}
                 <div className="mt-8 space-y-5">
                   {!authorized && loading ? <DashboardSkeleton /> : visible.length === 0 && (
                     <div className="admin-empty">
@@ -484,7 +490,7 @@ export function AdminPanel({
                     >
                       <div className="admin-invite-header">
                         <div><h2 className="font-serif text-3xl"><button type="button" className="admin-invite-toggle" aria-expanded={!collapsed[i.id]} aria-controls={"invite-body-" + i.id} aria-label={(collapsed[i.id] ? "Expandir convite " : "Recolher convite ") + i.label} onClick={() => setCollapsed(current => ({...current,[i.id]:!current[i.id]}))}>{i.label}<CaretDownIcon size={20} className={collapsed[i.id] ? "" : "is-expanded"} aria-hidden="true" /></button>{!i.active && <span className="ml-3 font-sans text-sm">Inativo</span>}</h2>
-                        <p className="admin-invite-meta"><UsersIcon size={15} aria-hidden="true" /> {i.guests.length} {i.guests.length === 1 ? "pessoa" : "pessoas"}<span>·</span>{i.sentAt ? "Enviado em " + new Date(i.sentAt).toLocaleDateString("pt-BR") : "Envio ainda não registrado"}</p></div>
+                        <p className="admin-invite-meta"><UsersIcon size={15} aria-hidden="true" /> {i.guests.length} {i.guests.length === 1 ? "pessoa" : "pessoas"}{modules.invitationTracking&&<><span>·</span>{i.sentAt ? "Enviado em " + new Date(i.sentAt).toLocaleDateString("pt-BR") : "Envio ainda não registrado"}</>}</p></div>
                         <ExpandingIconButtonGroup className="admin-invite-actions">
 
                           <ExpandingIconButton disabled={busy} onClick={() => open(i)} icon={<PencilSimpleIcon size={17} aria-hidden="true" />} label={"Editar"} />
@@ -493,23 +499,23 @@ export function AdminPanel({
                             setCopiedId(i.id); if (copyTimer.current) clearTimeout(copyTimer.current);
                             copyTimer.current = setTimeout(() => setCopiedId(null), 3000);
                           })} icon={copiedId === i.id ? <CheckIcon size={17} weight="bold" aria-hidden="true" /> : <CopyIcon size={17} aria-hidden="true" />} label={copiedId === i.id ? "Copiado" : (i.guests.length > 1 ? "Copiar link do grupo" : "Copiar link")} />
-                          <ExpandingIconButton aria-pressed={!!i.sentAt} disabled={busy} onClick={() => void action(async () => {
+                          {modules.invitationTracking&&<ExpandingIconButton aria-pressed={!!i.sentAt} disabled={busy} onClick={() => void action(async () => {
                             const result = await api("/api/admin/invites/sent", "POST", {id:i.id,sent:!i.sentAt});
                             setInvites(current => current.map(item => item.id === i.id ? {...item,sentAt:result.sentAt} : item));
                             
-                          })} icon={<PaperPlaneTiltIcon size={17} weight={i.sentAt ? "fill" : "regular"} aria-hidden="true" />} label={i.sentAt ? "Enviado" : "Marcar enviado"} />
+                          })} icon={<PaperPlaneTiltIcon size={17} weight={i.sentAt ? "fill" : "regular"} aria-hidden="true" />} label={i.sentAt ? "Enviado" : "Marcar enviado"} />}
                           <ExpandingIconButton disabled={busy || !!generatingPdf || !i.active} onClick={async () => {setGeneratingPdf(i.id);setError("");try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf");await downloadInvitationPdf(i,weddingConfig,slug);}catch {setError("Não foi possível gerar o convite. Tente novamente.");}finally {setGeneratingPdf(null);}}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={generatingPdf === i.id ? "Gerando convite…" : (i.guests.length > 1 ? "Convite do grupo" : "Baixar convite")} />
                           <ExpandingIconButton disabled={busy} onClick={() => openModal("delete-invitation",i.id)} icon={<TrashIcon size={17} aria-hidden="true" />} label={"Excluir"} />
                         </ExpandingIconButtonGroup>
                       </div>
                       <div id={"invite-body-" + i.id} className="admin-invite-collapse" data-open={!collapsed[i.id]} aria-hidden={!!collapsed[i.id]} inert={!!collapsed[i.id]}><div className="admin-invite-collapse-inner">
-                      <div className="my-3 flex flex-wrap gap-x-5 gap-y-2 text-[11px] text-[var(--forever-accent,#80654E)]"><span>{i.sentAt ? "Enviado em "+new Date(i.sentAt).toLocaleDateString("pt-BR") : "Envio não registrado"}</span><span>{i.openedAt ? "Primeiro acesso em "+new Date(i.openedAt).toLocaleString("pt-BR") : "Sem acesso registrado"}</span><span>{i.guests.filter(g=>g.status!=="pendente").length}/{i.guests.length} respostas</span></div><div className={i.respondedAt || i.dietaryRestrictions || i.message ? "mt-5 mb-5" : "mt-5"}>
+                      {modules.invitationTracking&&<div className="my-3 flex flex-wrap gap-x-5 gap-y-2 text-[11px] text-[var(--forever-accent,#80654E)]"><span>{i.sentAt ? "Enviado em "+new Date(i.sentAt).toLocaleDateString("pt-BR") : "Envio não registrado"}</span><span>{i.openedAt ? "Primeiro acesso em "+new Date(i.openedAt).toLocaleString("pt-BR") : "Sem acesso registrado"}</span><span>{i.guests.filter(g=>g.status!=="pendente").length}/{i.guests.length} respostas</span></div>}<div className={i.respondedAt || i.dietaryRestrictions || i.message ? "mt-5 mb-5" : "mt-5"}>
                         {i.guests.map((g) => (
                           <details key={g.id} className="rsvp-guest-accordion admin-guest-accordion last:border-b-0! [&:last-child>summary]:pb-0! [&:last-child[open]>summary]:pb-[18px]!">
                             <summary>
                               <span className="admin-guest-name-alerts">{g.name}{g.child ? " · Criança" : ""}
-                                {g.status === "confirmado" && i.personalResponses?.[g.id]?.dietaryRestrictions?.trim() && <WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" role="img" aria-label="Restrição alimentar informada" />}
-                                {g.status === "confirmado" && i.personalResponses?.[g.id]?.message?.trim() && <ChatTextIcon size={19} weight="fill" className="admin-message-alert" role="img" aria-label="Recado aos noivos" />}
+                                {modules.dietaryRestrictions&&g.status === "confirmado" && i.personalResponses?.[g.id]?.dietaryRestrictions?.trim() && <WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" role="img" aria-label="Restrição alimentar informada" />}
+                                {modules.messages&&g.status === "confirmado" && i.personalResponses?.[g.id]?.message?.trim() && <ChatTextIcon size={19} weight="fill" className="admin-message-alert" role="img" aria-label="Recado aos noivos" />}
                               </span>
                               <span className="rsvp-guest-summary-status">
                                 <ExpandingIconButtonGroup as="span" className="admin-guest-quick-actions">
@@ -522,9 +528,9 @@ export function AdminPanel({
                             </summary>
                             <div className="rsvp-guest-accordion-fields">
                               <div className="admin-guest-notes">
-                                {i.personalOpenedAt?.[g.id] && <p className="text-xs text-[var(--forever-accent,#80654E)]">Link pessoal aberto em {new Date(i.personalOpenedAt[g.id]).toLocaleString("pt-BR")}</p>}
-                                <div><p><WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" aria-hidden="true" />Restrições alimentares</p><span>{i.personalResponses?.[g.id]?.dietaryRestrictions || "Nenhuma restrição informada."}</span></div>
-                                <div><p><ChatTextIcon size={19} weight="fill" className="admin-message-alert" aria-hidden="true" />Recado aos noivos</p><span>{i.personalResponses?.[g.id]?.message || "Nenhum recado enviado."}</span></div>
+                                {modules.invitationTracking&&i.personalOpenedAt?.[g.id] && <p className="text-xs text-[var(--forever-accent,#80654E)]">Link pessoal aberto em {new Date(i.personalOpenedAt[g.id]).toLocaleString("pt-BR")}</p>}
+                                {modules.dietaryRestrictions&&<div><p><WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" aria-hidden="true" />Restrições alimentares</p><span>{i.personalResponses?.[g.id]?.dietaryRestrictions || "Nenhuma restrição informada."}</span></div>}
+                                {modules.messages&&<div><p><ChatTextIcon size={19} weight="fill" className="admin-message-alert" aria-hidden="true" />Recado aos noivos</p><span>{i.personalResponses?.[g.id]?.message || "Nenhum recado enviado."}</span></div>}
                               </div>
                             </div>
                           </details>
@@ -536,12 +542,12 @@ export function AdminPanel({
                           {new Date(i.respondedAt).toLocaleString("pt-BR")}
                         </p>
                       )}
-                      {i.dietaryRestrictions && (
+                      {modules.dietaryRestrictions&&i.dietaryRestrictions && (
                         <p className="mt-2 whitespace-pre-wrap text-sm">
                           Restrições: {i.dietaryRestrictions}
                         </p>
                       )}
-                      {i.message && (
+                      {modules.messages&&i.message && (
                         <p className="mt-2 whitespace-pre-wrap text-sm">
                           Recado: {i.message}
                         </p>

@@ -12,7 +12,7 @@ import { Countdown } from "./Countdown";
 import { ArrowDown } from "lucide-react";
 
 export function Hero() {
-  const {config:weddingConfig,path}=useWedding();
+  const {config:weddingConfig,path,modules}=useWedding();
   const { couple } = weddingConfig;
   const section = useRef<HTMLElement>(null);
   const reducedMotion = useReducedMotion();
@@ -49,10 +49,10 @@ export function Hero() {
         <span>{formatDateBR(couple.weddingDate)}</span><span>{couple.locationSummary}</span><span>11h30</span>
       </div>
       <div className="hero-detail py-3"><Countdown targetDateISO={couple.weddingDate} /></div>
-      <div className="hero-detail flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
-        <a href="#rsvp" className="cinema-button bg-[#C7B79D] text-[#3D2501] hover:bg-[#F1F1F1]">Confirmar presença</a>
-        <a href="#presentes" className="cinema-button bg-white/10 text-[#F1F1F1] hover:bg-white/20 backdrop-blur-sm">Lista de presentes</a>
-      </div>
+      {(modules.rsvp||modules.gifts)&&<div className="hero-detail flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
+        {modules.rsvp&&<a href="#rsvp" className="cinema-button bg-[#C7B79D] text-[#3D2501] hover:bg-[#F1F1F1]">Confirmar presença</a>}
+        {modules.gifts&&<a href="#presentes" className="cinema-button bg-white/10 text-[#F1F1F1] hover:bg-white/20 backdrop-blur-sm">Lista de presentes</a>}
+      </div>}
     </motion.div>
     <a href="#historia" className="hero-detail relative z-10 flex flex-col items-center gap-3 mx-auto w-fit mt-4 text-white group">
       <span className="text-[9px] uppercase tracking-[0.3em]">O próximo capítulo</span>

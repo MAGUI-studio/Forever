@@ -1,4 +1,5 @@
 "use client";
+import {sectionModule} from "@/config/modules";
 import {useWedding} from "@/components/wedding/WeddingProvider";
 import {useState} from "react";
 import Link from "next/link";
@@ -17,7 +18,7 @@ type MobileAdminMenuProps = {
 };
 
 export function MobileAdminMenu({role,section,email,busy,authorized,onSettings,onSignOut}:MobileAdminMenuProps) {
-  const {path}=useWedding();
+  const {path,modules}=useWedding();
   const [open,setOpen] = useState(false);
   const reducedMotion = useReducedMotion();
   const links = [
@@ -35,9 +36,9 @@ export function MobileAdminMenu({role,section,email,busy,authorized,onSettings,o
           <div className="flex items-center justify-between gap-4"><Dialog.Title className="font-serif text-3xl">Nosso casamento</Dialog.Title><Dialog.Close asChild><button type="button" aria-label="Fechar menu" className="flex size-11 items-center justify-center rounded-[var(--wedding-radius)] hover:bg-[#5d613c10]"><X size={22} /></button></Dialog.Close></div>
           <Dialog.Description className="mt-2 text-xs text-[var(--forever-accent,#80654E)]">Espaço dos noivos</Dialog.Description>
           <nav aria-label="Menu mobile do painel" className="mt-8 flex flex-col gap-2">
-            {links.filter(link=>role === "admin" || link.key === "check-in").map(({href,label,key,icon:Icon}) => <Link key={key} href={path(href)} onClick={()=>setOpen(false)} aria-current={section === key ? "page" : undefined} className={"flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm transition-colors hover:bg-[#5d613c10] " + (section === key ? "bg-[#5d613c10] font-semibold" : "")}><Icon size={19} />{label}</Link>)}
+            {links.filter(link=>(role === "admin" || link.key === "check-in")&&(!sectionModule[link.key]||modules[sectionModule[link.key]!])).map(({href,label,key,icon:Icon}) => <Link key={key} href={path(href)} onClick={()=>setOpen(false)} aria-current={section === key ? "page" : undefined} className={"flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm transition-colors hover:bg-[#5d613c10] " + (section === key ? "bg-[#5d613c10] font-semibold" : "")}><Icon size={19} />{label}</Link>)}
             <Link href={path()} target="_blank" rel="noopener noreferrer" onClick={()=>setOpen(false)} className="flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm transition-colors hover:bg-[#5d613c10]"><ArrowUpRight size={19} aria-hidden="true"/>Ver site</Link>
-            <button type="button" disabled={busy || !authorized || role !== "admin"} onClick={()=>{setOpen(false);onSettings();}} className="flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm hover:bg-[#5d613c10] disabled:opacity-40"><Settings size={19} />Configurações</button>
+            {modules.rsvp&&<button type="button" disabled={busy || !authorized || role !== "admin"} onClick={()=>{setOpen(false);onSettings();}} className="flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm hover:bg-[#5d613c10] disabled:opacity-40"><Settings size={19} />Configurações</button>}
           </nav>
           <div className="mt-auto pt-10"><p className="break-all px-4 text-xs text-[var(--forever-accent,#80654E)]">{email}</p><button type="button" disabled={busy} onClick={()=>{setOpen(false);onSignOut();}} className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm hover:bg-[#5d613c10] disabled:opacity-40"><LogOut size={18} />Sair da conta</button></div>
         </motion.div></Dialog.Content>

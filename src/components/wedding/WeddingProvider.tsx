@@ -1,4 +1,5 @@
 "use client";
+import {resolveModules,type WeddingModules} from "@/config/modules";
 import {
   createContext,
   useContext,
@@ -35,6 +36,8 @@ const themes = {
 };
 const WeddingContext = createContext<{
   slug: string;
+  modules:WeddingModules;
+  setModules:(modules:Partial<WeddingModules>)=>void;
   config: WeddingConfig;
   setConfig: (config: WeddingConfig) => void;
   setTheme: (theme: WeddingTheme) => void;
@@ -45,13 +48,17 @@ export function WeddingProvider({
   slug,
   config = emptyWeddingConfig,
   theme = "botanical",
+  modules,
   children,
 }: {
   slug: string;
   config?: WeddingConfig;
   theme?: WeddingTheme;
+  modules?:Partial<WeddingModules>;
   children: ReactNode;
 }) {
+  const [enabledModules,updateModules]=useState(()=>resolveModules(modules));
+  const setModules=useCallback((value:Partial<WeddingModules>)=>updateModules(resolveModules(value)),[]);
   const [current, setConfig] = useState(config);
   const [currentTheme, setTheme] = useState(theme);
   const path=useCallback((path="")=>weddingPath(slug,path),[slug]);
@@ -67,6 +74,7 @@ export function WeddingProvider({
     <WeddingContext.Provider
       value={{
         slug,
+        modules:enabledModules,setModules,
         config: current,
         setConfig,
         setTheme,

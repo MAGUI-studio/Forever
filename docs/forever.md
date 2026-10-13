@@ -1,5 +1,15 @@
 # Forever by MAGUI.studio
 
+## Modules
+
+Platform administrators manage wedding features at `/studio/modules?wedding={slug}`. The catalog and dependency rules live in `src/config/modules.ts`; flags are stored in `weddings/{slug}.modules`. Missing flags preserve existing features. Disabling a prerequisite disables its dependents. Enabling a dependent enables its prerequisites; re-enabling a prerequisite does not automatically restore every dependent.
+
+Disabled modules hide navigation, fields, alerts and legends, reject protected API actions and redact disabled notes from responses and exports. Existing Firestore values are preserved. Refresh open tabs after changing modules; server checks apply on every request. Infrastructure audit recording continues when the history screen is disabled.
+
+Authorize an existing Firebase account with `node scripts/grant-platform-admin.mjs --email=operator@example.com`. This stores the account UID in the server-only `platformAdmins` collection. Platform administrators are redirected from `/login` to `/studio`.
+
+Dietary restrictions and the dependent buffet module are disabled for `giovanna-e-edson`. Other weddings are unaffected.
+
 ## Addresses and data model
 
 Production uses only https://forever.magui.studio/{slug}. There is no custom-domain feature. Slugs are immutable, lowercase and unique. Reserved paths cannot be used.

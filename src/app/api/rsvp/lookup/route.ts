@@ -1,3 +1,5 @@
+import {resolveModules,redactModuleData} from "@/config/modules";
+import {requestWedding,assertModule} from "@/lib/guest-server";
 import { z } from "zod";
 import {publicWeddingDatabase} from "@/lib/guest-server";
 import {
@@ -17,6 +19,7 @@ export async function POST(request: Request) {
     const { token } = z
       .object({ token: tokenSchema })
       .parse(await body(request));
+    const wedding=await requestWedding(request,true);assertModule(wedding,"rsvp");const modules=resolveModules(wedding.modules);
     const db = await publicWeddingDatabase(request);
     const [snap, settings] = await Promise.all([
       db.collection("invitations").doc(invitationDocumentId(token)).get(),
@@ -38,10 +41,10 @@ export async function POST(request: Request) {
       if (!current?.active) throw new HttpError(404,"Convite não encontrado.");
       authorizedGuests(token, current as {token:string; guests:import('@/types/guests').Guest[]});
       const now = new Date().toISOString();
-      t.update(invitationRef, {openedAt:current.openedAt ?? now, ...(personal ? {personalOpenedAt:{...(current.personalOpenedAt ?? {}),[allowed[0].id]:current.personalOpenedAt?.[allowed[0].id] ?? now}} : {})});
+      if(modules.invitationTracking)t.update(invitationRef, {openedAt:current.openedAt ?? now, ...(personal ? {personalOpenedAt:{...(current.personalOpenedAt ?? {}),[allowed[0].id]:current.personalOpenedAt?.[allowed[0].id] ?? now}} : {})});
     });
     const config = settings.data() ?? { enabled: true, deadline: "" };
-    return reply({
+    return reply(redactModuleData({
       invitation: {
         label: personal ? allowed[0].name : data.label,
         personal,
@@ -60,7 +63,7 @@ export async function POST(request: Request) {
         dietaryRestrictions: notes?.dietaryRestrictions ?? "",
       },
       settings: config,
-    });
+    },modules));
   } catch (e) {
     if (e instanceof z.ZodError) return reply({error:"Código de convite inválido. Copie o código completo enviado pelos noivos ou abra o link que você recebeu."},400);
     return failure(e);

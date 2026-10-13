@@ -1,4 +1,5 @@
 "use client";
+import {resolveModules} from "@/config/modules";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase/client";
@@ -29,7 +30,7 @@ export function WeddingPreview() {
             },
           }),
         );
-        if (data.role !== "admin")
+        if (data.role !== "admin"||!resolveModules(data.wedding.modules).siteEditor)
           throw Error("Acesso exclusivo da administração.");
         setWedding(data.wedding);
       } catch (e) {
@@ -54,7 +55,7 @@ export function WeddingPreview() {
             ...wedding.config,
             sections: { ...wedding.config.sections, rsvp: false },
           }}
-          theme={wedding.theme}
+          theme={wedding.theme} modules={wedding.modules}
         >
           <WeddingSite />
         </WeddingProvider>

@@ -477,6 +477,41 @@ async function check(title, work) {
     const ref="weddings/other-couple/members/"+authAccounts.get("newstaff@example.com").uid;store.set(ref,{active:true,role:"admin"});
     assert.equal((await destination.GET(request("GET",null,"managed"))).status,409);store.delete(ref);
   });
+  await check("módulos têm dependências consistentes por casamento",async()=>{
+    const {resolveModules,toggleModule}=load("src/config/modules.ts");
+    const defaults=resolveModules();assert(defaults.dietaryRestrictions);const withoutDiet=toggleModule(defaults,"dietaryRestrictions",false);assert(!withoutDiet.buffet);assert(withoutDiet.messages);assert(resolveModules().dietaryRestrictions);
+    const noGuests=toggleModule(defaults,"guestList",false);assert(!noGuests.rsvp&&!noGuests.checkIn&&!noGuests.team&&!noGuests.tables);assert(noGuests.gifts);
+    assert(toggleModule(noGuests,"team",true).checkIn);assert(toggleModule(noGuests,"team",true).guestList);
+  });
+  await check("somente administrador principal altera módulos e a configuração é isolada",async()=>{
+    const modulesApi=load("src/app/api/platform/modules/route.ts"),{resolveModules}=load("src/config/modules.ts");
+    const payload={slug:"test-couple",modules:{...resolveModules(),dietaryRestrictions:false}};
+    assert.equal((await modulesApi.PUT(request("PUT",payload))).status,403);
+    store.set("platformAdmins/bride",{active:true});
+    assert.equal((await modulesApi.PUT(request("PUT",payload))).status,200);
+    assert.equal(store.get("weddings/test-couple").modules.buffet,false);assert.equal(store.get("weddings/other-couple").modules,undefined);
+    assert.equal((await modulesApi.PUT(request("PUT",{...payload,modules:{...payload.modules,unknown:true}}))).status,400);
+    store.delete("platformAdmins/bride");
+  });
+  await check("restrições desativadas desaparecem das respostas sem apagar dados",async()=>{
+    const before=clone(store.get("weddings/test-couple/invitations/"+eventInvite.id));
+    const result=await (await admin.GET(request("GET"))).json();assert(!JSON.stringify(result).includes("dietaryRestrictions"));assert(JSON.stringify(result).includes("message"));
+    const publicView=await (await lookup.POST(request("POST",{token:eventInvite.token}))).json();assert(!JSON.stringify(publicView).includes("dietaryRestrictions"));
+    const payload={token:eventInvite.token,revision:publicView.invitation.revision,responses:publicView.invitation.guests.map(g=>({id:g.id,status:"confirmado",dietaryRestrictions:"not allowed"}))};
+    assert.equal((await rsvp.POST(request("POST",payload))).status,403);
+    assert.deepEqual(store.get("weddings/test-couple/invitations/"+eventInvite.id).personalResponses,before.personalResponses);
+  });
+  await check("módulos desativados bloqueiam acesso direto às APIs",async()=>{
+    const original=clone(store.get("weddings/test-couple"));
+    store.set("weddings/test-couple",{...original,modules:{...original.modules,checkIn:false,organization:false}});
+    assert.equal((await reception.GET(request("GET"))).status,403);
+    assert.equal((await reception.PATCH(request("PATCH",{id:eventInvite.id,guestIds:[guests[0].id],checkedIn:true,expectedCheckedIn:false}))).status,403);
+    assert.equal((await ops.POST(request("POST",{action:"table",name:"Blocked table",capacity:5}))).status,403);
+    const operations=await (await ops.GET(request("GET"))).json();assert.deepEqual(operations.tables,[]);assert.deepEqual(operations.team,[]);assert.deepEqual(operations.history,[]);
+    store.set("weddings/test-couple",{...original,modules:{...original.modules,guestList:false}});
+    assert.equal((await admin.GET(request("GET"))).status,403);assert.equal((await lookup.POST(request("POST",{token:eventInvite.token}))).status,403);
+    store.set("weddings/test-couple",original);
+  });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,
   );

@@ -40,6 +40,7 @@ export async function GET(request: Request) {
           status: data.status,
           config: data.config,
           theme: data.theme,
+          modules:data.modules??{},
         });
       }
     }

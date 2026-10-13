@@ -1,3 +1,4 @@
+import {assertModule} from "@/lib/guest-server";
 import {
   body,
   failure,
@@ -10,7 +11,7 @@ import { services } from "@/lib/firebase/admin";
 import { audit } from "@/lib/event-audit";
 export async function PUT(request: Request) {
   try {
-    const access = await requireAccess(request);
+    const access = await requireAccess(request);assertModule(access.wedding,"siteEditor");
     if (access.role !== "admin")
       throw new HttpError(403, "Acesso exclusivo da administração.");
     const data = weddingUpdateSchema.parse(await body(request));

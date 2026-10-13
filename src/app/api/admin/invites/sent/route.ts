@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 const schema = z.object({ id: z.string().regex(/^[a-f0-9]{64}$/), sent: z.boolean() }).strict();
 export async function POST(request: Request) {
   try {
-    const db = await requireAdmin(request); const {email:actor} = await requireAccess(request); const data = schema.parse(await body(request)); const ref = db.collection("invitations").doc(data.id);
+    const db = await requireAdmin(request,"invitationTracking"); const {email:actor} = await requireAccess(request); const data = schema.parse(await body(request)); const ref = db.collection("invitations").doc(data.id);
     const sentAt = await db.runTransaction(async transaction => {
       const snapshot = await transaction.get(ref);
       if (!snapshot.exists) throw new HttpError(404, "Convite removido. Atualize a lista.");
