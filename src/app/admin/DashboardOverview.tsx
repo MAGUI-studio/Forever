@@ -173,7 +173,7 @@ export function DashboardOverview({
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-6 items-stretch">
         {/* Left (4 cols): Editorial Title & Story */}
         <div className="lg:col-span-4 flex flex-col justify-center space-y-4">
-          <p className="admin-eyebrow text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#80654E]">
+          <p className="admin-eyebrow text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#77736c]">
             Com carinho, cada detalhe
           </p>
 
@@ -183,7 +183,7 @@ export function DashboardOverview({
             nossa <em className="italic text-[#722F37]">história.</em>
           </h1>
 
-          <p className="text-sm sm:text-base text-[#80654E] leading-relaxed">
+          <p className="text-sm sm:text-base text-[#77736c] leading-relaxed">
             Um espaço para cuidar dos convites e de quem estará ao nosso lado.
             {weddingDateStr && formattedWeddingDate !== "Data a definir" && (
               <span className="block mt-2 text-sm sm:text-base text-[#161616] font-medium">
@@ -306,7 +306,7 @@ export function DashboardOverview({
           {/* Left Side: Seu Site */}
           <div className="p-6 sm:p-8 flex flex-col justify-between space-y-6">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#80654E]">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#77736c]">
                 Do seu jeito
               </p>
               <h2 className="mt-2 font-serif text-2xl sm:text-3xl text-[#161616]">
@@ -361,7 +361,7 @@ export function DashboardOverview({
           <div className="p-6 sm:p-8 flex flex-col justify-between space-y-6 bg-gradient-to-br from-transparent to-[#722F3705]">
             <div>
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-[#80654E]">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-[#77736c]">
                   Acompanhamento
                 </p>
                 {formattedRsvpDeadline && (

@@ -249,18 +249,18 @@ export function SingleImageUploader({
   const isBusy = isUploading || isAutoSaving || isCleaning;
 
   return (
-    <div className="space-y-3 rounded-2xl border border-[var(--forever-hover-border,#5d613c20)] bg-[var(--forever-sand-card,#fffdfa)] p-4 shadow-2xs">
+    <div className="space-y-3 rounded-2xl border border-[var(--forever-hover-border,#722f3720)] bg-[var(--forever-sand-card,#fffdfa)] p-4 shadow-2xs">
       {/* Label and Reset Action */}
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Camera size={16} className="text-[var(--forever-primary,#5D613C)]" />
-            <h3 className="text-xs font-semibold text-[var(--forever-primary,#5D613C)]">
+            <Camera size={16} className="text-[var(--forever-primary,#722F37)]" />
+            <h3 className="text-xs font-semibold text-[var(--forever-primary,#722F37)]">
               {label}
             </h3>
           </div>
           {description && (
-            <p className="mt-1 text-[11px] leading-relaxed text-[var(--forever-accent,#80654E)]">
+            <p className="mt-1 text-[11px] leading-relaxed text-[var(--forever-accent,#77736c)]">
               {description}
             </p>
           )}
@@ -270,7 +270,7 @@ export function SingleImageUploader({
             type="button"
             disabled={isBusy}
             onClick={() => setShowResetModal(true)}
-            className="inline-flex shrink-0 items-center gap-1 text-[11px] text-[var(--forever-accent,#80654E)] transition-colors hover:text-[var(--forever-primary,#5D613C)] disabled:opacity-50"
+            className="inline-flex shrink-0 items-center gap-1 text-[11px] text-[var(--forever-accent,#77736c)] transition-colors hover:text-[var(--forever-primary,#722F37)] disabled:opacity-50"
             title="Restaurar foto original do template"
           >
             <RefreshCw size={12} className={isCleaning ? "animate-spin" : ""} />
@@ -280,8 +280,8 @@ export function SingleImageUploader({
       </div>
 
       {/* Subtle Auto-save Reassurance */}
-      <div className="flex items-center gap-2 rounded-xl border border-[var(--forever-hover-border,#5d613c15)] bg-[var(--forever-hover-tint,#5d613c05)] px-3 py-2 text-[11px] text-[var(--forever-primary,#5D613C)]">
-        <Sparkles size={13} className="shrink-0 text-[var(--forever-primary,#5D613C)]" />
+      <div className="flex items-center gap-2 rounded-xl border border-[var(--forever-hover-border,#722f3715)] bg-[var(--forever-hover-tint,#722f3705)] px-3 py-2 text-[11px] text-[var(--forever-primary,#722F37)]">
+        <Sparkles size={13} className="shrink-0 text-[var(--forever-primary,#722F37)]" />
         <p className="leading-tight">
           <span className="font-semibold">Salvamento automático:</span> ao enviar uma nova foto, ela é salva automaticamente no site.
         </p>
@@ -308,14 +308,14 @@ export function SingleImageUploader({
       {success && (
         <div
           role="status"
-          className="flex items-start gap-2 rounded-xl border border-[#5d613c30] bg-[#edf0e3] p-2.5 text-xs text-[var(--forever-primary,#5D613C)]"
+          className="flex items-start gap-2 rounded-xl border border-[#722f3730] bg-[#fbf4f5] p-2.5 text-xs text-[var(--forever-primary,#722F37)]"
         >
-          <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-[var(--forever-primary,#5D613C)]" />
+          <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-[var(--forever-primary,#722F37)]" />
           <div className="flex-1 leading-relaxed">{success}</div>
           <button
             type="button"
             onClick={() => setSuccess("")}
-            className="text-[var(--forever-primary,#5D613C)] hover:opacity-75"
+            className="text-[var(--forever-primary,#722F37)] hover:opacity-75"
           >
             <X size={14} />
           </button>
@@ -324,8 +324,8 @@ export function SingleImageUploader({
 
       {/* Current Image Thumbnail & Status */}
       {displayUrl && !stagedFile && (
-        <div className="flex items-center gap-3 rounded-xl border border-[#5d613c18] bg-white p-2.5">
-          <div className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-[#5d613c10]">
+        <div className="flex items-center gap-3 rounded-xl border border-[#722f3718] bg-white p-2.5">
+          <div className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-[#722f3710]">
             <Image
               src={displayUrl}
               alt={label}
@@ -335,10 +335,10 @@ export function SingleImageUploader({
             />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-medium text-[var(--forever-ink,#3D2501)]">
+            <p className="truncate text-xs font-medium text-[var(--forever-ink,#161616)]">
               {hasCustomUpload ? "Foto personalizada salva" : "Foto padrão do template"}
             </p>
-            <p className="mt-0.5 text-[11px] text-[var(--forever-accent,#80654E)]">
+            <p className="mt-0.5 text-[11px] text-[var(--forever-accent,#77736c)]">
               {hasCustomUpload ? "Enviada pelos noivos" : "Ilustração original"}
             </p>
           </div>
@@ -356,7 +356,7 @@ export function SingleImageUploader({
 
       {/* Staged File Ready to Upload */}
       {stagedFile && (
-        <div className="rounded-xl border border-[var(--forever-primary,#5D613C)]/30 bg-[#edf0e3]/40 p-3">
+        <div className="rounded-xl border border-[var(--forever-primary,#722F37)]/30 bg-[#fbf4f5] p-3">
           <div className="flex items-center gap-3">
             <div className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-black/10">
               <Image
@@ -368,10 +368,10 @@ export function SingleImageUploader({
               />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-xs font-semibold text-[var(--forever-ink,#3D2501)]">
+              <p className="truncate text-xs font-semibold text-[var(--forever-ink,#161616)]">
                 {stagedFile.file.name}
               </p>
-              <p className="text-[11px] text-[var(--forever-accent,#80654E)]">
+              <p className="text-[11px] text-[var(--forever-accent,#77736c)]">
                 {(stagedFile.file.size / 1024).toFixed(0)} KB · Pronto para envio
               </p>
             </div>
@@ -379,7 +379,7 @@ export function SingleImageUploader({
               type="button"
               disabled={isBusy}
               onClick={handleCancelStaged}
-              className="text-[var(--forever-accent,#80654E)] hover:text-red-600 disabled:opacity-50"
+              className="text-[var(--forever-accent,#77736c)] hover:text-red-600 disabled:opacity-50"
               title="Cancelar"
             >
               <X size={16} />
@@ -428,8 +428,8 @@ export function SingleImageUploader({
           onClick={() => !isBusy && fileInputRef.current?.click()}
           className={`group relative flex flex-col items-center justify-center rounded-xl border border-dashed p-4 text-center transition-all cursor-pointer ${
             dragActive
-              ? "border-[var(--forever-primary,#5D613C)] bg-[var(--forever-hover-tint,#5d613c0a)] ring-2 ring-[var(--forever-hover-tint,#5d613c12)]"
-              : "border-[var(--forever-hover-border,#5d613c25)] bg-white/70 hover:border-[var(--forever-primary,#5D613C)] hover:bg-[var(--forever-hover-tint,#5d613c05)]"
+              ? "border-[var(--forever-primary,#722F37)] bg-[var(--forever-hover-tint,#722f370a)] ring-2 ring-[var(--forever-hover-tint,#722f3712)]"
+              : "border-[var(--forever-hover-border,#722f3725)] bg-white/70 hover:border-[var(--forever-primary,#722F37)] hover:bg-[var(--forever-hover-tint,#722f3705)]"
           }`}
         >
           <input
@@ -441,7 +441,7 @@ export function SingleImageUploader({
             className="sr-only"
           />
 
-          <div className="flex size-10 items-center justify-center rounded-full bg-[var(--forever-sand,#EFECE6)] text-[var(--forever-primary,#5D613C)] transition-transform duration-200 group-hover:scale-110">
+          <div className="flex size-10 items-center justify-center rounded-full bg-[var(--forever-sand,#EFECE6)] text-[var(--forever-primary,#722F37)] transition-transform duration-200 group-hover:scale-110">
             {isBusy ? (
               <Loader2 size={18} className="animate-spin" />
             ) : (
@@ -449,18 +449,18 @@ export function SingleImageUploader({
             )}
           </div>
 
-          <p className="mt-2 text-xs font-medium text-[var(--forever-ink,#3D2501)]">
-            <span className="text-[var(--forever-primary,#5D613C)] underline decoration-[var(--forever-primary,#5D613C)]/40 underline-offset-4">
+          <p className="mt-2 text-xs font-medium text-[var(--forever-ink,#161616)]">
+            <span className="text-[var(--forever-primary,#722F37)] underline decoration-[var(--forever-primary,#722F37)]/40 underline-offset-4">
               Clique para selecionar
             </span>{" "}
             ou arraste a foto aqui
           </p>
 
           <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
-            <span className="inline-flex items-center rounded-full bg-[var(--forever-sand,#EFECE6)] px-2 py-0.5 text-[10px] font-medium text-[var(--forever-accent,#80654E)]">
+            <span className="inline-flex items-center rounded-full bg-[var(--forever-sand,#EFECE6)] px-2 py-0.5 text-[10px] font-medium text-[var(--forever-accent,#77736c)]">
               Apenas PNG ou WebP
             </span>
-            <span className="inline-flex items-center rounded-full bg-[var(--forever-sand,#EFECE6)] px-2 py-0.5 text-[10px] font-medium text-[var(--forever-accent,#80654E)]">
+            <span className="inline-flex items-center rounded-full bg-[var(--forever-sand,#EFECE6)] px-2 py-0.5 text-[10px] font-medium text-[var(--forever-accent,#77736c)]">
               Máximo 1MB
             </span>
           </div>
@@ -470,7 +470,7 @@ export function SingleImageUploader({
       {/* Busy Progress Bar */}
       {isBusy && (
         <div className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between text-xs text-[var(--forever-primary,#5D613C)]">
+          <div className="flex items-center justify-between text-xs text-[var(--forever-primary,#722F37)]">
             <span className="flex items-center gap-1.5 font-medium">
               <Loader2 size={12} className="animate-spin" />
               {isUploading
@@ -483,7 +483,7 @@ export function SingleImageUploader({
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--forever-sand,#EFECE6)]">
             <div
-              className="h-full rounded-full bg-[var(--forever-primary,#5D613C)] transition-all duration-300"
+              className="h-full rounded-full bg-[var(--forever-primary,#722F37)] transition-all duration-300"
               style={{ width: isUploading ? `${progress}%` : "100%" }}
             />
           </div>

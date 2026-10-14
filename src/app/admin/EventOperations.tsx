@@ -59,7 +59,7 @@ const descriptions = {
   team: "Permita que sua equipe consulte a lista e registre chegadas.",
 };
 const input =
-  "h-12 w-full rounded-[var(--wedding-radius)] border border-[#5d613c30] bg-[#fffdfa] px-4 text-sm text-[var(--forever-ink,#3D2501)] outline-none focus:border-[var(--forever-primary,#5D613C)] focus:ring-2 focus:ring-[#5d613c20]";
+  "h-12 w-full rounded-[var(--wedding-radius)] border border-[#722f3730] bg-[#fffdfa] px-4 text-sm text-[var(--forever-ink,#161616)] outline-none focus:border-[var(--forever-primary,#722F37)] focus:ring-2 focus:ring-[#722f3720]";
 
 const normalize = (value: string) =>
   value
@@ -188,11 +188,11 @@ export function EventOperations({
       )}
       <fieldset disabled={busy || pending} className="min-w-0 border-0 p-0">
         <div className="my-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <label className="flex min-h-12 w-full items-center gap-3 rounded-[var(--wedding-radius)] border border-[#5d613c30] bg-[#fffdfa] px-3 text-[var(--forever-primary,#5D613C)] focus-within:ring-2 focus-within:ring-[#5d613c20] sm:w-[340px] sm:shrink-0">
+          <label className="flex min-h-12 w-full items-center gap-3 rounded-[var(--wedding-radius)] border border-[#722f3730] bg-[#fffdfa] px-3 text-[var(--forever-primary,#722F37)] focus-within:ring-2 focus-within:ring-[#722f3720] sm:w-[340px] sm:shrink-0">
             <Search size={19} className="shrink-0" aria-hidden="true" />
             <input
               aria-label="Buscar nesta página"
-              className="h-12 w-full min-w-0 border-0! bg-transparent text-sm text-[var(--forever-ink,#3D2501)] outline-none! ring-0! shadow-none! placeholder:text-[#8a887b]"
+              className="h-12 w-full min-w-0 border-0! bg-transparent text-sm text-[var(--forever-ink,#161616)] outline-none! ring-0! shadow-none! placeholder:text-[#8a887b]"
               placeholder={
                 section === "history"
                   ? "Buscar ação, pessoa ou responsável"
@@ -285,15 +285,15 @@ export function EventOperations({
                     return (
                       <article
                         key={table.id}
-                        className="relative isolate overflow-hidden rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-5"
+                        className="relative isolate overflow-hidden rounded-[var(--wedding-radius)] border border-[#722f3720] bg-[#fffdfa] p-5"
                       >
                         <Armchair
                           size={110}
                           aria-hidden="true"
-                          className="pointer-events-none absolute -right-4 -bottom-4 -rotate-12 text-[var(--forever-primary,#5D613C)] opacity-10"
+                          className="pointer-events-none absolute -right-4 -bottom-4 -rotate-12 text-[var(--forever-primary,#722F37)] opacity-10"
                         />
                         <div className="flex items-center justify-between">
-                          <h2 className="font-serif text-2xl text-[var(--forever-ink,#3D2501)]">
+                          <h2 className="font-serif text-2xl text-[var(--forever-ink,#161616)]">
                             {table.name}
                           </h2>
                           <ExpandingIconButtonGroup className="relative flex">
@@ -323,14 +323,14 @@ export function EventOperations({
                             />
                           </ExpandingIconButtonGroup>
                         </div>
-                        <p className="mt-3 text-xs text-[var(--forever-accent,#80654E)]">
+                        <p className="mt-3 text-xs text-[var(--forever-accent,#77736c)]">
                           {count} de {table.capacity} lugares ocupados
                         </p>
                         <progress
                           aria-label={"Ocupação de " + table.name}
                           value={count}
                           max={table.capacity}
-                          className="relative mt-3 h-1.5 w-full overflow-hidden rounded-full border-0 bg-[#5d613c10] [&::-webkit-progress-bar]:bg-[#5d613c10] [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-[var(--forever-primary,#5D613C)] [&::-moz-progress-bar]:bg-[var(--forever-primary,#5D613C)]"
+                          className="relative mt-3 h-1.5 w-full overflow-hidden rounded-full border-0 bg-[#722f3710] [&::-webkit-progress-bar]:bg-[#722f3710] [&::-webkit-progress-value]:rounded-full [&::-webkit-progress-value]:bg-[var(--forever-primary,#722F37)] [&::-moz-progress-bar]:bg-[var(--forever-primary,#722F37)]"
                         />
                       </article>
                     );
@@ -370,7 +370,7 @@ export function EventOperations({
         {section === "buffet" && (
           <>
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-              <p className="text-sm text-[var(--forever-primary,#5D613C)]">
+              <p className="text-sm text-[var(--forever-primary,#722F37)]">
                 {confirmed.length} confirmados ·{" "}
                 {confirmed.filter((r) => r.restriction?.trim()).length} com
                 restrições · {confirmed.filter((r) => r.guest.child).length}{" "}
@@ -390,10 +390,10 @@ export function EventOperations({
                   ]}
                 />
               </div>}
-              <label className="flex items-center gap-2 text-xs text-[var(--forever-primary,#5D613C)]">
+              <label className="flex items-center gap-2 text-xs text-[var(--forever-primary,#722F37)]">
                 <input
                   type="checkbox"
-                  className="accent-[var(--forever-primary,#5D613C)]"
+                  className="accent-[var(--forever-primary,#722F37)]"
                   checked={onlyRestrictions}
                   onChange={(e) => setOnlyRestrictions(e.target.checked)}
                 />
@@ -415,15 +415,15 @@ export function EventOperations({
                           className="admin-dietary-alert shrink-0"
                           aria-hidden="true"
                         />
-                        <h2 className="text-sm font-medium text-[var(--forever-ink,#3D2501)]">
+                        <h2 className="text-sm font-medium text-[var(--forever-ink,#161616)]">
                           {guest.name}
                           {guest.child ? " · Criança" : ""}
                         </h2>
                       </div>
-                      <p className="mt-2 text-xs text-[var(--forever-accent,#80654E)]">
+                      <p className="mt-2 text-xs text-[var(--forever-accent,#77736c)]">
                         {invitation.label}{modules.tables&&<> · {tables.find((t)=>t.id===guest.tableId)?.name??"Sem mesa"}{guest.seat?" · Lugar "+guest.seat:""}</>}
                       </p>
-                      <p className="mt-3 whitespace-pre-wrap text-sm text-[var(--forever-primary,#5D613C)]">
+                      <p className="mt-3 whitespace-pre-wrap text-sm text-[var(--forever-primary,#722F37)]">
                         {restriction || "Nenhuma restrição informada."}
                       </p>
                     </article>
@@ -437,7 +437,7 @@ export function EventOperations({
         {section === "history" && (
           <>
             {pending ? (
-              <ol className="divide-y divide-[#5d613c20]">
+              <ol className="divide-y divide-[#722f3720]">
                 {[0, 1, 2, 3].map((index) => (
                   <li key={index} className="flex gap-4 py-5">
                     <SkeletonBlock className="mt-1 size-8 shrink-0 rounded-full!" />
@@ -450,7 +450,7 @@ export function EventOperations({
                 ))}
               </ol>
             ) : (
-              <ol className="divide-y divide-[#5d613c20]">
+              <ol className="divide-y divide-[#722f3720]">
                 {history
                   .filter((e) =>
                     normalize(
@@ -465,19 +465,19 @@ export function EventOperations({
                   )
                   .map((entry) => (
                     <li key={entry.id} className="flex gap-4 py-5">
-                      <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#5d613c10] text-[var(--forever-primary,#5D613C)]">
+                      <span className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#722f3710] text-[var(--forever-primary,#722F37)]">
                         <History size={15} />
                       </span>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-[var(--forever-ink,#3D2501)]">
+                        <p className="text-sm font-medium text-[var(--forever-ink,#161616)]">
                           {entry.action} · {entry.target}
                         </p>
                         {entry.details && (
-                          <p className="mt-2 whitespace-pre-wrap text-xs text-[var(--forever-primary,#5D613C)]">
+                          <p className="mt-2 whitespace-pre-wrap text-xs text-[var(--forever-primary,#722F37)]">
                             {entry.details}
                           </p>
                         )}
-                        <p className="mt-2 break-words text-[11px] text-[var(--forever-accent,#80654E)]">
+                        <p className="mt-2 break-words text-[11px] text-[var(--forever-accent,#77736c)]">
                           {entry.actor} ·{" "}
                           {new Date(entry.at).toLocaleString("pt-BR")}
                         </p>
@@ -493,7 +493,7 @@ export function EventOperations({
         )}
         {section === "team" && (
           <>
-            <div className="mb-6 rounded-[var(--wedding-radius)] bg-[#fffdfa] p-5 text-xs leading-relaxed text-[var(--forever-accent,#80654E)]">
+            <div className="mb-6 rounded-[var(--wedding-radius)] bg-[#fffdfa] p-5 text-xs leading-relaxed text-[var(--forever-accent,#77736c)]">
               A equipe acessa somente o controle de chegada: nomes, mesas e
               registro ou cancelamento de chegadas. Cadastre o e-mail e a senha
               da pessoa aqui. Ela entra pelo mesmo login do painel.
@@ -525,10 +525,10 @@ export function EventOperations({
                       className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--wedding-radius)] bg-[#fffdfa] p-5"
                     >
                       <div>
-                        <p className="break-all text-sm text-[var(--forever-ink,#3D2501)]">
+                        <p className="break-all text-sm text-[var(--forever-ink,#161616)]">
                           {member.email}
                         </p>
-                        <p className="mt-1 text-xs text-[var(--forever-accent,#80654E)]">
+                        <p className="mt-1 text-xs text-[var(--forever-accent,#77736c)]">
                           {member.active
                             ? "Acesso ativo · Recepção"
                             : "Acesso revogado"}
@@ -593,7 +593,7 @@ export function EventOperations({
             : "Defina o nome e a quantidade de lugares para organizar seus convidados."
         }
       >
-        <p className="mt-5 text-xs text-[var(--forever-accent,#80654E)]">
+        <p className="mt-5 text-xs text-[var(--forever-accent,#77736c)]">
           Todos os campos marcados com <span className="text-red-600">*</span>{" "}
           são obrigatórios.
         </p>
@@ -610,7 +610,7 @@ export function EventOperations({
               }
             }}
           >
-            <label className="grid gap-2 text-sm text-[var(--forever-primary,#5D613C)]">
+            <label className="grid gap-2 text-sm text-[var(--forever-primary,#722F37)]">
               <span>
                 E-mail da equipe <span className="text-red-600">*</span>
               </span>
@@ -625,7 +625,7 @@ export function EventOperations({
                 onChange={(e) => setEmail(e.target.value)}
               />
             </label>
-            <label className="grid gap-2 text-sm text-[var(--forever-primary,#5D613C)]">
+            <label className="grid gap-2 text-sm text-[var(--forever-primary,#722F37)]">
               <span>
                 Senha <span className="text-red-600">*</span>
               </span>
@@ -687,7 +687,7 @@ export function EventOperations({
               }
             }}
           >
-            <label className="grid gap-2 text-sm text-[var(--forever-primary,#5D613C)]">
+            <label className="grid gap-2 text-sm text-[var(--forever-primary,#722F37)]">
               <span>
                 Nome da mesa <span className="text-red-600">*</span>
               </span>
@@ -703,7 +703,7 @@ export function EventOperations({
                 onChange={(e) => setName(e.target.value)}
               />
             </label>
-            <label className="grid gap-2 text-sm text-[var(--forever-primary,#5D613C)]">
+            <label className="grid gap-2 text-sm text-[var(--forever-primary,#722F37)]">
               <span>
                 Quantidade de lugares <span className="text-red-600">*</span>
               </span>
@@ -756,7 +756,7 @@ export function EventOperations({
 }
 function Empty({ text }: { text: string }) {
   return (
-    <p className="rounded-[var(--wedding-radius)] bg-[#fffdfa] px-6 py-10 text-center text-sm text-[var(--forever-accent,#80654E)]">
+    <p className="rounded-[var(--wedding-radius)] bg-[#fffdfa] px-6 py-10 text-center text-sm text-[var(--forever-accent,#77736c)]">
       {text}
     </p>
   );
@@ -789,10 +789,10 @@ function SeatRow({
       }}
     >
       <div>
-        <p className="text-sm text-[var(--forever-ink,#3D2501)]">
+        <p className="text-sm text-[var(--forever-ink,#161616)]">
           {guest.name}
         </p>
-        <p className="mt-1 text-[11px] text-[var(--forever-accent,#80654E)]">
+        <p className="mt-1 text-[11px] text-[var(--forever-accent,#77736c)]">
           {label}
         </p>
       </div>
@@ -833,11 +833,11 @@ function SeatRow({
 
 function TableSkeleton() {
   return (
-    <article className="relative overflow-hidden rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-5">
+    <article className="relative overflow-hidden rounded-[var(--wedding-radius)] border border-[#722f3720] bg-[#fffdfa] p-5">
       <Armchair
         size={110}
         aria-hidden="true"
-        className="pointer-events-none absolute -right-4 -bottom-4 -rotate-12 text-[var(--forever-primary,#5D613C)] opacity-10"
+        className="pointer-events-none absolute -right-4 -bottom-4 -rotate-12 text-[var(--forever-primary,#722F37)] opacity-10"
       />
       <div className="flex h-[42px] items-center justify-between">
         <SkeletonBlock className="h-7 w-28" />

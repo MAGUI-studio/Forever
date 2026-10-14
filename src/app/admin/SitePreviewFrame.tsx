@@ -41,5 +41,5 @@ export function SitePreviewFrame(){const {slug}=useWedding();const [session,setS
   schedule();
   return ()=>{cancelAnimationFrame(frame);window.removeEventListener("scroll",schedule);window.removeEventListener("resize",schedule);document.removeEventListener("click",schedule);};
  },[hasDraft,session,slug]);
- if(error)return <p role="alert" className="p-6 text-sm text-red-700">{error}</p>;if(!draft||!session)return <p role="status" className="p-6 text-sm text-[#5D613C]">Preparando a prévia…</p>;return <WeddingProvider slug={slug} config={draft.config} templateId={draft.templateId} theme={session.theme} modules={session.modules} preview><WeddingSite/></WeddingProvider>;
+ if(error)return <p role="alert" className="p-6 text-sm text-red-700">{error}</p>;if(!draft||!session)return <p role="status" className="p-6 text-sm text-[#722F37]">Preparando a prévia…</p>;return <WeddingProvider slug={slug} config={draft.config} templateId={draft.templateId} theme={session.theme} modules={session.modules} preview><WeddingSite/></WeddingProvider>;
 }

@@ -8,5 +8,8 @@ export const foreverTheme = {
   "--forever-accent": "#77736c",
   "--forever-sand": "#dcd8d1",
   "--forever-paper": "var(--page-background, #F1F1F1)",
+  "--forever-hover-tint": "rgba(114, 47, 55, 0.08)",
+  "--forever-hover-border": "rgba(114, 47, 55, 0.35)",
+  "--forever-focus": "#722F37",
   "--wedding-radius": "16px",
 } as CSSProperties;

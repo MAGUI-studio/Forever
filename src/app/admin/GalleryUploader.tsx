@@ -287,8 +287,8 @@ export function GalleryUploader({
       <div>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Camera size={20} className="text-[var(--forever-primary,#5D613C)]" />
-            <h2 className="font-serif text-2xl text-[var(--forever-ink,#3D2501)]">
+            <Camera size={20} className="text-[var(--forever-primary,#722F37)]" />
+            <h2 className="font-serif text-2xl text-[var(--forever-ink,#161616)]">
               Fotos do casal
             </h2>
           </div>
@@ -297,21 +297,21 @@ export function GalleryUploader({
               type="button"
               disabled={isBusy}
               onClick={() => setShowResetModal(true)}
-              className="inline-flex items-center gap-1.5 text-xs text-[var(--forever-accent,#80654E)] transition-colors hover:text-[var(--forever-primary,#5D613C)] disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 text-xs text-[var(--forever-accent,#77736c)] transition-colors hover:text-[var(--forever-primary,#722F37)] disabled:opacity-50"
             >
               <RefreshCw size={13} className={isCleaning ? "animate-spin" : ""} />
               Restaurar fotos de exemplo
             </button>
           )}
         </div>
-        <p className="mt-1 text-xs leading-relaxed text-[var(--forever-accent,#80654E)]">
+        <p className="mt-1 text-xs leading-relaxed text-[var(--forever-accent,#77736c)]">
           Envie as {MAX_GALLERY_PHOTOS} fotos oficiais do casamento para ilustrar a galeria dos noivos.
         </p>
       </div>
 
       {/* Auto-Save Reassurance Card */}
-      <div className="flex items-start gap-3 rounded-2xl border border-[var(--forever-hover-border,#5d613c25)] bg-[var(--forever-hover-tint,#5d613c08)] p-3.5 text-xs text-[var(--forever-primary,#5D613C)]">
-        <Sparkles size={17} className="mt-0.5 shrink-0 text-[var(--forever-primary,#5D613C)]" />
+      <div className="flex items-start gap-3 rounded-2xl border border-[var(--forever-hover-border,#722f3725)] bg-[var(--forever-hover-tint,#722f3708)] p-3.5 text-xs text-[var(--forever-primary,#722F37)]">
+        <Sparkles size={17} className="mt-0.5 shrink-0 text-[var(--forever-primary,#722F37)]" />
         <div className="leading-relaxed">
           <span className="font-semibold">Salvamento automático:</span> assim que você enviar as fotos, suas alterações serão salvas automaticamente no site.
         </div>
@@ -338,14 +338,14 @@ export function GalleryUploader({
       {success && (
         <div
           role="status"
-          className="flex items-start gap-2.5 rounded-xl border border-[#5d613c30] bg-[#edf0e3] p-3.5 text-xs text-[var(--forever-primary,#5D613C)]"
+          className="flex items-start gap-2.5 rounded-xl border border-[#722f3730] bg-[#fbf4f5] p-3.5 text-xs text-[var(--forever-primary,#722F37)]"
         >
-          <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--forever-primary,#5D613C)]" />
+          <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--forever-primary,#722F37)]" />
           <div className="flex-1 leading-relaxed">{success}</div>
           <button
             type="button"
             onClick={() => setSuccess("")}
-            className="text-[var(--forever-primary,#5D613C)] hover:opacity-75"
+            className="text-[var(--forever-primary,#722F37)] hover:opacity-75"
           >
             <X size={14} />
           </button>
@@ -361,8 +361,8 @@ export function GalleryUploader({
         onClick={() => !isBusy && fileInputRef.current?.click()}
         className={`group relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition-all cursor-pointer ${
           dragActive
-            ? "border-[var(--forever-primary,#5D613C)] bg-[var(--forever-hover-tint,#5d613c0a)] ring-4 ring-[var(--forever-hover-tint,#5d613c12)]"
-            : "border-[var(--forever-hover-border,#5d613c30)] bg-[var(--forever-sand-card,#fffdfa)] hover:border-[var(--forever-primary,#5D613C)] hover:bg-[var(--forever-hover-tint,#5d613c05)]"
+            ? "border-[var(--forever-primary,#722F37)] bg-[var(--forever-hover-tint,#722f370a)] ring-4 ring-[var(--forever-hover-tint,#722f3712)]"
+            : "border-[var(--forever-hover-border,#722f3730)] bg-[var(--forever-sand-card,#fffdfa)] hover:border-[var(--forever-primary,#722F37)] hover:bg-[var(--forever-hover-tint,#722f3705)]"
         }`}
       >
         <input
@@ -375,34 +375,34 @@ export function GalleryUploader({
           className="sr-only"
         />
 
-        <div className="flex size-14 items-center justify-center rounded-full bg-[var(--forever-sand,#EFECE6)] text-[var(--forever-primary,#5D613C)] shadow-xs transition-transform duration-300 group-hover:scale-110">
+        <div className="flex size-14 items-center justify-center rounded-full bg-[var(--forever-sand,#EFECE6)] text-[var(--forever-primary,#722F37)] shadow-xs transition-transform duration-300 group-hover:scale-110">
           {isBusy ? (
-            <Loader2 size={24} className="animate-spin text-[var(--forever-primary,#5D613C)]" />
+            <Loader2 size={24} className="animate-spin text-[var(--forever-primary,#722F37)]" />
           ) : (
             <UploadCloud size={26} strokeWidth={1.75} />
           )}
         </div>
 
-        <p className="mt-3 text-sm font-medium text-[var(--forever-ink,#3D2501)]">
-          <span className="text-[var(--forever-primary,#5D613C)] underline decoration-[var(--forever-primary,#5D613C)]/40 underline-offset-4">
+        <p className="mt-3 text-sm font-medium text-[var(--forever-ink,#161616)]">
+          <span className="text-[var(--forever-primary,#722F37)] underline decoration-[var(--forever-primary,#722F37)]/40 underline-offset-4">
             Clique para selecionar as fotos
           </span>{" "}
           ou arraste até aqui
         </p>
 
-        <p className="mt-1 text-xs text-[var(--forever-accent,#80654E)]">
+        <p className="mt-1 text-xs text-[var(--forever-accent,#77736c)]">
           Selecione as imagens em alta resolução do casal
         </p>
 
         {/* Requirements Badges */}
         <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-1 text-[11px] font-medium text-[var(--forever-accent,#80654E)]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-1 text-[11px] font-medium text-[var(--forever-accent,#77736c)]">
             Apenas PNG ou WebP
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-1 text-[11px] font-medium text-[var(--forever-accent,#80654E)]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-1 text-[11px] font-medium text-[var(--forever-accent,#77736c)]">
             Máximo 1MB por imagem
           </span>
-          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-1 text-[11px] font-medium text-[var(--forever-accent,#80654E)]">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-1 text-[11px] font-medium text-[var(--forever-accent,#77736c)]">
             Até 6 fotos
           </span>
         </div>
@@ -410,11 +410,11 @@ export function GalleryUploader({
 
       {/* Staged Files Preview (Before Upload) */}
       {staged.length > 0 && (
-        <div className="rounded-2xl border border-[var(--forever-hover-border,#5d613c30)] bg-[var(--forever-sand-card,#fffdfa)] p-4 shadow-sm">
+        <div className="rounded-2xl border border-[var(--forever-hover-border,#722f3730)] bg-[var(--forever-sand-card,#fffdfa)] p-4 shadow-sm">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <Sparkles size={16} className="text-[var(--forever-primary,#5D613C)]" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--forever-primary,#5D613C)]">
+              <Sparkles size={16} className="text-[var(--forever-primary,#722F37)]" />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--forever-primary,#722F37)]">
                 Fotos prontas para upload ({staged.length}/{MAX_GALLERY_PHOTOS})
               </h3>
             </div>
@@ -422,7 +422,7 @@ export function GalleryUploader({
               <button
                 type="button"
                 onClick={() => setStaged([])}
-                className="text-xs text-[var(--forever-accent,#80654E)] hover:text-red-600"
+                className="text-xs text-[var(--forever-accent,#77736c)] hover:text-red-600"
               >
                 Limpar seleção
               </button>
@@ -433,7 +433,7 @@ export function GalleryUploader({
             {staged.map((item, index) => (
               <div
                 key={item.previewUrl}
-                className="group relative aspect-square overflow-hidden rounded-xl border border-[#5d613c20] bg-neutral-100"
+                className="group relative aspect-square overflow-hidden rounded-xl border border-[#722f3720] bg-neutral-100"
               >
                 <img
                   src={item.previewUrl}
@@ -475,7 +475,7 @@ export function GalleryUploader({
           {/* Upload and Auto-Save Progress Bar */}
           {isBusy && (
             <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between text-xs text-[var(--forever-primary,#5D613C)]">
+              <div className="flex items-center justify-between text-xs text-[var(--forever-primary,#722F37)]">
                 <span className="flex items-center gap-1.5 font-medium">
                   <Loader2 size={13} className="animate-spin" />
                   {isUploading
@@ -488,7 +488,7 @@ export function GalleryUploader({
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--forever-sand,#EFECE6)]">
                 <div
-                  className="h-full rounded-full bg-[var(--forever-primary,#5D613C)] transition-all duration-300"
+                  className="h-full rounded-full bg-[var(--forever-primary,#722F37)] transition-all duration-300"
                   style={{ width: isUploading ? `${progress}%` : "100%" }}
                 />
               </div>
@@ -522,12 +522,12 @@ export function GalleryUploader({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <ImageIcon size={16} className="text-[var(--forever-accent,#80654E)]" />
-            <span className="text-xs font-medium text-[var(--forever-primary,#5D613C)]">
+            <ImageIcon size={16} className="text-[var(--forever-accent,#77736c)]" />
+            <span className="text-xs font-medium text-[var(--forever-primary,#722F37)]">
               Fotos ativas no site ({activePhotos.length}/{MAX_GALLERY_PHOTOS})
             </span>
           </div>
-          <span className="inline-flex items-center gap-1 text-[11px] text-[var(--forever-accent,#80654E)]">
+          <span className="inline-flex items-center gap-1 text-[11px] text-[var(--forever-accent,#77736c)]">
             {hasCustomUploads ? (
               <>
                 <CheckCircle2 size={12} className="text-emerald-600" />
@@ -543,7 +543,7 @@ export function GalleryUploader({
           {activePhotos.map((photo, index) => (
             <div
               key={photo.id}
-              className="group relative aspect-square overflow-hidden rounded-xl border border-[#5d613c20] bg-neutral-100 shadow-sm"
+              className="group relative aspect-square overflow-hidden rounded-xl border border-[#722f3720] bg-neutral-100 shadow-sm"
             >
               <Image
                 src={photo.url}

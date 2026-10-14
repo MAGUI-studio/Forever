@@ -1,5 +1,6 @@
 "use client";
 
+import { foreverTheme } from "@/config/brand";
 import * as Dialog from "@radix-ui/react-dialog";
 import { AdminButton } from "./AdminButton";
 import { Loader2, RefreshCw, X } from "lucide-react";
@@ -33,36 +34,37 @@ export function ConfirmModal({
   return (
     <Dialog.Root open={open} onOpenChange={(val) => !isBusy && onOpenChange(val)}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-[#17130D]/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-[#161616]/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200" />
         <Dialog.Content
-          className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#5d613c25] bg-[#fffdfa] p-6 shadow-2xl focus:outline-none animate-in zoom-in-95 fade-in duration-200"
+          style={foreverTheme}
+          className="fixed left-1/2 top-1/2 z-50 w-[92vw] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#722f3720] bg-[#fffdfa] p-6 shadow-2xl focus:outline-none animate-in zoom-in-95 fade-in duration-200"
           onEscapeKeyDown={(e) => isBusy && e.preventDefault()}
           onPointerDownOutside={(e) => isBusy && e.preventDefault()}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--forever-hover-tint,#5d613c10)] text-[var(--forever-primary,#5D613C)]">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--forever-hover-tint,#722f3710)] text-[var(--forever-primary,#722F37)]">
                 {icon ?? <RefreshCw size={18} strokeWidth={1.75} />}
               </div>
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--forever-accent,#80654E)]">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--forever-accent,#77736c)]">
                   {eyebrow}
                 </p>
-                <Dialog.Title className="font-serif text-lg font-normal text-[var(--forever-ink,#3D2501)]">
+                <Dialog.Title className="font-serif text-lg font-normal text-[var(--forever-ink,#161616)]">
                   {title}
                 </Dialog.Title>
               </div>
             </div>
             <Dialog.Close
               disabled={isBusy}
-              className="rounded-lg p-1 text-[var(--forever-accent,#80654E)] hover:bg-[var(--forever-hover-tint,#5d613c10)] hover:text-[var(--forever-ink,#3D2501)] disabled:opacity-40"
+              className="rounded-lg p-1 text-[var(--forever-accent,#77736c)] hover:bg-[var(--forever-hover-tint,#722f3710)] hover:text-[var(--forever-ink,#161616)] disabled:opacity-40"
               aria-label="Fechar"
             >
               <X size={18} />
             </Dialog.Close>
           </div>
 
-          <Dialog.Description className="mt-3.5 text-xs leading-relaxed text-[var(--forever-accent,#80654E)]">
+          <Dialog.Description className="mt-3.5 text-xs leading-relaxed text-[var(--forever-accent,#77736c)]">
             {description}
           </Dialog.Description>
 

@@ -309,7 +309,7 @@ export function AdminPanel({
               <Link href={weddingPath("admin/dashboard")} aria-label="Forever — Início" className="transition-opacity hover:opacity-85">
                 <ForeverLogo className="w-28 sm:w-32" />
               </Link>
-              <span className="hidden sm:block h-7 w-px bg-[#80654e30]" aria-hidden="true" />
+              <span className="hidden sm:block h-7 w-px bg-[#722f3725]" aria-hidden="true" />
               <div
                 className="hidden sm:flex items-center"
                 title={`Assinatura: ${PLAN_NAMES[plan] ?? "Forever PRO"}`}
@@ -524,7 +524,7 @@ export function AdminPanel({
               <DropdownMenu.Portal><DropdownMenu.Content className="admin-profile-menu border border-[#722F3720] shadow-xl" align="end" sideOffset={10} collisionPadding={16}>
                 <DropdownMenu.Label className="admin-profile-label">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-[#722F37]">Espaço dos noivos</span>
-                  <span className="text-xs text-[#80654e] font-normal">{user.email}</span>
+                  <span className="text-xs text-[#77736c] font-normal">{user.email}</span>
                 </DropdownMenu.Label>
                 {plan === "essencial" && (
                   <DropdownMenu.Item asChild>
@@ -729,7 +729,7 @@ export function AdminPanel({
                       Lista de <em>convidados</em>
                     </h2>
                     <p>
-                      {loading && !authorized ? <span className="inline-block h-3 w-32 animate-pulse rounded bg-[#5d613c15]" aria-label="Carregando quantidade" /> : <>{visible.length}{" "}
+                      {loading && !authorized ? <span className="inline-block h-3 w-32 animate-pulse rounded bg-[#722f3715]" aria-label="Carregando quantidade" /> : <>{visible.length}{" "}
                       {visible.length === 1
                         ? "convite encontrado"
                         : "convites encontrados"}{plan === "essencial" && <> · {allGuests.length} de 50 convidados</>}</> }
@@ -761,18 +761,18 @@ export function AdminPanel({
                 )}
                 <div className="flex flex-col gap-5 py-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="grid min-w-0 gap-3 sm:grid-cols-[340px_220px] sm:items-center sm:gap-6">
-                    <label className="flex min-h-12 min-w-0 items-center gap-3 rounded-[var(--wedding-radius)] border border-[#5d613c30] bg-[#fffdfa] px-3 text-[var(--forever-primary,#5D613C)] transition-[border-color,box-shadow] focus-within:border-[#5d613c70] focus-within:ring-2 focus-within:ring-[#5d613c20]">
+                    <label className="flex min-h-12 min-w-0 items-center gap-3 rounded-[var(--wedding-radius)] border border-[#722f3730] bg-[#fffdfa] px-3 text-[var(--forever-primary,#722F37)] transition-[border-color,box-shadow] focus-within:border-[#722f3770] focus-within:ring-2 focus-within:ring-[#722f3720]">
                       <Search size={19} className="shrink-0" aria-hidden="true" />
-                      <input aria-label="Buscar convidados" className="h-12 w-full min-w-0 rounded-lg bg-transparent text-sm text-[var(--forever-ink,#3D2501)] border-0! outline-none! ring-0! shadow-none! placeholder:text-[#8a887b] focus:outline-none! focus-visible:outline-none!" placeholder="Buscar nome, família ou grupo" value={query} onChange={event => setQuery(event.target.value)} />
+                      <input aria-label="Buscar convidados" className="h-12 w-full min-w-0 rounded-lg bg-transparent text-sm text-[var(--forever-ink,#161616)] border-0! outline-none! ring-0! shadow-none! placeholder:text-[#8a887b] focus:outline-none! focus-visible:outline-none!" placeholder="Buscar nome, família ou grupo" value={query} onChange={event => setQuery(event.target.value)} />
                     </label>
-                    <WeddingSelect label="Filtrar situação" className="h-12! min-h-12! border! border-[#5d613c30]! bg-[#fffdfa]! px-3! text-sm! shadow-none! focus-visible:border-[var(--forever-hover-border,#5d613c70)]!" value={filter} onValueChange={setFilter} options={[{value:"todos",label:"Todos os convites"},{value:"pendente",label:"Com pendentes"},{value:"confirmado",label:"Com confirmados"},{value:"recusado",label:"Com recusas"},{value:"abertos",label:"Convites abertos"},{value:"nao-respondidos",label:"Com respostas pendentes"},{value:"respondidos",label:"Totalmente respondidos"},{value:"enviados",label:"Convites enviados"},{value:"nao-enviados",label:"Ainda não enviados"},{value:"inativos",label:"Inativos"}].filter(option=>modules.invitationTracking||!["abertos","enviados","nao-enviados","nao-respondidos","respondidos"].includes(option.value))} />
+                    <WeddingSelect label="Filtrar situação" className="h-12! min-h-12! border! border-[#722f3730]! bg-[#fffdfa]! px-3! text-sm! shadow-none! focus-visible:border-[var(--forever-hover-border,#722f3770)]!" value={filter} onValueChange={setFilter} options={[{value:"todos",label:"Todos os convites"},{value:"pendente",label:"Com pendentes"},{value:"confirmado",label:"Com confirmados"},{value:"recusado",label:"Com recusas"},{value:"abertos",label:"Convites abertos"},{value:"nao-respondidos",label:"Com respostas pendentes"},{value:"respondidos",label:"Totalmente respondidos"},{value:"enviados",label:"Convites enviados"},{value:"nao-enviados",label:"Ainda não enviados"},{value:"inativos",label:"Inativos"}].filter(option=>modules.invitationTracking||!["abertos","enviados","nao-enviados","nao-respondidos","respondidos"].includes(option.value))} />
                   </div>
                   <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
-                    <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[var(--forever-hover-tint,#5d613c0d)] disabled:opacity-50" disabled={busy} onClick={() => void action(async () => {await load();})}>
+                    <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#722F37)] transition-colors hover:bg-[var(--forever-hover-tint,#722f370d)] disabled:opacity-50" disabled={busy} onClick={() => void action(async () => {await load();})}>
                       <RefreshCw size={16} aria-hidden="true" className={busy ? "animate-spin" : ""} />Atualizar
                     </button>
                     {plan === "essencial" && (
-                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${allGuests.length >= 50 ? "border-[#b4434640] bg-[#b4434612] font-medium text-[#b44346]" : "border-[#5d613c30] bg-[#fffdfa] text-[var(--forever-primary,#5D613C)]"}`}>
+                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${allGuests.length >= 50 ? "border-[#b4434640] bg-[#b4434612] font-medium text-[#b44346]" : "border-[#722f3730] bg-[#fffdfa] text-[var(--forever-primary,#722F37)]"}`}>
                         <Users size={13} aria-hidden="true" />
                         <span>{allGuests.length} / 50 convidados {allGuests.length >= 50 ? "· Limite atingido" : ""}</span>
                       </span>
@@ -818,7 +818,7 @@ export function AdminPanel({
                   {invitationSections.filter(section => section.invitations.length > 0).map(section => (
                     <section key={section.id} className="space-y-5">
                       <SectionDivider title={section.title} count={section.invitations.length} actions={
-                        <button type="button" className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--wedding-radius)] px-2 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] focus-visible:outline-2 focus-visible:outline-[var(--forever-primary,#5D613C)]" onClick={() => setCollapsed(current => {
+                        <button type="button" className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--wedding-radius)] px-2 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#722f3710)] focus-visible:outline-2 focus-visible:outline-[var(--forever-primary,#722F37)]" onClick={() => setCollapsed(current => {
                           const allExpanded = section.invitations.every(invite => !current[invite.id]);
                           return {...current, ...Object.fromEntries(section.invitations.map(invite => [invite.id, allExpanded]))};
                         })}>
@@ -855,7 +855,7 @@ export function AdminPanel({
                         </ExpandingIconButtonGroup>
                       </div>
                       <div id={"invite-body-" + i.id} className="admin-invite-collapse" data-open={!collapsed[i.id]} aria-hidden={!!collapsed[i.id]} inert={!!collapsed[i.id]}><div className="admin-invite-collapse-inner">
-                      {modules.invitationTracking&&<div className="my-3 flex flex-wrap gap-x-5 gap-y-2 text-[11px] text-[var(--forever-accent,#80654E)]"><span>{i.sentAt ? "Enviado em "+new Date(i.sentAt).toLocaleDateString("pt-BR") : "Envio não registrado"}</span><span>{i.openedAt ? "Primeiro acesso em "+new Date(i.openedAt).toLocaleString("pt-BR") : "Sem acesso registrado"}</span><span>{i.guests.filter(g=>g.status!=="pendente").length}/{i.guests.length} respostas</span></div>}<div className={i.respondedAt || i.dietaryRestrictions || i.message ? "mt-5 mb-5" : "mt-5"}>
+                      {modules.invitationTracking&&<div className="my-3 flex flex-wrap gap-x-5 gap-y-2 text-[11px] text-[var(--forever-accent,#77736c)]"><span>{i.sentAt ? "Enviado em "+new Date(i.sentAt).toLocaleDateString("pt-BR") : "Envio não registrado"}</span><span>{i.openedAt ? "Primeiro acesso em "+new Date(i.openedAt).toLocaleString("pt-BR") : "Sem acesso registrado"}</span><span>{i.guests.filter(g=>g.status!=="pendente").length}/{i.guests.length} respostas</span></div>}<div className={i.respondedAt || i.dietaryRestrictions || i.message ? "mt-5 mb-5" : "mt-5"}>
                         {i.guests.map((g) => (
                           <details key={g.id} className="rsvp-guest-accordion admin-guest-accordion last:border-b-0! [&:last-child>summary]:pb-0! [&:last-child[open]>summary]:pb-[18px]!">
                             <summary>
@@ -874,7 +874,7 @@ export function AdminPanel({
                             </summary>
                             <div className="rsvp-guest-accordion-fields">
                               <div className="admin-guest-notes">
-                                {modules.invitationTracking&&i.personalOpenedAt?.[g.id] && <p className="text-xs text-[var(--forever-accent,#80654E)]">Link pessoal aberto em {new Date(i.personalOpenedAt[g.id]).toLocaleString("pt-BR")}</p>}
+                                {modules.invitationTracking&&i.personalOpenedAt?.[g.id] && <p className="text-xs text-[var(--forever-accent,#77736c)]">Link pessoal aberto em {new Date(i.personalOpenedAt[g.id]).toLocaleString("pt-BR")}</p>}
                                 {modules.dietaryRestrictions&&<div><p><WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" aria-hidden="true" />Restrições alimentares</p><span>{i.personalResponses?.[g.id]?.dietaryRestrictions || "Nenhuma restrição informada."}</span></div>}
                                 {modules.messages&&<div><p><ChatTextIcon size={19} weight="fill" className="admin-message-alert" aria-hidden="true" />Recado aos noivos</p><span>{i.personalResponses?.[g.id]?.message || "Nenhum recado enviado."}</span></div>}
                               </div>
@@ -883,7 +883,7 @@ export function AdminPanel({
                         ))}
                       </div>
                       {i.respondedAt && (
-                        <p className="text-sm text-[var(--forever-accent,#80654E)]">
+                        <p className="text-sm text-[var(--forever-accent,#77736c)]">
                           Última resposta do convite:{" "}
                           {new Date(i.respondedAt).toLocaleString("pt-BR")}
                         </p>

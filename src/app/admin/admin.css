@@ -1,9 +1,22 @@
 /* Wedding stationery, shared typography and botanical ornaments. */
+.admin-root,
+.admin-wedding {
+  --forever-primary: #722F37;
+  --forever-primary-hover: #5B252C;
+  --forever-ink: #161616;
+  --forever-accent: #77736c;
+  --forever-sand: #dcd8d1;
+  --forever-paper: var(--page-background, #F1F1F1);
+  --forever-hover-tint: rgba(114, 47, 55, 0.08);
+  --forever-hover-border: rgba(114, 47, 55, 0.35);
+  --forever-focus: #722F37;
+  --wedding-radius: 16px;
+}
 .admin-wedding {
   position: relative;
   isolation: isolate;
   min-height: 100svh;
-  color: var(--forever-ink,#3d2501);
+  color: var(--forever-ink,#161616);
   background: var(--forever-paper,#f1f1f1);
 }
 .admin-background {
@@ -28,7 +41,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  border-bottom: 1px solid #80654e24;
+  border-bottom: 1px solid rgba(114, 47, 55, 0.15);
 }
 .admin-wordmark {
   font-family: var(--font-serif);
@@ -38,7 +51,7 @@
 }
 .admin-wordmark em {
   padding-inline: 5px;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   font-weight: 300;
 }
 .admin-wordmark > span {
@@ -48,7 +61,7 @@
   font-size: 8px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
 }
 .admin-back {
   display: inline-flex;
@@ -57,18 +70,18 @@
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
   padding-block: 12px;
 }
 .admin-back:hover {
-  color: var(--forever-ink,#3d2501);
+  color: var(--forever-ink,#161616);
 }
 .admin-eyebrow {
   font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
 }
 .admin-page-heading {
   display: flex;
@@ -87,7 +100,7 @@
 }
 .admin-page-heading h1 em,
 .admin-list-heading h2 em {
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
 }
 .admin-subtitle {
   margin-top: 24px;
@@ -95,7 +108,7 @@
   font-size: 13px;
   font-weight: 300;
   line-height: 1.9;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
 }
 .admin-heading-seal {
   position: relative;
@@ -104,7 +117,7 @@
   width: 150px;
   height: 150px;
   flex-shrink: 0;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
 }
 .admin-heading-seal > svg {
   position: absolute;
@@ -118,7 +131,7 @@
 }
 .admin-heading-seal i {
   font-size: 22px;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
 }
 .admin-login-grid {
   display: grid;
@@ -126,7 +139,7 @@
   max-width: 1060px;
   margin: 48px auto 40px;
   border-radius: 220px 24px 24px 24px;
-  box-shadow: 0 30px 85px -48px #3d25014a;
+  box-shadow: 0 30px 85px -48px rgba(22, 22, 22, 0.25);
   overflow: hidden;
   border: 1px solid #c7b79d60;
   background: #f9f8f4;
@@ -139,8 +152,8 @@
   overflow: hidden;
   min-height: 650px;
   padding: 64px 28px 48px;
-  background: var(--forever-primary,#5d613c);
-  color: #f5f5da;
+  background: var(--forever-primary,#722F37);
+  color: #fffdfb;
 }
 .admin-scene-photo {
   position: absolute;
@@ -236,7 +249,7 @@
   margin-bottom: 26px;
   border: 1px solid #c7b79d80;
   border-radius: 50%;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
 }
 .admin-login-intro h2 {
   margin-top: 16px;
@@ -247,13 +260,13 @@
   letter-spacing: -0.035em;
 }
 .admin-login-intro h2 em {
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
 }
 .admin-login-intro > p:last-child {
   font-size: 12px;
   line-height: 1.9;
   font-weight: 300;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   margin-top: 20px;
   max-width: 300px;
 }
@@ -264,7 +277,7 @@
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
 }
 .admin-wedding .guest-input {
   background: #fffdfbba;
@@ -279,10 +292,10 @@
     background 0.25s;
 }
 .admin-wedding .guest-input::placeholder {
-  color: #80654eaa;
+  color: #77736caa;
 }
 .admin-wedding .guest-input:hover {
-  border-color: #80654e90;
+  border-color: #77736c90;
 }
 .admin-wedding .guest-input:focus {
   background: #fffdfb;
@@ -301,11 +314,11 @@
     transform 0.25s;
 }
 .admin-wedding .guest-button {
-  background: var(--forever-primary,#5d613c);
+  background: var(--forever-primary,#722F37);
   color: #fffdfb;
 }
 .admin-wedding .guest-button:hover:not(:disabled) {
-  background: var(--forever-primary-hover,#44492c);
+  background: var(--forever-primary-hover,#5B252C);
   transform: translateY(-1px);
 }
 .admin-wedding .guest-secondary {
@@ -314,7 +327,7 @@
 }
 .admin-wedding .guest-secondary:hover:not(:disabled) {
   background: #ede8de;
-  border-color: #80654e80;
+  border-color: #77736c80;
 }
 .admin-wedding .admin-login-submit {
   justify-content: space-between;
@@ -331,7 +344,7 @@
   justify-content: center;
   gap: 7px;
   font-size: 9px;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   text-align: center;
   line-height: 1.8;
 }
@@ -358,13 +371,13 @@
   flex-shrink: 0;
   border-radius: 50%;
   background: #e7e4d9;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
   font-family: var(--font-serif);
   font-size: 23px;
 }
 .admin-account small {
   display: block;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   font-size: 9px;
   margin-bottom: 4px;
 }
@@ -384,14 +397,14 @@
   border-radius: var(--wedding-radius);
   padding: 22px 20px;
   background: #fffefbbd;
-  box-shadow: 0 8px 30px -24px #3d250126;
+  box-shadow: 0 8px 30px -24px rgba(22, 22, 22, 0.15);
 }
 .admin-stat-top {
   display: flex;
   justify-content: space-between;
   gap: 8px;
   align-items: center;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
 }
 .admin-stat-top p {
   font-size: 10px;
@@ -409,12 +422,12 @@
   display: block;
   font-size: 9px;
   margin-top: 11px;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
 }
 .admin-stat:first-child {
-  background: var(--forever-primary,#5d613c);
-  border-color: var(--forever-primary,#5d613c);
-  color: #f5f5da;
+  background: var(--forever-primary,#722F37);
+  border-color: var(--forever-primary,#722F37);
+  color: #fffdfb;
 }
 .admin-stat:first-child .admin-stat-top,
 .admin-stat:first-child .admin-stat-caption {
@@ -432,7 +445,7 @@
   align-items: center;
   gap: 11px;
   font-size: 12px;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
   list-style: none;
 }
 .admin-settings summary::-webkit-details-marker {
@@ -452,7 +465,7 @@
 }
 .admin-settings > p {
   font-size: 11px;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   line-height: 1.8;
 }
 .admin-list-heading {
@@ -472,12 +485,12 @@
 .admin-list-heading > div > p:last-child {
   margin-top: 10px;
   font-size: 10px;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
 }
 .admin-heading-branch {
   width: 45px;
   height: 85px;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   opacity: 0.4;
   transform: rotate(25deg);
   overflow: hidden;
@@ -504,7 +517,7 @@
   border: 1px solid #c7b79d99;
   border-radius: var(--wedding-radius);
   padding: 30px;
-  box-shadow: 0 20px 55px -38px #3d25013d;
+  box-shadow: 0 20px 55px -38px rgba(22, 22, 22, 0.2);
 }
 .admin-editor > h2 {
   font-weight: 300;
@@ -532,7 +545,7 @@
   margin-left: auto;
 }
 .admin-wedding input[type="checkbox"] {
-  accent-color: var(--forever-primary,#5d613c);
+  accent-color: var(--forever-primary,#722F37);
   width: 16px;
   height: 16px;
   flex-shrink: 0;
@@ -542,7 +555,7 @@
   border: 1px solid #c7b79d59;
   border-radius: var(--wedding-radius);
   background: #fffefbdb;
-  box-shadow: 0 10px 40px -34px #3d25012e;
+  box-shadow: 0 10px 40px -34px rgba(22, 22, 22, 0.18);
 }
 .admin-invite--inactive {
   background: #edebe5b3;
@@ -576,7 +589,7 @@
   border: 1px solid #c7b79d55;
   border-radius: 50%;
   font-family: var(--font-serif);
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   font-size: 18px;
 }
 .admin-person-actions {
@@ -588,7 +601,7 @@
 .admin-person-actions > label {
   align-items: center;
   font-size: 11px;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
 }
 .admin-status {
   display: inline-flex;
@@ -621,7 +634,7 @@
 .admin-invite > details {
   padding-top: 13px;
   border-top: 1px solid #c7b79d33;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   font-size: 10px;
 }
 .admin-invite > p {
@@ -641,7 +654,7 @@
   width: 72px;
   height: 72px;
   margin: 0 auto 20px;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
   border: 1px solid #c7b79d70;
   border-radius: 50%;
   background: #f1f1e9;
@@ -658,7 +671,7 @@
   margin: 14px auto 22px;
   font-size: 12px;
   line-height: 1.9;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
 }
 .admin-alert {
   margin-block: 20px;
@@ -674,16 +687,16 @@
   background: #faeeeb;
 }
 .admin-alert--success {
-  color: #4a5937;
-  border-color: #5d613c33;
-  background: #edf0e6;
+  color: #2e6930;
+  border-color: #2e693033;
+  background: #f0f7f0;
 }
 .admin-loading {
   display: grid;
   justify-items: center;
   padding: 140px 24px;
   gap: 22px;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   font-size: 12px;
 }
 .admin-loading > svg,
@@ -898,7 +911,7 @@
   align-items: center;
   gap: 14px;
   text-align: left;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
   cursor: pointer;
   transition:
     background 0.2s,
@@ -918,7 +931,7 @@
 }
 .admin-settings-trigger small {
   font-size: 10px;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
 }
 .admin-settings-edit {
   margin-left: auto;
@@ -931,7 +944,7 @@
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: #191d16a8;
+  background: rgba(22, 22, 22, 0.65);
   backdrop-filter: blur(5px);
   animation: admin-modal-fade 0.18s ease-out;
 }
@@ -949,7 +962,7 @@
   background: #fffdf9;
   border: 1px solid #e8e1d6;
   border-radius: var(--wedding-radius);
-  box-shadow: 0 40px 120px #11150e50;
+  box-shadow: 0 40px 120px rgba(22, 22, 22, 0.35);
   overflow: hidden;
   animation: admin-modal-enter 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -974,8 +987,9 @@
   border: 1px solid #c7b79d70;
   border-radius: 50%;
   flex-shrink: 0;
-  color: var(--forever-primary,#5d613c);
-  background: #f4f2e9;
+  color: var(--forever-primary,#722F37);
+  background: #fbf4f5;
+  border-color: #722f3730;
 }
 .admin-modal-emblem--danger {
   background: #f5eae5;
@@ -1001,7 +1015,7 @@
 .admin-modal-description {
   margin-top: 11px;
   font-size: 11px;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   line-height: 1.8;
   max-width: 490px;
 }
@@ -1015,7 +1029,7 @@
   height: 34px;
   border-radius: 50%;
   border: 1px solid #c7b79d50;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   background: #fffdfb;
   cursor: pointer;
   transition: background 0.2s;
@@ -1064,7 +1078,7 @@
   font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
 }
 .admin-modal-field {
   display: flex;
@@ -1109,12 +1123,12 @@
 }
 .admin-invitation-toggle strong {
   font-size: 11px;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
   font-weight: 500;
 }
 .admin-invitation-toggle small {
   font-size: 10px;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   line-height: 1.7;
 }
 .admin-modal .admin-invitation-toggle > input {
@@ -1146,13 +1160,13 @@
   transition: transform 0.2s;
 }
 .admin-invitation-toggle input:checked + .admin-switch-track {
-  background: var(--forever-primary,#5d613c);
+  background: var(--forever-primary,#722F37);
 }
 .admin-invitation-toggle input:checked + .admin-switch-track::after {
   transform: translateX(15px);
 }
 .admin-invitation-toggle:has(input:focus-visible) {
-  outline: 2px solid var(--forever-primary,#5d613c);
+  outline: 2px solid var(--forever-primary,#722F37);
   outline-offset: 3px;
 }
 .admin-people-heading {
@@ -1173,7 +1187,7 @@
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
   border: 1px solid #c7b79d60;
   border-radius: var(--wedding-radius);
   padding: 7px 10px;
@@ -1182,7 +1196,7 @@
 }
 .admin-form-help {
   font-size: 10px;
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   line-height: 1.9;
 }
 .admin-people-heading + .admin-form-help {
@@ -1226,7 +1240,7 @@
   font-size: 9px;
   font-style: normal;
   background: #e9e6da;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
 }
 .admin-remove-person {
   display: inline-flex;
@@ -1301,14 +1315,14 @@
   opacity: 0;
 }
 .admin-option-chip:has(input:checked) {
-  color: #4a5533;
-  background: #e8eddb;
-  border-color: #a8b18a;
+  color: var(--forever-primary, #722F37);
+  background: var(--forever-hover-tint, rgba(114, 47, 55, 0.08));
+  border-color: var(--forever-hover-border, rgba(114, 47, 55, 0.35));
 }
 .admin-option-chip input:checked + .admin-option-check {
-  background: var(--forever-primary,#5d613c);
+  background: var(--forever-primary,#722F37);
   color: #fffdf9;
-  border-color: var(--forever-primary,#5d613c);
+  border-color: var(--forever-primary,#722F37);
 }
 .admin-option-chip input:checked + .admin-option-check svg {
   opacity: 1;
@@ -1318,7 +1332,7 @@
   cursor: not-allowed;
 }
 .admin-option-chip:has(input:focus-visible) {
-  outline: 2px solid var(--forever-primary,#5d613c);
+  outline: 2px solid var(--forever-primary,#722F37);
   outline-offset: 3px;
 }
 .admin-add-person {
@@ -1330,7 +1344,7 @@
   border-radius: var(--wedding-radius);
   padding: 14px 16px;
   min-height: 46px;
-  color: var(--forever-primary,#5d613c);
+  color: var(--forever-primary,#722F37);
   font-size: 10px;
   cursor: pointer;
   background: #fffdfb;
@@ -1341,8 +1355,8 @@
   color: #9a8a75;
 }
 .admin-add-person:hover:not(:disabled) {
-  background: #f2f1e6;
-  border-color: var(--forever-primary,#5d613c);
+  background: var(--forever-hover-tint, rgba(114, 47, 55, 0.08));
+  border-color: var(--forever-primary, #722F37);
 }
 .admin-add-person:disabled {
   opacity: 0.5;
@@ -1388,7 +1402,7 @@
   overflow-wrap: anywhere;
 }
 .admin-delete-summary span {
-  color: var(--forever-accent,#80654e);
+  color: var(--forever-accent,#77736c);
   font-size: 10px;
 }
 .admin-modal .admin-danger-button {
@@ -1539,14 +1553,14 @@
 @media(max-width:900px){.admin-nav .admin-session{width:100%;border-top:1px solid #c7b79d40;padding-top:18px}.admin-nav .admin-account{margin-right:auto}}
 @media(max-width:480px){.admin-nav .admin-account{width:100%;flex-basis:100%}.admin-nav .admin-session .guest-secondary{flex:1}}
 
-.admin-profile-trigger{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:#697046;border-radius:var(--wedding-radius);padding:5px;background:#f8f7ef;border:1px solid #d9d7c6;flex-shrink:0}.admin-profile-trigger .admin-account-avatar{width:34px;height:34px;font-size:22px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:#eaeddc}.admin-profile-trigger:focus-visible{outline:2px solid var(--forever-focus,#858b65);outline-offset:3px}.admin-profile-menu{z-index:260;min-width:240px;max-width:calc(100vw - 32px);padding:7px;border-radius:var(--wedding-radius);background:#fffdf9;border:1px solid #e3dccf;box-shadow:0 14px 45px #3d25011c;animation:admin-modal-fade .16s ease-out}.admin-profile-label{padding:12px 10px;color:#6c724c;font-size:11px}.admin-profile-label span{display:block;margin-top:7px;color:var(--forever-accent,#80654e);overflow-wrap:anywhere;font-size:12px}.admin-profile-separator{height:1px;background:#e9e2d5;margin:4px 0}.admin-profile-item{display:flex;gap:9px;align-items:center;padding:12px 10px;color:#8c4a4c;font-size:12px;border-radius:var(--wedding-radius);cursor:pointer;outline:none}.admin-profile-item[data-highlighted]{background:#f9eded}.admin-profile-item[data-disabled]{opacity:.4;cursor:not-allowed}.admin-toolbar .admin-toolbar-refresh{flex-shrink:0;white-space:nowrap;min-height:48px;padding:12px 14px;font-size:11px}@media(max-width:600px){.admin-toolbar .admin-toolbar-refresh{width:100%}}
+.admin-profile-trigger{display:inline-flex;align-items:center;gap:8px;cursor:pointer;color:#722F37;border-radius:var(--wedding-radius);padding:5px;background:#fffdfa;border:1px solid #722F3720;flex-shrink:0}.admin-profile-trigger .admin-account-avatar{width:34px;height:34px;font-size:22px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:#722F370d}.admin-profile-trigger:focus-visible{outline:2px solid #722F37;outline-offset:3px}.admin-profile-menu{z-index:260;min-width:240px;max-width:calc(100vw - 32px);padding:7px;border-radius:var(--wedding-radius);background:#fffdf9;border:1px solid #e3dccf;box-shadow:0 14px 45px rgba(22, 22, 22, 0.12);animation:admin-modal-fade .16s ease-out}.admin-profile-label{padding:12px 10px;color:#722F37;font-size:11px}.admin-profile-label span{display:block;margin-top:7px;color:var(--forever-accent,#77736c);overflow-wrap:anywhere;font-size:12px}.admin-profile-separator{height:1px;background:#e9e2d5;margin:4px 0}.admin-profile-item{display:flex;gap:9px;align-items:center;padding:12px 10px;color:#722F37;font-size:12px;border-radius:var(--wedding-radius);cursor:pointer;outline:none}.admin-profile-item[data-highlighted]{background:#722F370d}.admin-profile-item[data-disabled]{opacity:.4;cursor:not-allowed}.admin-toolbar .admin-toolbar-refresh{flex-shrink:0;white-space:nowrap;min-height:48px;padding:12px 14px;font-size:11px}@media(max-width:600px){.admin-toolbar .admin-toolbar-refresh{width:100%}}
 
-.admin-profile-trigger{background:transparent;border:0;padding:0;gap:10px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:transparent;color:var(--forever-ink,#3d2501)}.admin-profile-name{font-size:11px;color:#66563e;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:480px){.admin-profile-name{max-width:150px}.admin-nav .admin-back{margin-left:0}.admin-profile-trigger{margin-left:auto}}
+.admin-profile-trigger{background:transparent;border:0;padding:0;gap:10px}.admin-profile-trigger:hover,.admin-profile-trigger[data-state="open"]{background:transparent;color:var(--forever-ink,#161616)}.admin-profile-name{font-size:11px;color:#66563e;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}@media(max-width:480px){.admin-profile-name{max-width:150px}.admin-nav .admin-back{margin-left:0}.admin-profile-trigger{margin-left:auto}}
 
 .admin-guest-accordion summary { font-size:15px; }
 .admin-guest-accordion .admin-person-actions { justify-content:flex-start; flex-wrap:wrap; }
 .admin-guest-notes { display:grid; gap:18px; font-size:14px; }
-.admin-guest-notes p { color:var(--forever-accent,#80654E); margin-bottom:8px; }
+.admin-guest-notes p { color:var(--forever-accent,#77736c); margin-bottom:8px; }
 .admin-guest-notes span { white-space:pre-wrap; overflow-wrap:anywhere; }
 
 .admin-guest-quick-actions { display:inline-flex; align-items:center; gap:8px; }
@@ -1570,18 +1584,18 @@
 .admin-guest-name-alerts { display:inline-flex; align-items:center; gap:9px; flex-wrap:wrap; }
 .admin-dietary-alert { color:#e07b00; flex-shrink:0; }
 .admin-message-alert { color:#23864b; flex-shrink:0; }
-.admin-guest-legend { display:flex; align-items:center; flex-wrap:wrap; gap:12px 24px; margin-top:16px; color:var(--forever-accent,#80654E); font-size:12px; }
+.admin-guest-legend { display:flex; align-items:center; flex-wrap:wrap; gap:12px 24px; margin-top:16px; color:var(--forever-accent,#77736c); font-size:12px; }
 .admin-guest-legend>span { display:inline-flex; align-items:center; gap:7px; }
 .admin-guest-legend small { font-size:12px; }
 
 .admin-guest-legend { display:flex; align-items:center; gap:20px; padding:16px 20px; margin-top:16px; background:#fffdfa; border-radius:12px; color:#5c584d; }
-.admin-guest-legend>strong { font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--forever-primary,#5D613C); }
+.admin-guest-legend>strong { font-size:12px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--forever-primary,#722F37); }
 .admin-guest-legend-items { display:flex; flex-wrap:wrap; gap:12px 24px; }
 .admin-guest-legend-items>span { display:inline-flex; align-items:center; gap:8px; font-size:12px; }
 .admin-guest-accordion .admin-person-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; width:100%; }
-.admin-guest-accordion .admin-person-actions .admin-action { width:100%; justify-content:center; border:1px solid #5d613c30; background:transparent; box-shadow:none; color:var(--forever-primary,#5D613C); transition:background-color .2s,color .2s; }
+.admin-guest-accordion .admin-person-actions .admin-action { width:100%; justify-content:center; border:1px solid #722f3730; background:transparent; box-shadow:none; color:var(--forever-primary,#722F37); transition:background-color .2s,color .2s; }
 .admin-guest-accordion .admin-person-actions .admin-action:hover:not(:disabled),
-.admin-guest-quick-actions .admin-action-icon:hover:not(:disabled) { background:var(--forever-hover-tint,#edf0e3); color:var(--forever-primary-hover,#3f5628); }
+.admin-guest-quick-actions .admin-action-icon:hover:not(:disabled) { background:var(--forever-hover-tint,rgba(114,47,55,0.08)); color:var(--forever-primary-hover,#5B252C); }
 @media(max-width:540px) {
   .admin-guest-legend { align-items:flex-start; flex-direction:column; gap:12px; }
   .admin-guest-accordion .admin-person-actions { grid-template-columns:1fr; }
@@ -1591,15 +1605,15 @@
 .admin-invite-actions .admin-action.is-success,
 .admin-invite-actions .admin-action-danger {
   background:transparent;
-  border:1px solid #5d613c30;
-  color:var(--forever-primary,#5D613C);
+  border:1px solid #722f3730;
+  color:var(--forever-primary,#722F37);
   box-shadow:none;
 }
 .admin-invite-actions .admin-action:hover:not(:disabled),
 .admin-guest-accordion .admin-person-actions .admin-action:hover:not(:disabled) {
-  background:var(--forever-hover-tint,#edf0e3);
-  border-color:var(--forever-hover-border,#5d613c60);
-  color:var(--forever-primary,#5D613C);
+  background:var(--forever-hover-tint,rgba(114,47,55,0.08));
+  border-color:var(--forever-hover-border,rgba(114,47,55,0.35));
+  color:var(--forever-primary,#722F37);
 }
 
 .admin-invite-actions .admin-action { min-width:42px; height:42px; padding:10px 12px; gap:0; }
@@ -1612,9 +1626,9 @@
 .admin-invite-actions .admin-action { flex-shrink:0; min-width:42px; }
 @media(max-width:600px) { .admin-invite-actions { max-width:100%; flex-wrap:wrap; } }
 
-.admin-guest-quick-actions .admin-action-icon { width:auto; min-width:42px; height:42px; padding:10px 12px; border:1px solid #5d613c30; background:transparent; gap:0; }
+.admin-guest-quick-actions .admin-action-icon { width:auto; min-width:42px; height:42px; padding:10px 12px; border:1px solid #722f3730; background:transparent; gap:0; }
 .admin-guest-quick-actions .admin-action-icon:hover,
-.admin-guest-quick-actions .admin-action-icon:active { border:1px solid var(--forever-hover-border,#5d613c60); background:var(--forever-hover-tint,#edf0e3); }
+.admin-guest-quick-actions .admin-action-icon:active { border:1px solid var(--forever-hover-border,rgba(114,47,55,0.35)); background:var(--forever-hover-tint,rgba(114,47,55,0.08)); }
 .admin-guest-quick-actions .admin-action-icon>svg { flex-shrink:0; }
 @media(max-width:600px) {
   .admin-guest-accordion summary { display:grid; grid-template-columns:minmax(0,1fr) auto 18px; gap:14px 10px; padding:20px 0; }

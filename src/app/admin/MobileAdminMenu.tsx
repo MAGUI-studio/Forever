@@ -8,6 +8,7 @@ import {AnimatePresence, motion, useReducedMotion} from "framer-motion";
 import {Menu, X, Users, Check, LayoutDashboard, Settings, LogOut, ArrowUpRight, Heart} from "lucide-react";
 import {PLAN_NAMES, type WeddingPlan} from "@/config/forever";
 import {ForeverLogo} from "@/components/forever/ForeverLogo";
+import {foreverTheme} from "@/config/brand";
 
 type MobileAdminMenuProps = {
   section: "site" | "site-settings" | "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
@@ -36,12 +37,12 @@ export function MobileAdminMenu({role,section,email,busy,authorized,plan,onSetti
     <AnimatePresence>
       {open && <Dialog.Portal forceMount>
         <Dialog.Overlay asChild forceMount><motion.div className="fixed inset-0 z-[300] bg-black/30 backdrop-blur-sm" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:reducedMotion ? 0 : .25}} /></Dialog.Overlay>
-        <Dialog.Content asChild forceMount><motion.div className="fixed inset-y-0 right-0 z-[310] flex w-[min(360px,90vw)] flex-col overflow-y-auto bg-[#fffdfa] p-6 text-[#161616] shadow-2xl outline-none" initial={{x:reducedMotion ? 0 : "100%"}} animate={{x:0}} exit={{x:reducedMotion ? 0 : "100%"}} transition={{duration:reducedMotion ? 0 : .4,ease:[.22,1,.36,1]}}>
+        <Dialog.Content asChild forceMount><motion.div style={foreverTheme} className="fixed inset-y-0 right-0 z-[310] flex w-[min(360px,90vw)] flex-col overflow-y-auto bg-[#fffdfa] p-6 text-[#161616] shadow-2xl outline-none" initial={{x:reducedMotion ? 0 : "100%"}} animate={{x:0}} exit={{x:reducedMotion ? 0 : "100%"}} transition={{duration:reducedMotion ? 0 : .4,ease:[.22,1,.36,1]}}>
           <div className="flex items-center justify-between gap-4">
             <Dialog.Title asChild>
               <div className="flex items-center gap-2.5">
                 <ForeverLogo className="w-24" />
-                <span className="h-5 w-px bg-[#80654e30]" aria-hidden="true" />
+                <span className="h-5 w-px bg-[#722f3725]" aria-hidden="true" />
                 <img
                   src={plan === "essencial" ? "/forever/subscription/essential_plan.svg" : "/forever/subscription/pro_plan.svg"}
                   alt={PLAN_NAMES[plan ?? "foreverPro"]}
@@ -56,9 +57,9 @@ export function MobileAdminMenu({role,section,email,busy,authorized,plan,onSetti
             </Dialog.Close>
           </div>
           <nav aria-label="Menu mobile do painel" className="mt-8 flex flex-col gap-2">
-            {links.filter(link=>(role === "admin" || link.key === "check-in")&&(!sectionModule[link.key]||modules[sectionModule[link.key]!])).map(({href,label,key,icon:Icon}) => <Link key={key} href={path(href)} onClick={()=>setOpen(false)} aria-current={section === key ? "page" : undefined} className={"flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm transition-colors hover:bg-[#722F370d] " + (section === key ? "bg-[#722F3714] font-semibold text-[#722F37]" : "text-[#161616]")}><Icon size={19} className={section === key ? "text-[#722F37]" : "text-[#80654E]"} />{label}</Link>)}
+            {links.filter(link=>(role === "admin" || link.key === "check-in")&&(!sectionModule[link.key]||modules[sectionModule[link.key]!])).map(({href,label,key,icon:Icon}) => <Link key={key} href={path(href)} onClick={()=>setOpen(false)} aria-current={section === key ? "page" : undefined} className={"flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm transition-colors hover:bg-[#722F370d] " + (section === key ? "bg-[#722F3714] font-semibold text-[#722F37]" : "text-[#161616]")}><Icon size={19} className={section === key ? "text-[#722F37]" : "text-[#77736c]"} />{label}</Link>)}
             <Link href={path()} target="_blank" rel="noopener noreferrer" onClick={()=>setOpen(false)} className="flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm text-[#722F37] transition-colors hover:bg-[#722F370d]"><ArrowUpRight size={19} aria-hidden="true"/>Ver site</Link>
-            {modules.rsvp&&<button type="button" disabled={busy || !authorized || role !== "admin"} onClick={()=>{setOpen(false);onSettings();}} className="flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm hover:bg-[#722F370d] disabled:opacity-40 text-[#161616]"><Settings size={19} className="text-[#80654E]" />Configurações</button>}
+            {modules.rsvp&&<button type="button" disabled={busy || !authorized || role !== "admin"} onClick={()=>{setOpen(false);onSettings();}} className="flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm hover:bg-[#722F370d] disabled:opacity-40 text-[#161616]"><Settings size={19} className="text-[#77736c]" />Configurações</button>}
           </nav>
           {plan === "essencial" && role === "admin" && (
             <div className="mt-6 rounded-xl border border-[#722F3730] bg-[#722F370d] p-4 text-xs text-[#161616]">
@@ -97,7 +98,7 @@ export function MobileAdminMenu({role,section,email,busy,authorized,plan,onSetti
               )}
             </div>
           )}
-          <div className="mt-auto pt-8"><p className="break-all px-4 text-xs text-[var(--forever-accent,#80654E)]">{email}</p><button type="button" disabled={busy} onClick={()=>{setOpen(false);onSignOut();}} className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm text-[#722F37] hover:bg-[#722F370d] disabled:opacity-40"><LogOut size={18} />Sair da conta</button></div>
+          <div className="mt-auto pt-8"><p className="break-all px-4 text-xs text-[var(--forever-accent,#77736c)]">{email}</p><button type="button" disabled={busy} onClick={()=>{setOpen(false);onSignOut();}} className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm text-[#722F37] hover:bg-[#722F370d] disabled:opacity-40"><LogOut size={18} />Sair da conta</button></div>
         </motion.div></Dialog.Content>
       </Dialog.Portal>}
     </AnimatePresence>
