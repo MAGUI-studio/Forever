@@ -2,9 +2,11 @@ import type {CSSProperties} from "react";
 import type {TemplateId} from "./registry";
 
 type Palette={primary:string;ink:string;accent:string;sand:string;hover:string};
-export const templatePalettes:Record<TemplateId,Palette>={
+export const templatePalettes:Record<string,Palette>={
  "botanical-classic":{primary:"#5D613C",ink:"#3D2501",accent:"#80654E",sand:"#C7B79D",hover:"#4b4f30"},
  "contemporary-romance":{primary:"#722F37",ink:"#302329",accent:"#82656C",sand:"#D2B9BD",hover:"#5B252C"},
+ "minimalist-modern":{primary:"#161616",ink:"#161616",accent:"#6B6760",sand:"#E5E5E5",hover:"#333333"},
+ "serene-breeze":{primary:"#1E2D4A",ink:"#101A2B",accent:"#457B9D",sand:"#A8DADC",hover:"#162238"},
 };
 export function weddingThemeStyle(colors:Palette):CSSProperties{
  return {

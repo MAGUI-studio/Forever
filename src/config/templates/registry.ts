@@ -6,7 +6,38 @@ export const templateIds=["botanical-classic","contemporary-romance"] as const;
 export type TemplateId=(typeof templateIds)[number];
 export const defaultTemplateId:TemplateId="botanical-classic";
 export const foreverTemplateId:TemplateId="contemporary-romance";
-export const templateCatalog=[{id:defaultTemplateId,name:"Botânico clássico",description:"Elegância atemporal e delicadeza floral para celebrar uma história de amor com leveza.",image:"/detalhes/aliancas-florais.jpg"},{id:foreverTemplateId,name:"Romance contemporâneo",description:"Sua história em destaque, com fotos marcantes e detalhes que unem romance e personalidade.",image:"/forever/icon_black.svg"}] as const;
+export const templateCatalog=[
+  {
+    id: defaultTemplateId,
+    name: "Botânico clássico",
+    description: "Elegância atemporal e delicadeza floral para celebrar uma história de amor com leveza.",
+    image: "/detalhes/aliancas-florais.jpg",
+    plan: "essencial" as const,
+  },
+  {
+    id: foreverTemplateId,
+    name: "Romance contemporâneo",
+    description: "Sua história em destaque, com fotos marcantes e detalhes que unem romance e personalidade.",
+    image: "/forever/icon_black.svg",
+    plan: "essencial" as const,
+  },
+  {
+    id: "minimalist-modern",
+    name: "Minimalista moderno",
+    description: "Contraste em preto e branco com linhas puras e design contemporâneo.",
+    image: "/forever/icon_black.svg",
+    plan: "foreverPlus" as const,
+    isComingSoon: true as const,
+  },
+  {
+    id: "serene-breeze",
+    name: "Brisa serena",
+    description: "Tons de azul e linho à beira-mar com atmosfera calma, fresca e poética.",
+    image: "/forever/icon_black.svg",
+    plan: "foreverPlus" as const,
+    isComingSoon: true as const,
+  },
+] as const;
 export type CopySection="gallery"|"hero"|"countdown"|"story"|"transition"|"events"|"schedule"|"dressCode"|"gifts"|"rsvp"|"checkout"|"footer";
 export const copySections:Record<CopySection,{label:string;anchor:string;module?:WeddingModule}>={gallery:{label:"Galeria do casal",anchor:"galeria"},schedule:{label:"Programação do dia",anchor:"programacao"},hero:{label:"Capa",anchor:"inicio"},countdown:{label:"Contagem regressiva",anchor:"contagem-regressiva"},story:{label:"Nossa história",anchor:"historia"},transition:{label:"O nosso para sempre",anchor:".cinema-transition"},events:{label:"Cerimônia e festa",anchor:"eventos"},dressCode:{label:"Trajes",anchor:"dress-code"},gifts:{label:"Lista de presentes",anchor:"presentes",module:"gifts"},rsvp:{label:"Confirmação de presença",anchor:"rsvp",module:"rsvp"},checkout:{label:"Pagamento dos presentes",anchor:"pagamento-presente",module:"gifts"},footer:{label:"Rodapé",anchor:".cinema-footer"}};
 const allCopyFields=[...fields,...romanceFields,...galleryCopyFields] as {key:string;section:CopySection;label:string;defaultValue:string;module?:WeddingModule}[];
