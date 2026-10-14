@@ -225,7 +225,6 @@ export function RSVPSection() {
                 }}
                 disabled={busy}
                 hasError={!!error}
-                autoFocus
               />
               <div className="flex justify-center pt-2">
                 <button

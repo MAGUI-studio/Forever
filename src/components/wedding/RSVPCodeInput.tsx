@@ -27,7 +27,7 @@ export function RSVPCodeInput({
 
   useEffect(() => {
     if (autoFocus && inputsRef.current[0] && !clean) {
-      inputsRef.current[0].focus();
+      inputsRef.current[0].focus({ preventScroll: true });
     }
   }, [autoFocus, clean]);
 
