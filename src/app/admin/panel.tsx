@@ -442,7 +442,7 @@ export function AdminPanel({
                                     {item.label}
                                   </span>
                                 </div>
-                                <p className="text-[11px] text-[#82656C] leading-snug pl-9">
+                                <p className="text-[11px] text-[#82656C] leading-snug">
                                   {item.description}
                                 </p>
                               </Link>
