@@ -250,6 +250,20 @@ export function AdminPanel({
               {role === "admin" && modules.organization && ["tables","buffet","history","team"].some(key=>modules[sectionModule[key]!]) && <DropdownMenu.Root><DropdownMenu.Trigger className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs text-[var(--forever-primary,#5D613C)] hover:bg-[var(--forever-hover-tint,#5d613c10)]">Organização<CaretDownIcon size={14} /></DropdownMenu.Trigger><DropdownMenu.Portal><DropdownMenu.Content style={themeStyle} sideOffset={8} className="z-50 min-w-48 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-2 shadow-lg">{[{href:"tables",label:"Mesas e lugares"},{href:"buffet",label:"Alimentação e buffet"},{href:"history",label:"Histórico de alterações"},{href:"team",label:"Equipe da recepção"}].filter(item=>modules[sectionModule[item.href]!]).map(item=><DropdownMenu.Item asChild key={item.href}><Link className="block rounded-lg px-4 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none hover:bg-[var(--forever-hover-tint,#5d613c10)] focus:bg-[var(--forever-hover-tint,#5d613c10)]" href={weddingPath("admin/"+item.href)}>{item.label}</Link></DropdownMenu.Item>)}</DropdownMenu.Content></DropdownMenu.Portal></DropdownMenu.Root>}
             </div>
             <Link href={weddingPath()} target="_blank" rel="noopener noreferrer" className="hidden min-h-11 shrink-0 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] lg:inline-flex"><ArrowUpRight size={16} aria-hidden="true"/>Ver site</Link>
+            {role === "admin" && modules.siteEditor && (
+              <Link
+                href={weddingPath("admin/site")}
+                className={
+                  "hidden min-h-11 shrink-0 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] lg:inline-flex " +
+                  (section === "site"
+                    ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]"
+                    : "text-[var(--forever-primary,#5D613C)]")
+                }
+              >
+                <PencilSimpleIcon size={16} aria-hidden="true" />
+                Personalizar site
+              </Link>
+            )}
             <div className="hidden lg:block">
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild><button type="button" className="admin-profile-trigger" aria-label="Abrir menu da conta"><span className="admin-account-avatar" aria-hidden="true">{user.email?.slice(0,1).toUpperCase() || "G"}</span><span className="admin-profile-name">{user.displayName || user.email}</span><CaretDownIcon size={13} aria-hidden="true" /></button></DropdownMenu.Trigger>
