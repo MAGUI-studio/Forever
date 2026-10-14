@@ -26,10 +26,14 @@ import {useWedding} from "@/components/wedding/WeddingProvider";
 import {
   ArrowUpRight,
   CalendarDays,
+  Check,
   CheckCircle2,
+  ChevronDown,
   Flower2,
   Heart,
+  History,
   KeyRound,
+  LayoutGrid,
   Loader2,
   LockKeyhole,
   LogOut,
@@ -37,7 +41,9 @@ import {
   Plus,
   RefreshCw,
   Search,
+  UserCheck,
   Users,
+  Utensils,
 } from "lucide-react";
 import {
   WeddingOrnaments,
@@ -90,6 +96,19 @@ export function AdminPanel({
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [upgradeSuccess, setUpgradeSuccess] = useState(false);
   const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [orgOpen, setOrgOpen] = useState(false);
+  const orgTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function handleOrgMouseEnter() {
+    if (orgTimeoutRef.current) clearTimeout(orgTimeoutRef.current);
+    setOrgOpen(true);
+  }
+
+  function handleOrgMouseLeave() {
+    orgTimeoutRef.current = setTimeout(() => {
+      setOrgOpen(false);
+    }, 160);
+  }
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -301,26 +320,189 @@ export function AdminPanel({
                 />
               </div>
             </div>
-            <div className="hidden! lg:flex! order-last flex w-full items-center justify-center gap-2 lg:order-none lg:w-auto lg:flex-1" aria-label="Seções do painel">
-              {role === "admin" && modules.guestList && <Link href={weddingPath("admin/guests")} aria-current={section === "guests" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] " + (section === "guests" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><Users size={16} aria-hidden="true" />Lista de convidados</Link>}
-              {modules.checkIn&&<Link href={weddingPath("admin/check-in")} aria-current={section === "check-in" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] " + (section === "check-in" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><CheckIcon size={16} aria-hidden="true" />Controle de chegada</Link>}
-              {role === "admin" && modules.organization && ["tables","buffet","history","team"].some(key=>modules[sectionModule[key]!]) && <DropdownMenu.Root><DropdownMenu.Trigger className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs text-[var(--forever-primary,#5D613C)] hover:bg-[var(--forever-hover-tint,#5d613c10)]">Organização<CaretDownIcon size={14} /></DropdownMenu.Trigger><DropdownMenu.Portal><DropdownMenu.Content style={themeStyle} sideOffset={8} className="z-50 min-w-48 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-2 shadow-lg">{[{href:"tables",label:"Mesas e lugares"},{href:"buffet",label:"Alimentação e buffet"},{href:"history",label:"Histórico de alterações"},{href:"team",label:"Equipe da recepção"}].filter(item=>modules[sectionModule[item.href]!]).map(item=><DropdownMenu.Item asChild key={item.href}><Link className="block rounded-lg px-4 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none hover:bg-[var(--forever-hover-tint,#5d613c10)] focus:bg-[var(--forever-hover-tint,#5d613c10)]" href={weddingPath("admin/"+item.href)}>{item.label}</Link></DropdownMenu.Item>)}</DropdownMenu.Content></DropdownMenu.Portal></DropdownMenu.Root>}
+            <div className="hidden! lg:flex! order-last flex w-full items-center justify-center gap-2.5 lg:order-none lg:w-auto lg:flex-1" aria-label="Seções do painel">
+              {role === "admin" && modules.guestList && (
+                <Link
+                  href={weddingPath("admin/guests")}
+                  aria-current={section === "guests" ? "page" : undefined}
+                  className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
+                    section === "guests"
+                      ? "border-[#5D613C30] bg-[#5D613C15] font-semibold text-[var(--forever-primary,#5D613C)] shadow-xs"
+                      : "border-transparent bg-white/40 text-[var(--forever-accent,#80654E)] hover:border-[#5D613C20] hover:bg-[#5D613C0d] hover:text-[var(--forever-primary,#5D613C)]"
+                  }`}
+                >
+                  <span
+                    className="pointer-events-none absolute -right-1.5 -bottom-1.5 size-9 text-[var(--forever-primary,#5D613C)] opacity-[0.08] transition-all duration-300 group-hover:scale-125 group-hover:opacity-[0.18]"
+                    aria-hidden="true"
+                  >
+                    <Users className="size-full" />
+                  </span>
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Users size={15} className="text-[var(--forever-primary,#5D613C)] shrink-0" aria-hidden="true" />
+                    <span>Lista de convidados</span>
+                  </span>
+                </Link>
+              )}
+
+              {modules.checkIn && (
+                <Link
+                  href={weddingPath("admin/check-in")}
+                  aria-current={section === "check-in" ? "page" : undefined}
+                  className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
+                    section === "check-in"
+                      ? "border-[#5D613C30] bg-[#5D613C15] font-semibold text-[var(--forever-primary,#5D613C)] shadow-xs"
+                      : "border-transparent bg-white/40 text-[var(--forever-accent,#80654E)] hover:border-[#5D613C20] hover:bg-[#5D613C0d] hover:text-[var(--forever-primary,#5D613C)]"
+                  }`}
+                >
+                  <span
+                    className="pointer-events-none absolute -right-1.5 -bottom-1.5 size-9 text-[var(--forever-primary,#5D613C)] opacity-[0.08] transition-all duration-300 group-hover:scale-125 group-hover:opacity-[0.18]"
+                    aria-hidden="true"
+                  >
+                    <Check className="size-full" />
+                  </span>
+                  <span className="relative z-10 flex items-center gap-2">
+                    <Check size={15} className="text-[var(--forever-primary,#5D613C)] shrink-0" aria-hidden="true" />
+                    <span>Controle de chegada</span>
+                  </span>
+                </Link>
+              )}
+
+              {role === "admin" && modules.organization && (
+                <div
+                  className="relative"
+                  onMouseEnter={handleOrgMouseEnter}
+                  onMouseLeave={handleOrgMouseLeave}
+                >
+                  <button
+                    type="button"
+                    aria-expanded={orgOpen}
+                    onClick={() => setOrgOpen(prev => !prev)}
+                    className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
+                      orgOpen || ["tables", "buffet", "history", "team"].includes(section)
+                        ? "border-[#5D613C30] bg-[#5D613C15] font-semibold text-[var(--forever-primary,#5D613C)] shadow-xs"
+                        : "border-transparent bg-white/40 text-[var(--forever-accent,#80654E)] hover:border-[#5D613C20] hover:bg-[#5D613C0d] hover:text-[var(--forever-primary,#5D613C)]"
+                    }`}
+                  >
+                    <span
+                      className="pointer-events-none absolute -right-1.5 -bottom-1.5 size-9 text-[var(--forever-primary,#5D613C)] opacity-[0.08] transition-all duration-300 group-hover:scale-125 group-hover:opacity-[0.18]"
+                      aria-hidden="true"
+                    >
+                      <LayoutGrid className="size-full" />
+                    </span>
+                    <span className="relative z-10 flex items-center gap-1.5">
+                      <LayoutGrid size={15} className="shrink-0 text-[var(--forever-primary,#5D613C)]" />
+                      <span>Organização</span>
+                      <ChevronDown
+                        size={13}
+                        className={`transition-transform duration-200 text-[var(--forever-primary,#5D613C)] ${orgOpen ? "rotate-180" : ""}`}
+                      />
+                    </span>
+                  </button>
+
+                  {orgOpen && (
+                    <div
+                      role="menu"
+                      className="absolute top-full left-1/2 -translate-x-1/2 z-50 mt-2 w-[460px] rounded-2xl border border-[#5D613C25] bg-[#FFFDFB] p-3 shadow-xl shadow-[#00000010] animate-in fade-in-0 zoom-in-95 duration-150"
+                    >
+                      <div className="px-3 py-1.5 border-b border-[#5D613C15] mb-2 flex items-center justify-between">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--forever-accent,#80654E)]">
+                          Central do Grande Dia
+                        </span>
+                        <span className="text-[10px] text-[#8C877F]">Recursos de Gestão</span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {[
+                          { href: "tables", label: "Mesas e lugares", description: "Distribuição e assentos", icon: LayoutGrid, key: "tables" as const },
+                          { href: "buffet", label: "Alimentação & buffet", description: "Restrições alimentares", icon: Utensils, key: "buffet" as const },
+                          { href: "history", label: "Histórico", description: "Auditoria de alterações", icon: History, key: "history" as const },
+                          { href: "team", label: "Equipe da recepção", description: "Contas e portaria", icon: UserCheck, key: "team" as const },
+                        ]
+                          .filter(item => modules[item.key])
+                          .map(item => {
+                            const Icon = item.icon;
+                            const isActive = section === item.href;
+                            return (
+                              <Link
+                                key={item.href}
+                                href={weddingPath("admin/" + item.href)}
+                                onClick={() => setOrgOpen(false)}
+                                className={`group/item relative flex flex-col gap-1 rounded-xl p-3 text-left transition-all duration-200 border ${
+                                  isActive
+                                    ? "border-[#5D613C30] bg-[#5D613C12] text-[var(--forever-primary,#5D613C)] font-semibold shadow-xs"
+                                    : "border-transparent hover:border-[#5D613C20] hover:bg-[#5D613C0a] text-[#161616]"
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#5D613C15] text-[var(--forever-primary,#5D613C)] transition-transform group-hover/item:scale-110">
+                                    <Icon size={14} />
+                                  </span>
+                                  <span className="text-xs font-medium text-[var(--forever-primary,#5D613C)]">
+                                    {item.label}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-[#80654E] leading-snug pl-9">
+                                  {item.description}
+                                </p>
+                              </Link>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-            <Link href={weddingPath()} target="_blank" rel="noopener noreferrer" className="hidden min-h-11 shrink-0 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] lg:inline-flex"><ArrowUpRight size={16} aria-hidden="true"/>Ver site</Link>
-            {role === "admin" && modules.siteEditor && (
-              <Link
-                href={weddingPath("admin/site")}
-                className={
-                  "hidden min-h-11 shrink-0 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] lg:inline-flex " +
-                  (section === "site"
-                    ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]"
-                    : "text-[var(--forever-primary,#5D613C)]")
-                }
-              >
-                <PencilSimpleIcon size={16} aria-hidden="true" />
-                Personalizar site
-              </Link>
-            )}
+
+            {/* Action Icon Buttons with Colored Tooltips */}
+            <div className="hidden lg:flex items-center gap-2">
+              {/* Ver site */}
+              <div className="group relative inline-flex items-center">
+                <Link
+                  href={weddingPath()}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Ver site"
+                  className="inline-flex size-10 items-center justify-center rounded-xl border border-[#5d613c20] bg-white/70 text-[var(--forever-primary,#5D613C)] transition-all duration-200 hover:border-[#5d613c40] hover:bg-[#5d613c12] hover:shadow-xs focus-visible:outline-2 focus-visible:outline-[var(--forever-primary,#5D613C)]"
+                >
+                  <ArrowUpRight size={17} aria-hidden="true" />
+                </Link>
+                <div
+                  role="tooltip"
+                  className="pointer-events-none absolute top-full left-1/2 z-50 mt-2.5 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#5D613C] px-2.5 py-1 text-[11px] font-medium text-white shadow-md shadow-[#5D613C30] opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1"
+                >
+                  <span className="absolute -top-1 left-1/2 -translate-x-1/2 size-2 rotate-45 bg-[#5D613C]" />
+                  <span className="relative z-10 flex items-center gap-1">
+                    <span>Ver site</span>
+                    <ArrowUpRight size={11} className="opacity-80" />
+                  </span>
+                </div>
+              </div>
+
+              {/* Personalizar site */}
+              {role === "admin" && modules.siteEditor && (
+                <div className="group relative inline-flex items-center">
+                  <Link
+                    href={weddingPath("admin/site")}
+                    aria-label="Personalizar site"
+                    className={`inline-flex size-10 items-center justify-center rounded-xl border transition-all duration-200 hover:shadow-xs focus-visible:outline-2 focus-visible:outline-[#722F37] ${
+                      section === "site"
+                        ? "border-[#722F3740] bg-[#722F3715] text-[#722F37] font-semibold"
+                        : "border-[#722F3725] bg-white/70 text-[#722F37] hover:border-[#722F3750] hover:bg-[#722F3710]"
+                    }`}
+                  >
+                    <PencilSimpleIcon size={17} aria-hidden="true" />
+                  </Link>
+                  <div
+                    role="tooltip"
+                    className="pointer-events-none absolute top-full left-1/2 z-50 mt-2.5 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#722F37] px-2.5 py-1 text-[11px] font-medium text-white shadow-md shadow-[#722F3730] opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1"
+                  >
+                    <span className="absolute -top-1 left-1/2 -translate-x-1/2 size-2 rotate-45 bg-[#722F37]" />
+                    <span className="relative z-10">Personalizar site</span>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="hidden lg:block">
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild><button type="button" className="admin-profile-trigger" aria-label="Abrir menu da conta"><span className="admin-account-avatar" aria-hidden="true">{user.email?.slice(0,1).toUpperCase() || "G"}</span><span className="admin-profile-name">{user.displayName || user.email}</span><CaretDownIcon size={13} aria-hidden="true" /></button></DropdownMenu.Trigger>
