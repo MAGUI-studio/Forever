@@ -5,7 +5,8 @@ import {useState} from "react";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
 import {AnimatePresence, motion, useReducedMotion} from "framer-motion";
-import {Menu, X, Users, Check, LayoutDashboard, Settings, LogOut, ArrowUpRight} from "lucide-react";
+import {Menu, X, Users, Check, LayoutDashboard, Settings, LogOut, ArrowUpRight, Heart} from "lucide-react";
+import {PLAN_NAMES, type WeddingPlan} from "@/config/forever";
 
 type MobileAdminMenuProps = {
   section: "site" | "site-settings" | "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
@@ -13,11 +14,12 @@ type MobileAdminMenuProps = {
   email: string | null;
   busy: boolean;
   authorized: boolean;
+  plan?: WeddingPlan;
   onSettings: () => void;
   onSignOut: () => void;
 };
 
-export function MobileAdminMenu({role,section,email,busy,authorized,onSettings,onSignOut}:MobileAdminMenuProps) {
+export function MobileAdminMenu({role,section,email,busy,authorized,plan,onSettings,onSignOut}:MobileAdminMenuProps) {
   const {path,modules}=useWedding();
   const [open,setOpen] = useState(false);
   const reducedMotion = useReducedMotion();
@@ -34,13 +36,44 @@ export function MobileAdminMenu({role,section,email,busy,authorized,onSettings,o
         <Dialog.Overlay asChild forceMount><motion.div className="fixed inset-0 z-[300] bg-black/30 backdrop-blur-sm" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:reducedMotion ? 0 : .25}} /></Dialog.Overlay>
         <Dialog.Content asChild forceMount><motion.div className="fixed inset-y-0 right-0 z-[310] flex w-[min(360px,90vw)] flex-col overflow-y-auto bg-[#fffdfa] p-6 text-[var(--forever-primary,#5D613C)] shadow-2xl outline-none" initial={{x:reducedMotion ? 0 : "100%"}} animate={{x:0}} exit={{x:reducedMotion ? 0 : "100%"}} transition={{duration:reducedMotion ? 0 : .4,ease:[.22,1,.36,1]}}>
           <div className="flex items-center justify-between gap-4"><Dialog.Title className="font-serif text-3xl">Nosso casamento</Dialog.Title><Dialog.Close asChild><button type="button" aria-label="Fechar menu" className="flex size-11 items-center justify-center rounded-[var(--wedding-radius)] hover:bg-[var(--forever-hover-tint,#5d613c10)]"><X size={22} /></button></Dialog.Close></div>
-          <Dialog.Description className="mt-2 text-xs text-[var(--forever-accent,#80654E)]">Espaço dos noivos</Dialog.Description>
+          <div className="mt-2 flex items-center justify-between gap-2">
+            <Dialog.Description className="text-xs text-[var(--forever-accent,#80654E)]">Espaço dos noivos</Dialog.Description>
+            <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
+              plan === "foreverPro" || plan === "foreverPlus"
+                ? "border-[#722F3730] bg-[#722F3712] text-[#722F37]"
+                : "border-[#16161618] bg-[#16161608] text-[#6B6760]"
+            }`}>
+              {(plan === "foreverPro" || plan === "foreverPlus") && <Heart size={9} className="fill-[#722F37]" />}
+              {PLAN_NAMES[plan ?? "essencial"] ?? "Forever Essencial"}
+            </span>
+          </div>
           <nav aria-label="Menu mobile do painel" className="mt-8 flex flex-col gap-2">
             {links.filter(link=>(role === "admin" || link.key === "check-in")&&(!sectionModule[link.key]||modules[sectionModule[link.key]!])).map(({href,label,key,icon:Icon}) => <Link key={key} href={path(href)} onClick={()=>setOpen(false)} aria-current={section === key ? "page" : undefined} className={"flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] " + (section === key ? "bg-[#5d613c10] font-semibold" : "")}><Icon size={19} />{label}</Link>)}
             <Link href={path()} target="_blank" rel="noopener noreferrer" onClick={()=>setOpen(false)} className="flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)]"><ArrowUpRight size={19} aria-hidden="true"/>Ver site</Link>
             {modules.rsvp&&<button type="button" disabled={busy || !authorized || role !== "admin"} onClick={()=>{setOpen(false);onSettings();}} className="flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm hover:bg-[var(--forever-hover-tint,#5d613c10)] disabled:opacity-40"><Settings size={19} />Configurações</button>}
           </nav>
-          <div className="mt-auto pt-10"><p className="break-all px-4 text-xs text-[var(--forever-accent,#80654E)]">{email}</p><button type="button" disabled={busy} onClick={()=>{setOpen(false);onSignOut();}} className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm hover:bg-[var(--forever-hover-tint,#5d613c10)] disabled:opacity-40"><LogOut size={18} />Sair da conta</button></div>
+          {plan === "essencial" && role === "admin" && (
+            <div className="mt-6 rounded-xl border border-[#722F3730] bg-[#722F370d] p-4 text-xs text-[#161616]">
+              <div className="flex items-center gap-1.5 font-semibold text-[#722F37]">
+                <Heart size={12} className="fill-[#722F37]" />
+                <span>Upgrade para Forever PRO</span>
+              </div>
+              <p className="mt-1 text-[11px] leading-relaxed text-[#6B6760]">
+                Desbloqueie convidados ilimitados, mesas e portaria com check-in ao vivo.
+              </p>
+              <a
+                href="/#preco"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setOpen(false)}
+                className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-[#722F37] py-2 text-center text-xs font-medium text-white transition-colors hover:bg-[#5b242b]"
+              >
+                <span>Conhecer o plano PRO</span>
+                <ArrowUpRight size={13} />
+              </a>
+            </div>
+          )}
+          <div className="mt-auto pt-8"><p className="break-all px-4 text-xs text-[var(--forever-accent,#80654E)]">{email}</p><button type="button" disabled={busy} onClick={()=>{setOpen(false);onSignOut();}} className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm hover:bg-[var(--forever-hover-tint,#5d613c10)] disabled:opacity-40"><LogOut size={18} />Sair da conta</button></div>
         </motion.div></Dialog.Content>
       </Dialog.Portal>}
     </AnimatePresence>

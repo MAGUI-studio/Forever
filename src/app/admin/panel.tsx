@@ -49,7 +49,7 @@ import {
   type User,
 } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase/client";
-import type { WeddingPlan } from "@/config/forever";
+import { PLAN_NAMES, type WeddingPlan } from "@/config/forever";
 import type { Invitation, RSVPSettings } from "@/types/guests";
 export function AdminPanel({
   view,
@@ -243,9 +243,24 @@ export function AdminPanel({
 
         {user && view === "dashboard" && authorized && (
           <nav className="admin-nav flex-nowrap! gap-3! lg:flex-wrap! lg:gap-6!" aria-label="Navegação da administração">
+            <div className="flex items-center gap-3">
             <Link href={weddingPath("admin/dashboard")} className="admin-wordmark">
               {weddingConfig.couple.partner1} <em>&</em> {weddingConfig.couple.partner2}<span>O nosso grande dia</span>
             </Link>
+            <span
+              className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium border ${
+                plan === "foreverPro" || plan === "foreverPlus"
+                  ? "border-[#722F3730] bg-[#722F3712] text-[#722F37]"
+                  : "border-[#16161618] bg-white/70 text-[#6B6760]"
+              }`}
+              title={`Plano contratado: ${PLAN_NAMES[plan] ?? "Forever Essencial"}`}
+            >
+              {(plan === "foreverPro" || plan === "foreverPlus") && (
+                <Heart size={10} className="fill-[#722F37] text-[#722F37]" />
+              )}
+              <span>{PLAN_NAMES[plan] ?? "Forever Essencial"}</span>
+            </span>
+            </div>
             <div className="hidden! lg:flex! order-last flex w-full items-center justify-center gap-2 lg:order-none lg:w-auto lg:flex-1" aria-label="Seções do painel">
               {role === "admin" && modules.guestList && <Link href={weddingPath("admin/guests")} aria-current={section === "guests" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] " + (section === "guests" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><Users size={16} aria-hidden="true" />Lista de convidados</Link>}
               {modules.checkIn&&<Link href={weddingPath("admin/check-in")} aria-current={section === "check-in" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] " + (section === "check-in" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><CheckIcon size={16} aria-hidden="true" />Controle de chegada</Link>}
@@ -270,7 +285,36 @@ export function AdminPanel({
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild><button type="button" className="admin-profile-trigger" aria-label="Abrir menu da conta"><span className="admin-account-avatar" aria-hidden="true">{user.email?.slice(0,1).toUpperCase() || "G"}</span><span className="admin-profile-name">{user.displayName || user.email}</span><CaretDownIcon size={13} aria-hidden="true" /></button></DropdownMenu.Trigger>
               <DropdownMenu.Portal><DropdownMenu.Content className="admin-profile-menu" align="end" sideOffset={10} collisionPadding={16}>
-                <DropdownMenu.Label className="admin-profile-label">Espaço dos noivos<span>{user.email}</span></DropdownMenu.Label>
+                <DropdownMenu.Label className="admin-profile-label">
+                  Espaço dos noivos
+                  <span>{user.email}</span>
+                  <div className="mt-2 flex items-center justify-between border-t border-[#16161610] pt-2 font-normal">
+                    <span className="text-[11px] text-[#80654E]">Plano atual:</span>
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
+                      plan === "foreverPro" || plan === "foreverPlus"
+                        ? "border-[#722F3730] bg-[#722F3712] text-[#722F37]"
+                        : "border-[#16161618] bg-[#16161608] text-[#6B6760]"
+                    }`}>
+                      {(plan === "foreverPro" || plan === "foreverPlus") && <Heart size={9} className="fill-[#722F37]" />}
+                      {PLAN_NAMES[plan] ?? "Forever Essencial"}
+                    </span>
+                  </div>
+                </DropdownMenu.Label>
+                {plan === "essencial" && (
+                  <DropdownMenu.Item asChild>
+                    <a
+                      href="/#preco"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex cursor-pointer items-center justify-between rounded-lg bg-[#722F3710] px-2.5 py-2 text-xs font-medium text-[#722F37] transition-colors hover:bg-[#722F3718] outline-none"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <Heart size={12} className="fill-[#722F37]" /> Upgrade para Forever PRO
+                      </span>
+                      <ArrowUpRight size={13} />
+                    </a>
+                  </DropdownMenu.Item>
+                )}
                 <DropdownMenu.Separator className="admin-profile-separator" />
 
                 {modules.rsvp&&<DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-[var(--wedding-radius)] px-2.5 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none data-highlighted:bg-[#edf0e3] data-disabled:opacity-40" disabled={busy || !authorized || role !== "admin"} onSelect={() => openModal("settings")}><CalendarDays size={16} aria-hidden="true" />Configurações</DropdownMenu.Item>}
@@ -278,7 +322,7 @@ export function AdminPanel({
               </DropdownMenu.Content></DropdownMenu.Portal>
             </DropdownMenu.Root>
             </div>
-            <MobileAdminMenu role={role} section={section} email={user.email} busy={busy} authorized={authorized} onSettings={() => openModal("settings")} onSignOut={() => void action(async () => {await signOut(clientAuth());})} />
+            <MobileAdminMenu role={role} plan={plan} section={section} email={user.email} busy={busy} authorized={authorized} onSettings={() => openModal("settings")} onSignOut={() => void action(async () => {await signOut(clientAuth());})} />
           </nav>
         )}
         {user && view === "dashboard" && section === "overview" && role === "admin" && (
@@ -300,6 +344,64 @@ export function AdminPanel({
 
         )}
         {authorized && section === "overview" && role === "admin" && modules.siteEditor && <section className="relative mb-6 overflow-hidden rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-6 sm:p-8"><div className="pointer-events-none absolute -right-5 -bottom-8 text-[#5d613c10]" aria-hidden="true"><span className="block w-44"><WeddingBranch/></span></div><div className="relative flex flex-wrap items-center justify-between gap-6"><div className="max-w-xl"><p className="admin-eyebrow">Do seu jeito</p><h2 className="mt-2 font-serif text-3xl text-[var(--forever-ink,#3D2501)]">Seu site</h2><p className="mt-3 text-sm leading-relaxed text-[var(--forever-accent,#80654E)]">Escolha o template, personalize os textos e acompanhe cada alteração na prévia antes de publicar.</p></div><Link href={weddingPath("admin/site")} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--wedding-radius)] bg-[var(--forever-primary,#5D613C)] px-5 py-3 text-sm font-medium text-[#fffdfa] transition-colors hover:bg-[var(--forever-primary-hover,#4e5232)]"><PencilSimpleIcon size={18}/>Personalizar site</Link></div></section>}
+        {authorized && section === "overview" && role === "admin" && plan === "essencial" && (
+          <section className="relative mb-6 overflow-hidden rounded-[var(--wedding-radius)] border border-[#722F3730] bg-gradient-to-br from-[#fffdfb] via-[#fffdfb] to-[#722F370a] p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-[#722F3730] bg-[#722F3712] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#722F37]">
+                  <Heart size={12} className="fill-[#722F37]" />
+                  Upgrade disponível · Forever PRO
+                </div>
+                <h2 className="mt-3 font-serif text-2xl text-[#161616] sm:text-3xl">
+                  Leve a organização do seu casamento ao <em className="font-serif italic text-[#722F37]">próximo nível</em>
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-[#6B6760]">
+                  Seu plano atual é o <strong>Forever Essencial</strong> (até 50 convidados). Com o <strong>Forever PRO</strong>, vocês desbloqueiam convidados ilimitados e toda a infraestrutura para o grande dia:
+                </p>
+                <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 text-xs text-[#161616]">
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
+                    <span><strong>Convidados ilimitados</strong> (sem limite de 50)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
+                    <span><strong>Gestão de mesas e lugares</strong></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
+                    <span><strong>Check-in ao vivo</strong> na portaria via celular</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
+                    <span><strong>Contas para equipe da recepção</strong></span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
+                    <span><strong>Templates exclusivos</strong> (Minimalista & Brisa)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
+                    <span><strong>+ 3 meses de acesso</strong> pós-evento</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex shrink-0 flex-col items-start gap-2 lg:items-end">
+                <a
+                  href="/#preco"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#722F37] px-6 py-3 text-xs font-semibold text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-md hover:shadow-[#722F3725]"
+                >
+                  <Heart size={14} className="fill-white" />
+                  <span>Fazer upgrade para Forever PRO</span>
+                  <ArrowUpRight size={14} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </a>
+                <span className="text-[11px] text-[#8C877F]">Pagamento único · Diferença de R$&nbsp;500</span>
+              </div>
+            </div>
+          </section>
+        )}
         {error && !(authorized && modalState.modal) && (
           <p role="alert" className="admin-alert admin-alert--error">
             {error}
@@ -441,6 +543,26 @@ export function AdminPanel({
                     <WeddingBranch />
                   </span>
                 </AdminContainer>
+                {plan === "essencial" && (
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#722F3725] bg-[#722F370a] p-4 text-xs text-[#161616]">
+                    <div className="flex items-center gap-2.5">
+                      <Heart size={16} className="shrink-0 fill-[#722F37] text-[#722F37]" />
+                      <span>
+                        Seu plano atual é o <strong>Forever Essencial</strong> ({allGuests.length} de 50 convidados).
+                        Para convidados ilimitados e gestão de mesas, faça o upgrade para o <strong>Forever PRO</strong>.
+                      </span>
+                    </div>
+                    <a
+                      href="/#preco"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#722F37] px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#5b242b]"
+                    >
+                      <span>Conhecer Forever PRO</span>
+                      <ArrowUpRight size={13} />
+                    </a>
+                  </div>
+                )}
                 <div className="flex flex-col gap-5 py-5 lg:flex-row lg:items-center lg:justify-between">
                   <div className="grid min-w-0 gap-3 sm:grid-cols-[340px_220px] sm:items-center sm:gap-6">
                     <label className="flex min-h-12 min-w-0 items-center gap-3 rounded-[var(--wedding-radius)] border border-[#5d613c30] bg-[#fffdfa] px-3 text-[var(--forever-primary,#5D613C)] transition-[border-color,box-shadow] focus-within:border-[#5d613c70] focus-within:ring-2 focus-within:ring-[#5d613c20]">
@@ -459,7 +581,7 @@ export function AdminPanel({
                         <span>{allGuests.length} / 50 convidados {allGuests.length >= 50 ? "· Limite atingido" : ""}</span>
                       </span>
                     )}
-                    <AdminButton disabled={busy || (plan === "essencial" && allGuests.length >= 50)} onClick={() => open()} title={plan === "essencial" && allGuests.length >= 50 ? "Limite de 50 convidados atingido no plano Essencial" : undefined}><Plus size={17} aria-hidden="true" />Adicionar convite</AdminButton>
+                    <AdminButton disabled={busy || (plan === "essencial" && allGuests.length >= 50)} onClick={() => open()} title={plan === "essencial" && allGuests.length >= 50 ? "Limite de 50 convidados atingido no plano Forever Essencial" : undefined}><Plus size={17} aria-hidden="true" />Adicionar convite</AdminButton>
                   </div>
                 </div>
                 {(modules.dietaryRestrictions||modules.messages)&&<aside className="admin-guest-legend" aria-label="Legenda dos alertas de convidados confirmados">
