@@ -15,6 +15,7 @@ import { EventOperations } from "./EventOperations";
 import { CheckInList } from "./CheckInList";
 import { MobileAdminMenu } from "./MobileAdminMenu";
 import { GuestStats } from "./GuestStats";
+import { DashboardOverview } from "./DashboardOverview";
 import { DashboardSkeleton, GuestStatsSkeleton } from "./skeleton";
 import { invitationUrl } from "@/config/site";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
@@ -555,33 +556,16 @@ export function AdminPanel({
             <MobileAdminMenu role={role} plan={plan} section={section} email={user.email} busy={busy} authorized={authorized} onSettings={() => openModal("settings")} onSignOut={() => void action(async () => {await signOut(clientAuth());})} onUpgrade={() => void handleUpgrade()} />
           </nav>
         )}
-        {user && view === "dashboard" && section === "overview" && role === "admin" && (
-          <AdminContainer variant="content" className="admin-page-heading px-0! pb-9! grid! grid-cols-1! items-center! gap-8! lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]! lg:gap-12!">
-            <div>
-              <p className="admin-eyebrow">Com carinho, cada detalhe</p>
-              <h1 className="text-[clamp(44px,5vw,80px)]!">
-                Quem faz parte da
-                <br />
-                nossa <em>história.</em>
-              </h1>
-              <p className="admin-subtitle">
-                Um espaço para cuidar dos convites e de quem estará ao nosso
-                lado.
-              </p>
-            </div>
-            {modules.guestList&&authorized ? <GuestStats guests={allGuests} /> : modules.guestList&&loading ? <GuestStatsSkeleton /> : null}
-          </AdminContainer>
-        )}
         {authorized && upgradeSuccess && (
-          <section className="relative mb-6 overflow-hidden rounded-[var(--wedding-radius)] border border-[#5D613C40] bg-[#5D613C12] p-5 shadow-sm">
+          <section className="relative mb-6 overflow-hidden rounded-2xl border border-emerald-600/30 bg-emerald-50 p-5 shadow-xs">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <CheckCircle2 size={24} className="shrink-0 text-[#5D613C]" />
+                <CheckCircle2 size={24} className="shrink-0 text-emerald-700" />
                 <div>
-                  <p className="text-sm font-semibold text-[#161616]">
+                  <p className="text-sm font-semibold text-emerald-950">
                     Upgrade ativado! Seu casamento agora é Forever PRO.
                   </p>
-                  <p className="mt-0.5 text-xs text-[#6B6760]">
+                  <p className="mt-0.5 text-xs text-emerald-800">
                     Convidados ilimitados, organização de mesas, check-in na portaria e todos os templates já estão liberados.
                   </p>
                 </div>
@@ -589,80 +573,30 @@ export function AdminPanel({
               <button
                 type="button"
                 onClick={() => setUpgradeSuccess(false)}
-                className="rounded-full border border-[#16161618] bg-white px-3 py-1 text-xs font-medium text-[#161616] hover:bg-[#16161605]"
+                className="rounded-full border border-emerald-700/20 bg-white px-3 py-1 text-xs font-medium text-emerald-900 hover:bg-emerald-100 cursor-pointer"
               >
                 Dispensar
               </button>
             </div>
           </section>
         )}
-        {authorized && section === "overview" && role === "admin" && modules.siteEditor && <section className="relative mb-6 overflow-hidden rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-6 sm:p-8"><div className="pointer-events-none absolute -right-5 -bottom-8 text-[#5d613c10]" aria-hidden="true"><span className="block w-44"><WeddingBranch/></span></div><div className="relative flex flex-wrap items-center justify-between gap-6"><div className="max-w-xl"><p className="admin-eyebrow">Do seu jeito</p><h2 className="mt-2 font-serif text-3xl text-[var(--forever-ink,#3D2501)]">Seu site</h2><p className="mt-3 text-sm leading-relaxed text-[var(--forever-accent,#80654E)]">Escolha o template, personalize os textos e acompanhe cada alteração na prévia antes de publicar.</p></div><Link href={weddingPath("admin/site")} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--wedding-radius)] bg-[var(--forever-primary,#5D613C)] px-5 py-3 text-sm font-medium text-[#fffdfa] transition-colors hover:bg-[var(--forever-primary-hover,#4e5232)]"><PencilSimpleIcon size={18}/>Personalizar site</Link></div></section>}
-        {authorized && section === "overview" && role === "admin" && plan === "essencial" && (
-          <section className="relative mb-6 overflow-hidden rounded-[var(--wedding-radius)] border border-[#722F3730] bg-gradient-to-br from-[#fffdfb] via-[#fffdfb] to-[#722F370a] p-6 sm:p-8 shadow-sm">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-2xl">
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-[#722F3730] bg-[#722F3712] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#722F37]">
-                  <Heart size={12} className="fill-[#722F37]" />
-                  Upgrade disponível · Forever PRO
-                </div>
-                <h2 className="mt-3 font-serif text-2xl text-[#161616] sm:text-3xl">
-                  Leve a organização do seu casamento ao <em className="font-serif italic text-[#722F37]">próximo nível</em>
-                </h2>
-                <p className="mt-2 text-sm leading-relaxed text-[#6B6760]">
-                  Seu plano atual é o <strong>Forever Essencial</strong> (até 50 convidados). Com o <strong>Forever PRO</strong>, vocês desbloqueiam convidados ilimitados e toda a infraestrutura para o grande dia:
-                </p>
-                <div className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 text-xs text-[#161616]">
-                  <div className="flex items-center gap-2">
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
-                    <span><strong>Convidados ilimitados</strong> (sem limite de 50)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
-                    <span><strong>Gestão de mesas e lugares</strong></span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
-                    <span><strong>Check-in ao vivo</strong> na portaria via celular</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
-                    <span><strong>Contas para equipe da recepção</strong></span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
-                    <span><strong>Templates exclusivos</strong> (Minimalista & Brisa)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[#722F3715] text-[#722F37]">✓</span>
-                    <span><strong>+ 3 meses de acesso</strong> pós-evento</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex shrink-0 flex-col items-start gap-2 lg:items-end">
-                <button
-                  type="button"
-                  disabled={upgradeLoading}
-                  onClick={() => void handleUpgrade()}
-                  className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#722F37] px-6 py-3 text-xs font-semibold text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-md hover:shadow-[#722F3725] disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {upgradeLoading ? (
-                    <>
-                      <Loader2 size={14} className="animate-spin text-white" />
-                      <span>Redirecionando…</span>
-                    </>
-                  ) : (
-                    <>
-                      <Heart size={14} className="fill-white" />
-                      <span>Fazer upgrade para Forever PRO</span>
-                      <ArrowUpRight size={14} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </>
-                  )}
-                </button>
-                <span className="text-[11px] text-[#8C877F]">Pagamento único · Diferença de R$&nbsp;500</span>
-              </div>
-            </div>
-          </section>
+        {user && view === "dashboard" && section === "overview" && role === "admin" && (
+          <DashboardOverview
+            guests={allGuests}
+            invitations={invites}
+            tables={tables}
+            weddingConfig={weddingConfig}
+            slug={slug}
+            templateId={templateId}
+            plan={plan}
+            modules={modules}
+            weddingPath={weddingPath}
+            onOpenNewInvite={() => open()}
+            onOpenSettings={() => openModal("settings")}
+            onUpgrade={() => void handleUpgrade()}
+            upgradeLoading={upgradeLoading}
+            loading={loading && !authorized}
+          />
         )}
         {error && !(authorized && modalState.modal) && (
           <p role="alert" className="admin-alert admin-alert--error">
