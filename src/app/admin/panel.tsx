@@ -49,6 +49,7 @@ import {
   type User,
 } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase/client";
+import type { WeddingPlan } from "@/config/forever";
 import type { Invitation, RSVPSettings } from "@/types/guests";
 export function AdminPanel({
   view,
@@ -61,6 +62,7 @@ export function AdminPanel({
   const router = useRouter();
   const [modalState, setModalState] = useAdminModal();
   const [user, setUser] = useState<User | null>(null);
+  const [plan, setPlan] = useState<WeddingPlan>("foreverPlus");
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState("Verificando seu acesso…");
@@ -124,8 +126,8 @@ export function AdminPanel({
   async function load(account = user) {
     setLoadingMessage("Buscando os detalhes do seu casamento…");
     const session = await api("/api/admin/session", "GET", undefined, account);
-    setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(session.wedding.modules??{});setTemplateId(session.wedding.templateId??"botanical-classic");
-    const enabled=resolveModules(session.wedding.modules);
+    setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(session.wedding.modules??{});setTemplateId(session.wedding.templateId??"botanical-classic");setPlan(session.wedding.plan ?? "foreverPlus");
+    const enabled=resolveModules(session.wedding.modules, session.wedding.plan);
     if(sectionModule[section]&&!enabled[sectionModule[section]!]){setLoading(false);router.replace(weddingPath("admin/dashboard"));return;}
     const reception = session.role === "reception";
     if (enabled.guestList) setLoadingMessage("Carregando sua lista de convidados…");
@@ -432,7 +434,7 @@ export function AdminPanel({
                       {loading && !authorized ? <span className="inline-block h-3 w-32 animate-pulse rounded bg-[#5d613c15]" aria-label="Carregando quantidade" /> : <>{visible.length}{" "}
                       {visible.length === 1
                         ? "convite encontrado"
-                        : "convites encontrados"}</> }
+                        : "convites encontrados"}{plan === "essencial" && <> · {allGuests.length} de 50 convidados</>}</> }
                     </p>
                   </div>
                   <span className="admin-heading-branch" aria-hidden="true">
@@ -451,7 +453,13 @@ export function AdminPanel({
                     <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#5D613C)] transition-colors hover:bg-[var(--forever-hover-tint,#5d613c0d)] disabled:opacity-50" disabled={busy} onClick={() => void action(async () => {await load();})}>
                       <RefreshCw size={16} aria-hidden="true" className={busy ? "animate-spin" : ""} />Atualizar
                     </button>
-                    <AdminButton disabled={busy} onClick={() => open()}><Plus size={17} aria-hidden="true" />Adicionar convite</AdminButton>
+                    {plan === "essencial" && (
+                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${allGuests.length >= 50 ? "border-[#b4434640] bg-[#b4434612] font-medium text-[#b44346]" : "border-[#5d613c30] bg-[#fffdfa] text-[var(--forever-primary,#5D613C)]"}`}>
+                        <Users size={13} aria-hidden="true" />
+                        <span>{allGuests.length} / 50 convidados {allGuests.length >= 50 ? "· Limite atingido" : ""}</span>
+                      </span>
+                    )}
+                    <AdminButton disabled={busy || (plan === "essencial" && allGuests.length >= 50)} onClick={() => open()} title={plan === "essencial" && allGuests.length >= 50 ? "Limite de 50 convidados atingido no plano Essencial" : undefined}><Plus size={17} aria-hidden="true" />Adicionar convite</AdminButton>
                   </div>
                 </div>
                 {(modules.dietaryRestrictions||modules.messages)&&<aside className="admin-guest-legend" aria-label="Legenda dos alertas de convidados confirmados">
@@ -480,7 +488,7 @@ export function AdminPanel({
                       {!query && filter === "todos" && (
                         <button
                           className="guest-secondary"
-                          disabled={busy}
+                          disabled={busy || (plan === "essencial" && allGuests.length >= 50)}
                           onClick={() => open()}
                         >
                           <Plus size={14} aria-hidden="true" /> Criar primeiro

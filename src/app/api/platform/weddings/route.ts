@@ -38,6 +38,7 @@ export async function GET(request: Request) {
         const data = document.data();
         weddings.push({
           slug: document.id,
+          plan: data.plan ?? "foreverPlus",
           status: data.status,
           config: data.config,
           theme: data.theme,
@@ -57,6 +58,7 @@ const createSchema = z
     partner2: z.string().trim().min(1).max(80),
     ownerEmail: z.string().trim().email().max(254),
     ownerPassword: z.string().min(8).max(128).optional(),
+    plan: z.enum(["essencial", "foreverPlus"]).optional(),
   })
   .strict();
 export async function POST(request: Request) {
@@ -93,6 +95,7 @@ export async function POST(request: Request) {
         status: "draft",
         theme: "botanical",
         templateId: foreverTemplateId,
+        plan: data.plan ?? "foreverPlus",
         config: {
           ...emptyWeddingConfig,
           couple: {
@@ -127,17 +130,21 @@ export async function PATCH(request: Request) {
     const data = z
       .object({
         slug: slugSchema,
-        status: z.enum(["draft", "suspended", "archived"]),
+        status: z.enum(["draft", "suspended", "archived"]).optional(),
+        plan: z.enum(["essencial", "foreverPlus"]).optional(),
       })
       .strict()
+      .refine(v => v.status !== undefined || v.plan !== undefined, "Nenhum campo para atualizar.")
       .parse(await body(request));
     const ref = services().db.doc("weddings/" + data.slug);
     if (!(await ref.get()).exists)
       throw new HttpError(404, "Casamento não encontrado.");
-    await ref.update({
-      status: data.status,
+    const updates: Record<string, unknown> = {
       updatedAt: new Date().toISOString(),
-    });
+    };
+    if (data.status) updates.status = data.status;
+    if (data.plan) updates.plan = data.plan;
+    await ref.update(updates);
     return reply({ success: true });
   } catch (e) {
     return failure(e);

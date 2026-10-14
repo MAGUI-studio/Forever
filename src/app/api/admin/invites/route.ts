@@ -1,4 +1,5 @@
 import {resolveModules,redactModuleData} from "@/config/modules";
+import { getWeddingGuestLimit } from "@/config/forever";
 import { audit } from "@/lib/event-audit";
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
           personalTokens: Object.fromEntries((item.guests ?? []).map((g: {id: string}) => [g.id, personalToken(d.id, item.token, g.id)])),
         };
       }),
-    },resolveModules(wedding.modules)));
+    },resolveModules(wedding.modules, wedding.plan)));
   } catch (e) {
     return failure(e);
   }
@@ -54,8 +55,21 @@ export async function POST(request: Request) {
     const db = await requireAdmin(request,"guestList");
     const {email:actor,wedding} = await requireAccess(request);
     const data = inviteSchema.parse(await body(request));
-    if(!resolveModules(wedding.modules).checkIn&&data.guests.some(g=>g.checkedIn))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
+    if(!resolveModules(wedding.modules, wedding.plan).checkIn&&data.guests.some(g=>g.checkedIn))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
     if(data.guests.some(g=>g.tableId||g.seat))throw new HttpError(400,"Distribua os lugares na página de mesas.");
+    const guestLimit = getWeddingGuestLimit(wedding.plan);
+    if (Number.isFinite(guestLimit)) {
+      const snap = await db.collection("invitations").get();
+      const currentGuestCount = snap.docs
+        .filter(d => d.data().active !== false)
+        .reduce((sum, d) => sum + ((d.data().guests ?? []).length as number), 0);
+      if (currentGuestCount + data.guests.length > guestLimit) {
+        throw new HttpError(
+          403,
+          `O plano Essencial permite até ${guestLimit} convidados. Faça o upgrade para o Forever + para ter convidados ilimitados.`
+        );
+      }
+    }
     const token = randomBytes(24).toString("hex");
     const id = tokenId(token);
     const code = generateShortCode();
@@ -116,7 +130,20 @@ export async function PATCH(request: Request) {
           "O convite mudou. Atualize a lista antes de editar novamente.",
         );
       const previous = snap.data()!;
-      if(!resolveModules(wedding.modules).checkIn&&data.invitation.guests.some(g=>g.checkedIn!==(previous.guests.find((old:{id:string})=>old.id===g.id)?.checkedIn??false)))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
+      if(!resolveModules(wedding.modules, wedding.plan).checkIn&&data.invitation.guests.some(g=>g.checkedIn!==(previous.guests.find((old:{id:string})=>old.id===g.id)?.checkedIn??false)))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
+      const guestLimit = getWeddingGuestLimit(wedding.plan);
+      if (Number.isFinite(guestLimit) && data.invitation.active !== false) {
+        const allSnap = await t.get(db.collection("invitations"));
+        const otherGuestsCount = allSnap.docs
+          .filter(d => d.id !== data.id && d.data().active !== false)
+          .reduce((sum, d) => sum + ((d.data().guests ?? []).length as number), 0);
+        if (otherGuestsCount + data.invitation.guests.length > guestLimit) {
+          throw new HttpError(
+            403,
+            `O plano Essencial permite até ${guestLimit} convidados. Faça o upgrade para o Forever + para ter convidados ilimitados.`
+          );
+        }
+      }
       for (const guest of data.invitation.guests) {
         const old = previous.guests.find((g: {id:string}) => g.id === guest.id);
         if ((guest.tableId ?? "") !== (old?.tableId ?? "") || (guest.seat ?? "") !== (old?.seat ?? "")) throw new HttpError(400,"Altere os lugares na página de mesas.");

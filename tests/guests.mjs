@@ -678,6 +678,68 @@ async function check(title, work) {
     assert.equal(body.invitation.personal, true);
     assert(store.has("weddings/test-couple/codes/" + guestCode));
   });
+  await check("plano essencial limita convidados em 50 e bloqueia módulos exclusivos", async () => {
+    store.set("weddings/essencial-wedding", {
+      slug: "essencial-wedding",
+      status: "published",
+      plan: "essencial",
+      config: { couple: { partner1: "Noiva", partner2: "Noivo" } },
+      theme: "botanical"
+    });
+    store.set("weddings/essencial-wedding/members/bride", { role: "admin", active: true });
+
+    const essencialReq = (method, data) => new Request("https://wedding.example/api", {
+      method,
+      headers: {
+        origin: "https://wedding.example",
+        authorization: "Bearer valid",
+        "Content-Type": "application/json",
+        "x-wedding-slug": "essencial-wedding",
+      },
+      ...(data ? { body: JSON.stringify(data) } : {}),
+    });
+
+    const { resolveModules } = load("src/config/modules.ts");
+    const modules = resolveModules({ checkIn: true, organization: true, guestList: true }, "essencial");
+    assert.equal(modules.checkIn, false);
+    assert.equal(modules.tables, false);
+    assert.equal(modules.buffet, false);
+    assert.equal(modules.team, false);
+    assert.equal(modules.guestList, true);
+
+    const guests50 = Array.from({ length: 50 }, (_, i) => ({
+      id: randomUUID(),
+      name: `Convidado ${i + 1}`,
+      child: false,
+      status: "pendente",
+      checkedIn: false,
+    }));
+    const create40 = await admin.POST(essencialReq("POST", {
+      label: "Grupo dos 40",
+      active: true,
+      kind: "group",
+      guests: guests50.slice(0, 40),
+    }));
+    assert.equal(create40.status, 201);
+
+    const create10 = await admin.POST(essencialReq("POST", {
+      label: "Grupo dos 10",
+      active: true,
+      kind: "group",
+      guests: guests50.slice(40, 50),
+    }));
+    assert.equal(create10.status, 201);
+
+    const create51 = await admin.POST(essencialReq("POST", {
+      label: "Convidado Excedente",
+      active: true,
+      kind: "individual",
+      guests: [{ id: randomUUID(), name: "Convidado 51", child: false, status: "pendente", checkedIn: false }],
+    }));
+    assert.equal(create51.status, 403);
+    const errBody = await create51.json();
+    assert(errBody.error.includes("50"));
+  });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,
   );

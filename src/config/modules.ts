@@ -16,7 +16,22 @@ export const moduleCatalog:Record<WeddingModule,{label:string;description:string
  gifts:{label:"Lista de presentes",description:"Seção de presentes, Pix e pagamento por cartão.",requires:[]},
  siteEditor:{label:"Personalização do site",description:"Edição do conteúdo, fotos, tema e publicação.",requires:[]}
 };
-export function resolveModules(stored?:Partial<WeddingModules>):WeddingModules{const result=Object.fromEntries(moduleKeys.map(key=>[key,stored?.[key]??true])) as WeddingModules;for(let i=0;i<moduleKeys.length;i++)for(const key of moduleKeys)if(moduleCatalog[key].requires.some(parent=>!result[parent]))result[key]=false;return result;}
+export const foreverPlusExclusiveModules: ReadonlySet<WeddingModule> = new Set<WeddingModule>([
+  "checkIn",
+  "organization",
+  "tables",
+  "buffet",
+  "history",
+  "team",
+]);
+export function resolveModules(stored?:Partial<WeddingModules>, plan?: import("@/config/forever").WeddingPlan):WeddingModules{
+  const result=Object.fromEntries(moduleKeys.map(key=>[key,stored?.[key]??true])) as WeddingModules;
+  if (plan === "essencial") {
+    for (const key of foreverPlusExclusiveModules) result[key] = false;
+  }
+  for(let i=0;i<moduleKeys.length;i++)for(const key of moduleKeys)if(moduleCatalog[key].requires.some(parent=>!result[parent]))result[key]=false;
+  return result;
+}
 export function toggleModule(current:WeddingModules,key:WeddingModule,enabled:boolean){const next={...current,[key]:enabled};function enableParents(child:WeddingModule){for(const parent of moduleCatalog[child].requires){next[parent]=true;enableParents(parent);}}if(enabled)enableParents(key);return resolveModules(next);}
 export const sectionModule:Record<string,WeddingModule|undefined>={guests:"guestList","check-in":"checkIn",tables:"tables",buffet:"buffet",history:"history",team:"team",site:"siteEditor","site-settings":"siteEditor","editor-preview":"siteEditor",preview:"siteEditor"};
 export function redactModuleData<T>(value:T,modules:WeddingModules):T{if(Array.isArray(value))return value.map(item=>redactModuleData(item,modules)) as T;if(value&&typeof value==="object"){const hidden=new Set<string>();if(!modules.dietaryRestrictions)hidden.add("dietaryRestrictions");if(!modules.messages)hidden.add("message");if(!modules.invitationTracking)for(const key of ["sentAt","openedAt","personalOpenedAt"])hidden.add(key);return Object.fromEntries(Object.entries(value).filter(([key])=>!hidden.has(key)).map(([key,item])=>[key,redactModuleData(item,modules)])) as T;}return value;}

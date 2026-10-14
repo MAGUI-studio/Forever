@@ -294,4 +294,4 @@ export async function requestWedding(request:Request,publicOnly=false){
 }
 export async function publicWeddingDatabase(request:Request){const wedding=await requestWedding(request,true);return scopedDatabase(services().db,wedding.slug);}
 
-export function assertModule(wedding:{modules?:Partial<import("@/config/modules").WeddingModules>},module:WeddingModule){if(!resolveModules(wedding.modules)[module])throw new HttpError(403,"Este recurso não está disponível para este casamento.");}
+export function assertModule(wedding:{modules?:Partial<import("@/config/modules").WeddingModules>; plan?: import("@/config/forever").WeddingPlan},module:WeddingModule){if(!resolveModules(wedding.modules, wedding.plan)[module])throw new HttpError(403,"Este recurso não está disponível para este casamento.");}

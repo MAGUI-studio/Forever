@@ -1,4 +1,20 @@
 import type { WeddingConfig } from "@/types/wedding";
+
+export type WeddingPlan = "essencial" | "foreverPlus";
+export const defaultWeddingPlan: WeddingPlan = "foreverPlus";
+export const PLAN_GUEST_LIMITS: Record<WeddingPlan, number> = {
+  essencial: 50,
+  foreverPlus: Infinity,
+};
+export const PLAN_NAMES: Record<WeddingPlan, string> = {
+  essencial: "Essencial",
+  foreverPlus: "Forever +",
+};
+export function getWeddingGuestLimit(plan?: WeddingPlan): number {
+  if (plan === "essencial") return 50;
+  return Infinity;
+}
+
 export const FOREVER_ORIGIN = (
   process.env.NODE_ENV === "development"
     ? process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
