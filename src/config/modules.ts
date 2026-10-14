@@ -24,7 +24,6 @@ export const foreverProExclusiveModules: ReadonlySet<WeddingModule> = new Set<We
   "history",
   "team",
 ]);
-export const foreverPlusExclusiveModules = foreverProExclusiveModules;
 export function resolveModules(stored?:Partial<WeddingModules>, plan?: import("@/config/forever").WeddingPlan):WeddingModules{
   const result=Object.fromEntries(moduleKeys.map(key=>[key,stored?.[key]??true])) as WeddingModules;
   if (plan === "essencial") {

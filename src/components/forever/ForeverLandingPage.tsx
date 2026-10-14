@@ -3,7 +3,7 @@
 import { useState, Fragment, type ReactNode } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, ArrowUp, ArrowUpRight, Check, Heart, Plus } from "lucide-react";
+import { ArrowRight, ArrowUp, ArrowUpRight, Check, Heart, Loader2, Plus } from "lucide-react";
 import { ForeverLogo } from "./ForeverLogo";
 import { BotanicalClassicBranch, BotanicalClassicOrnaments } from "@/components/wedding/templates/BotanicalClassicOrnaments";
 import { moduleCatalog, moduleKeys } from "@/config/modules";
@@ -934,7 +934,28 @@ const faqs = [
 
 export function ForeverLandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [checkoutLoading, setCheckoutLoading] = useState<"essencial" | "foreverPro" | null>(null);
   const modules = moduleKeys.filter(key => key !== "organization");
+
+  async function handleCheckout(plan: "essencial" | "foreverPro") {
+    try {
+      setCheckoutLoading(plan);
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan, action: "new" }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || "Erro ao iniciar pagamento.");
+      }
+      window.location.href = data.url;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erro ao iniciar checkout.";
+      alert(message);
+      setCheckoutLoading(null);
+    }
+  }
 
   return (
     <div id="inicio" className="min-h-screen bg-[#F1F1F1] text-[#161616] selection:bg-[#722F3722]">
@@ -1233,14 +1254,21 @@ export function ForeverLandingPage() {
                         <div className="mt-5">
                           <button
                             type="button"
-                            disabled
-                            aria-disabled="true"
-                            className="inline-flex h-11 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full border border-[#16161625] bg-[#16161610] px-4 text-xs font-medium text-[#716D68]"
+                            disabled={checkoutLoading !== null}
+                            onClick={() => handleCheckout("essencial")}
+                            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-[#16161625] bg-white px-4 text-xs font-medium text-[#161616] shadow-xs transition-all hover:border-[#16161645] hover:bg-[#16161606] disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            <span>Assinar Forever Essencial</span>
-                            <span className="rounded-full bg-[#16161615] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#716D68]">
-                              Em breve
-                            </span>
+                            {checkoutLoading === "essencial" ? (
+                              <>
+                                <Loader2 size={13} className="animate-spin text-[#161616]" />
+                                <span>Redirecionando…</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>Assinar Forever Essencial</span>
+                                <ArrowUpRight size={13} className="text-[#8C877F]" />
+                              </>
+                            )}
                           </button>
                         </div>
                       </th>
@@ -1261,15 +1289,22 @@ export function ForeverLandingPage() {
                         <div className="mt-5">
                           <button
                             type="button"
-                            disabled
-                            aria-disabled="true"
-                            className="inline-flex h-11 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full border border-[#722F3740] bg-[#722F3712] px-4 text-xs font-medium text-[#722F37]"
+                            disabled={checkoutLoading !== null}
+                            onClick={() => handleCheckout("foreverPro")}
+                            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#722F37] px-4 text-xs font-semibold text-white shadow-md shadow-[#722F3720] transition-all duration-300 hover:bg-[#5b242b] hover:shadow-lg hover:shadow-[#722F3730] disabled:cursor-not-allowed disabled:opacity-60"
                           >
-                            <Heart size={12} className="fill-[#722F37] text-[#722F37]" />
-                            <span>Assinar Forever PRO</span>
-                            <span className="rounded-full bg-[#722F3720] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#722F37]">
-                              Em breve
-                            </span>
+                            {checkoutLoading === "foreverPro" ? (
+                              <>
+                                <Loader2 size={13} className="animate-spin text-white" />
+                                <span>Redirecionando…</span>
+                              </>
+                            ) : (
+                              <>
+                                <Heart size={12} className="fill-white text-white" />
+                                <span>Assinar Forever PRO</span>
+                                <ArrowUpRight size={13} className="text-white/80" />
+                              </>
+                            )}
                           </button>
                         </div>
                       </th>
@@ -1337,33 +1372,47 @@ export function ForeverLandingPage() {
                   <tfoot>
                     <tr className={`border-t ${line}`}>
                       <td className="pt-8 pr-6 text-xs text-[#8C877F]">
-                        Checkout seguro via Stripe em liberação. Plano Forever Essencial com acesso até a data do evento e Plano Forever PRO com + 3 meses pós-evento.
+                        Checkout seguro via Stripe com aprovação imediata. Pagamento único com 0% de comissão sobre seus presentes.
                       </td>
                       <td className={`border-l ${line} px-6 pt-8 text-center`}>
                         <button
                           type="button"
-                          disabled
-                          aria-disabled="true"
-                          className="inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full border border-[#16161625] bg-[#16161610] px-4 text-xs font-medium text-[#716D68]"
+                          disabled={checkoutLoading !== null}
+                          onClick={() => handleCheckout("essencial")}
+                          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#16161625] bg-white px-4 text-xs font-medium text-[#161616] shadow-xs transition-all hover:border-[#16161645] hover:bg-[#16161606] disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          <span>Assinar Forever Essencial</span>
-                          <span className="rounded-full bg-[#16161615] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#716D68]">
-                            Em breve
-                          </span>
+                          {checkoutLoading === "essencial" ? (
+                            <>
+                              <Loader2 size={12} className="animate-spin text-[#161616]" />
+                              <span>Aguarde…</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Assinar Forever Essencial</span>
+                              <ArrowUpRight size={12} className="text-[#8C877F]" />
+                            </>
+                          )}
                         </button>
                       </td>
                       <td className={`border-l ${line} px-6 pt-8 text-center`}>
                         <button
                           type="button"
-                          disabled
-                          aria-disabled="true"
-                          className="inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full border border-[#722F3740] bg-[#722F3712] px-4 text-xs font-medium text-[#722F37]"
+                          disabled={checkoutLoading !== null}
+                          onClick={() => handleCheckout("foreverPro")}
+                          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-[#722F37] px-4 text-xs font-semibold text-white shadow-md shadow-[#722F3720] transition-all duration-300 hover:bg-[#5b242b] hover:shadow-lg hover:shadow-[#722F3730] disabled:cursor-not-allowed disabled:opacity-60"
                         >
-                          <Heart size={12} className="fill-[#722F37] text-[#722F37]" />
-                          <span>Assinar Forever PRO</span>
-                          <span className="rounded-full bg-[#722F3720] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#722F37]">
-                            Em breve
-                          </span>
+                          {checkoutLoading === "foreverPro" ? (
+                            <>
+                              <Loader2 size={12} className="animate-spin text-white" />
+                              <span>Aguarde…</span>
+                            </>
+                          ) : (
+                            <>
+                              <Heart size={12} className="fill-white text-white" />
+                              <span>Assinar Forever PRO</span>
+                              <ArrowUpRight size={12} className="text-white/80" />
+                            </>
+                          )}
                         </button>
                       </td>
                     </tr>

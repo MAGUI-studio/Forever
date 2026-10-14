@@ -38,7 +38,7 @@ export async function GET(request: Request) {
         const data = document.data();
         weddings.push({
           slug: document.id,
-          plan: data.plan ?? "foreverPlus",
+          plan: data.plan === "essencial" ? "essencial" : "foreverPro",
           status: data.status,
           config: data.config,
           theme: data.theme,
@@ -58,7 +58,7 @@ const createSchema = z
     partner2: z.string().trim().min(1).max(80),
     ownerEmail: z.string().trim().email().max(254),
     ownerPassword: z.string().min(8).max(128).optional(),
-    plan: z.enum(["essencial", "foreverPlus"]).optional(),
+    plan: z.enum(["essencial", "foreverPro"]).optional(),
   })
   .strict();
 export async function POST(request: Request) {
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
         status: "draft",
         theme: "botanical",
         templateId: foreverTemplateId,
-        plan: data.plan ?? "foreverPlus",
+        plan: data.plan ?? "foreverPro",
         config: {
           ...emptyWeddingConfig,
           couple: {
@@ -131,7 +131,7 @@ export async function PATCH(request: Request) {
       .object({
         slug: slugSchema,
         status: z.enum(["draft", "suspended", "archived"]).optional(),
-        plan: z.enum(["essencial", "foreverPlus"]).optional(),
+        plan: z.enum(["essencial", "foreverPro"]).optional(),
       })
       .strict()
       .refine(v => v.status !== undefined || v.plan !== undefined, "Nenhum campo para atualizar.")

@@ -26,9 +26,11 @@ import {useWedding} from "@/components/wedding/WeddingProvider";
 import {
   ArrowUpRight,
   CalendarDays,
+  CheckCircle2,
   Flower2,
   Heart,
   KeyRound,
+  Loader2,
   LockKeyhole,
   LogOut,
   Mail,
@@ -62,7 +64,7 @@ export function AdminPanel({
   const router = useRouter();
   const [modalState, setModalState] = useAdminModal();
   const [user, setUser] = useState<User | null>(null);
-  const [plan, setPlan] = useState<WeddingPlan>("foreverPlus");
+  const [plan, setPlan] = useState<WeddingPlan>("foreverPro");
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMessage, setLoadingMessage] = useState("Verificando seu acesso…");
@@ -85,6 +87,45 @@ export function AdminPanel({
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("todos");
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("upgrade") === "success") {
+        setUpgradeSuccess(true);
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, "", cleanUrl);
+      }
+    }
+  }, []);
+
+  async function handleUpgrade() {
+    try {
+      setUpgradeLoading(true);
+      setError("");
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plan: "foreverPro",
+          action: "upgrade",
+          weddingSlug: slug,
+          customerEmail: user?.email || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || "Não foi possível iniciar o checkout de upgrade.");
+      }
+      window.location.href = data.url;
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erro ao iniciar upgrade.";
+      setError(message);
+      setUpgradeLoading(false);
+    }
+  }
   useEffect(() => {
     try {
       return onAuthStateChanged(clientAuth(), (u) => {
@@ -126,7 +167,7 @@ export function AdminPanel({
   async function load(account = user) {
     setLoadingMessage("Buscando os detalhes do seu casamento…");
     const session = await api("/api/admin/session", "GET", undefined, account);
-    setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(session.wedding.modules??{});setTemplateId(session.wedding.templateId??"botanical-classic");setPlan(session.wedding.plan ?? "foreverPlus");
+    setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(session.wedding.modules??{});setTemplateId(session.wedding.templateId??"botanical-classic");setPlan(session.wedding.plan === "essencial" ? "essencial" : "foreverPro");
     const enabled=resolveModules(session.wedding.modules, session.wedding.plan);
     if(sectionModule[section]&&!enabled[sectionModule[section]!]){setLoading(false);router.replace(weddingPath("admin/dashboard"));return;}
     const reception = session.role === "reception";
@@ -243,23 +284,21 @@ export function AdminPanel({
 
         {user && view === "dashboard" && authorized && (
           <nav className="admin-nav flex-nowrap! gap-3! lg:flex-wrap! lg:gap-6!" aria-label="Navegação da administração">
-            <div className="flex items-center gap-3">
-            <Link href={weddingPath("admin/dashboard")} className="admin-wordmark">
-              {weddingConfig.couple.partner1} <em>&</em> {weddingConfig.couple.partner2}<span>O nosso grande dia</span>
-            </Link>
-            <span
-              className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium border ${
-                plan === "foreverPro" || plan === "foreverPlus"
-                  ? "border-[#722F3730] bg-[#722F3712] text-[#722F37]"
-                  : "border-[#16161618] bg-white/70 text-[#6B6760]"
-              }`}
-              title={`Plano contratado: ${PLAN_NAMES[plan] ?? "Forever Essencial"}`}
-            >
-              {(plan === "foreverPro" || plan === "foreverPlus") && (
-                <Heart size={10} className="fill-[#722F37] text-[#722F37]" />
-              )}
-              <span>{PLAN_NAMES[plan] ?? "Forever Essencial"}</span>
-            </span>
+            <div className="flex items-center gap-3.5">
+              <Link href={weddingPath("admin/dashboard")} className="admin-wordmark">
+                {weddingConfig.couple.partner1} <em>&</em> {weddingConfig.couple.partner2}<span>O nosso grande dia</span>
+              </Link>
+              <span className="hidden sm:block h-7 w-px bg-[#80654e30]" aria-hidden="true" />
+              <div
+                className="hidden sm:flex items-center"
+                title={`Assinatura: ${PLAN_NAMES[plan] ?? "Forever PRO"}`}
+              >
+                <img
+                  src={plan === "essencial" ? "/forever/subscription/essential_plan.svg" : "/forever/subscription/pro_plan.svg"}
+                  alt={PLAN_NAMES[plan] ?? "Forever PRO"}
+                  className="h-8 w-auto object-contain"
+                />
+              </div>
             </div>
             <div className="hidden! lg:flex! order-last flex w-full items-center justify-center gap-2 lg:order-none lg:w-auto lg:flex-1" aria-label="Seções do painel">
               {role === "admin" && modules.guestList && <Link href={weddingPath("admin/guests")} aria-current={section === "guests" ? "page" : undefined} className={"inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-4 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] " + (section === "guests" ? "bg-[#5d613c10] font-semibold text-[var(--forever-primary,#5D613C)]" : "text-[var(--forever-accent,#80654E)]")}><Users size={16} aria-hidden="true" />Lista de convidados</Link>}
@@ -291,28 +330,33 @@ export function AdminPanel({
                   <div className="mt-2 flex items-center justify-between border-t border-[#16161610] pt-2 font-normal">
                     <span className="text-[11px] text-[#80654E]">Plano atual:</span>
                     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
-                      plan === "foreverPro" || plan === "foreverPlus"
+                      plan === "foreverPro"
                         ? "border-[#722F3730] bg-[#722F3712] text-[#722F37]"
                         : "border-[#16161618] bg-[#16161608] text-[#6B6760]"
                     }`}>
-                      {(plan === "foreverPro" || plan === "foreverPlus") && <Heart size={9} className="fill-[#722F37]" />}
+                      {plan === "foreverPro" && <Heart size={9} className="fill-[#722F37]" />}
                       {PLAN_NAMES[plan] ?? "Forever Essencial"}
                     </span>
                   </div>
                 </DropdownMenu.Label>
                 {plan === "essencial" && (
                   <DropdownMenu.Item asChild>
-                    <a
-                      href="/#preco"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex cursor-pointer items-center justify-between rounded-lg bg-[#722F3710] px-2.5 py-2 text-xs font-medium text-[#722F37] transition-colors hover:bg-[#722F3718] outline-none"
+                    <button
+                      type="button"
+                      disabled={upgradeLoading}
+                      onClick={() => void handleUpgrade()}
+                      className="flex w-full cursor-pointer items-center justify-between rounded-lg bg-[#722F3710] px-2.5 py-2 text-xs font-medium text-[#722F37] transition-colors hover:bg-[#722F3718] outline-none disabled:opacity-60"
                     >
                       <span className="flex items-center gap-1.5">
-                        <Heart size={12} className="fill-[#722F37]" /> Upgrade para Forever PRO
+                        {upgradeLoading ? (
+                          <Loader2 size={12} className="animate-spin text-[#722F37]" />
+                        ) : (
+                          <Heart size={12} className="fill-[#722F37]" />
+                        )}
+                        <span>{upgradeLoading ? "Iniciando…" : "Upgrade para Forever PRO"}</span>
                       </span>
                       <ArrowUpRight size={13} />
-                    </a>
+                    </button>
                   </DropdownMenu.Item>
                 )}
                 <DropdownMenu.Separator className="admin-profile-separator" />
@@ -322,7 +366,7 @@ export function AdminPanel({
               </DropdownMenu.Content></DropdownMenu.Portal>
             </DropdownMenu.Root>
             </div>
-            <MobileAdminMenu role={role} plan={plan} section={section} email={user.email} busy={busy} authorized={authorized} onSettings={() => openModal("settings")} onSignOut={() => void action(async () => {await signOut(clientAuth());})} />
+            <MobileAdminMenu role={role} plan={plan} section={section} email={user.email} busy={busy} authorized={authorized} onSettings={() => openModal("settings")} onSignOut={() => void action(async () => {await signOut(clientAuth());})} onUpgrade={() => void handleUpgrade()} />
           </nav>
         )}
         {user && view === "dashboard" && section === "overview" && role === "admin" && (
@@ -341,7 +385,30 @@ export function AdminPanel({
             </div>
             {modules.guestList&&authorized ? <GuestStats guests={allGuests} /> : modules.guestList&&loading ? <GuestStatsSkeleton /> : null}
           </AdminContainer>
-
+        )}
+        {authorized && upgradeSuccess && (
+          <section className="relative mb-6 overflow-hidden rounded-[var(--wedding-radius)] border border-[#5D613C40] bg-[#5D613C12] p-5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 size={24} className="shrink-0 text-[#5D613C]" />
+                <div>
+                  <p className="text-sm font-semibold text-[#161616]">
+                    Upgrade ativado! Seu casamento agora é Forever PRO.
+                  </p>
+                  <p className="mt-0.5 text-xs text-[#6B6760]">
+                    Convidados ilimitados, organização de mesas, check-in na portaria e todos os templates já estão liberados.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setUpgradeSuccess(false)}
+                className="rounded-full border border-[#16161618] bg-white px-3 py-1 text-xs font-medium text-[#161616] hover:bg-[#16161605]"
+              >
+                Dispensar
+              </button>
+            </div>
+          </section>
         )}
         {authorized && section === "overview" && role === "admin" && modules.siteEditor && <section className="relative mb-6 overflow-hidden rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] p-6 sm:p-8"><div className="pointer-events-none absolute -right-5 -bottom-8 text-[#5d613c10]" aria-hidden="true"><span className="block w-44"><WeddingBranch/></span></div><div className="relative flex flex-wrap items-center justify-between gap-6"><div className="max-w-xl"><p className="admin-eyebrow">Do seu jeito</p><h2 className="mt-2 font-serif text-3xl text-[var(--forever-ink,#3D2501)]">Seu site</h2><p className="mt-3 text-sm leading-relaxed text-[var(--forever-accent,#80654E)]">Escolha o template, personalize os textos e acompanhe cada alteração na prévia antes de publicar.</p></div><Link href={weddingPath("admin/site")} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[var(--wedding-radius)] bg-[var(--forever-primary,#5D613C)] px-5 py-3 text-sm font-medium text-[#fffdfa] transition-colors hover:bg-[var(--forever-primary-hover,#4e5232)]"><PencilSimpleIcon size={18}/>Personalizar site</Link></div></section>}
         {authorized && section === "overview" && role === "admin" && plan === "essencial" && (
@@ -387,16 +454,25 @@ export function AdminPanel({
               </div>
 
               <div className="flex shrink-0 flex-col items-start gap-2 lg:items-end">
-                <a
-                  href="/#preco"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#722F37] px-6 py-3 text-xs font-semibold text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-md hover:shadow-[#722F3725]"
+                <button
+                  type="button"
+                  disabled={upgradeLoading}
+                  onClick={() => void handleUpgrade()}
+                  className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#722F37] px-6 py-3 text-xs font-semibold text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-md hover:shadow-[#722F3725] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  <Heart size={14} className="fill-white" />
-                  <span>Fazer upgrade para Forever PRO</span>
-                  <ArrowUpRight size={14} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
+                  {upgradeLoading ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin text-white" />
+                      <span>Redirecionando…</span>
+                    </>
+                  ) : (
+                    <>
+                      <Heart size={14} className="fill-white" />
+                      <span>Fazer upgrade para Forever PRO</span>
+                      <ArrowUpRight size={14} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </>
+                  )}
+                </button>
                 <span className="text-[11px] text-[#8C877F]">Pagamento único · Diferença de R$&nbsp;500</span>
               </div>
             </div>
