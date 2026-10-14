@@ -172,50 +172,26 @@ export function DashboardOverview({
       {/* 1. TOP ROW: Title on Left, Mural de Recados in Middle, 4 Neutral Stat Cards on Right */}
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-6 items-stretch">
         {/* Left (4 cols): Editorial Title & Story */}
-        <div className="lg:col-span-4 flex flex-col justify-between space-y-4">
-          <div className="space-y-3">
-            <p className="admin-eyebrow text-[11px] font-semibold uppercase tracking-wider text-[#80654E]">
-              Com carinho, cada detalhe
-            </p>
+        <div className="lg:col-span-4 flex flex-col justify-center space-y-4">
+          <p className="admin-eyebrow text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#80654E]">
+            Com carinho, cada detalhe
+          </p>
 
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-light text-[#161616] leading-[1.12] tracking-tight">
-              Quem faz parte da
-              <br />
-              nossa <em className="italic text-[#722F37]">história.</em>
-            </h1>
+          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-light text-[#161616] leading-[1.08] tracking-tight">
+            Quem faz parte da
+            <br />
+            nossa <em className="italic text-[#722F37]">história.</em>
+          </h1>
 
-            <p className="text-xs sm:text-sm text-[#80654E] max-w-sm leading-relaxed">
-              Um espaço para cuidar dos convites e de quem estará ao nosso lado.
-              {weddingDateStr && formattedWeddingDate !== "Data a definir" && (
-                <span className="block mt-1 text-[#161616] font-medium">
-                  {formattedWeddingDate}
-                  {daysUntilWedding !== null && daysUntilWedding > 0 && ` · Faltam ${daysUntilWedding} dias`}
-                </span>
-              )}
-            </p>
-          </div>
-
-          {modules.guestList && (
-            <div className="pt-2 flex flex-wrap items-center gap-2.5">
-              <button
-                type="button"
-                onClick={onOpenNewInvite}
-                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#722F37] px-4 py-2 text-xs font-semibold text-white shadow-xs transition-all duration-200 hover:bg-[#5B252C] hover:shadow-sm cursor-pointer"
-              >
-                <Plus size={14} />
-                <span>Novo convite</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleCopySiteLink}
-                className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-[#722F3730] bg-white px-3.5 py-2 text-xs font-medium text-[#722F37] transition-all duration-200 hover:border-[#722F37] hover:bg-[#722F370a] shadow-xs cursor-pointer"
-              >
-                {copiedLink ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-                <span>{copiedLink ? "Link copiado!" : "Copiar link do site"}</span>
-              </button>
-            </div>
-          )}
+          <p className="text-sm sm:text-base text-[#80654E] leading-relaxed">
+            Um espaço para cuidar dos convites e de quem estará ao nosso lado.
+            {weddingDateStr && formattedWeddingDate !== "Data a definir" && (
+              <span className="block mt-2 text-sm sm:text-base text-[#161616] font-medium">
+                {formattedWeddingDate}
+                {daysUntilWedding !== null && daysUntilWedding > 0 && ` · Faltam ${daysUntilWedding} dias`}
+              </span>
+            )}
+          </p>
         </div>
 
         {/* Middle (4 cols): Mural de Recados using ScrollArea (Where the red box was) */}
@@ -403,7 +379,7 @@ export function DashboardOverview({
               </h2>
 
               {/* Progress Bar */}
-              <div className="mt-4 space-y-2">
+              <div className="mt-4 space-y-2.5">
                 <div className="flex items-center justify-between text-xs text-[#161616]">
                   <span className="text-[#6B6760]">Taxa de resposta</span>
                   <span className="font-semibold text-[#722F37]">
@@ -415,16 +391,40 @@ export function DashboardOverview({
                   </span>
                 </div>
 
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-[#EFECE6] flex" aria-hidden="true">
+                <div className="h-3 w-full overflow-hidden rounded-full bg-[#EFECE6] flex" aria-hidden="true">
                   {confirmedPct > 0 && (
-                    <div style={{ width: `${confirmedPct}%` }} className="bg-[#722F37]" />
+                    <div style={{ width: `${confirmedPct}%` }} className="bg-[#722F37]" title={`Confirmados: ${confirmedGuests.length}`} />
                   )}
                   {declinedPct > 0 && (
-                    <div style={{ width: `${declinedPct}%` }} className="bg-[#C4A4A9]" />
+                    <div style={{ width: `${declinedPct}%` }} className="bg-[#C4A4A9]" title={`Recusados: ${declinedGuests.length}`} />
                   )}
                   {pendingPct > 0 && (
-                    <div style={{ width: `${pendingPct}%` }} className="bg-[#E2DDD5]" />
+                    <div style={{ width: `${pendingPct}%` }} className="bg-[#D8D2C7]" title={`Pendentes: ${pendingGuests.length}`} />
                   )}
+                </div>
+
+                {/* Legenda com quadrados coloridos */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-1 text-[11px] text-[#6B6760]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="size-2.5 rounded-[2px] bg-[#722F37] shrink-0" aria-hidden="true" />
+                    <span>
+                      <strong className="text-[#161616] font-medium">{confirmedGuests.length}</strong> confirmados ({confirmedPct}%)
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="size-2.5 rounded-[2px] bg-[#D8D2C7] shrink-0 border border-[#16161615]" aria-hidden="true" />
+                    <span>
+                      <strong className="text-[#161616] font-medium">{pendingGuests.length}</strong> pendentes ({pendingPct}%)
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="size-2.5 rounded-[2px] bg-[#C4A4A9] shrink-0" aria-hidden="true" />
+                    <span>
+                      <strong className="text-[#161616] font-medium">{declinedGuests.length}</strong> recusados ({declinedPct}%)
+                    </span>
+                  </div>
                 </div>
               </div>
 
