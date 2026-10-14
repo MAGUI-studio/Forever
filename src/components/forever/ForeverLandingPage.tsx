@@ -10,7 +10,7 @@ import { moduleCatalog, moduleKeys } from "@/config/modules";
 
 const STUDIO_URL = "https://magui.studio";
 const line = "border-[#16161612]";
-const cerimonialModules = new Set<string>(["checkIn", "tables", "buffet", "history", "team"]);
+const foreverPlusModules = new Set<string>(["checkIn", "tables", "buffet", "history", "team"]);
 
 function InstagramIcon({ size = 16 }: { size?: number }) {
   return (
@@ -40,7 +40,7 @@ function XIcon({ size = 14 }: { size?: number }) {
 
 /* ---------- primitives ---------- */
 
-function CerimonialHeartTooltip({ text = "Exclusivo do Plano Cerimonial" }: { text?: string }) {
+function ForeverPlusHeartTooltip({ text = "Exclusivo do Forever +" }: { text?: string }) {
   return (
     <span className="group/tooltip relative inline-flex items-center" tabIndex={0} aria-label={text}>
       <span className="inline-flex cursor-help items-center justify-center p-0.5 text-[#722F37] transition-transform group-hover/tooltip:scale-125 focus:outline-none">
@@ -724,7 +724,7 @@ const templates = [
   },
   {
     name: "Minimalista Moderno",
-    plan: "cerimonial" as const,
+    plan: "foreverPlus" as const,
     mood: "Alta costura e contemporâneo",
     text: "Contraste em preto e branco com linhas puras e tipografia marcante para casamentos minimalistas e cosmopolitas.",
     color: "#161616",
@@ -732,7 +732,7 @@ const templates = [
   },
   {
     name: "Brisa Serena",
-    plan: "cerimonial" as const,
+    plan: "foreverPlus" as const,
     mood: "Beira-mar, linho e leveza",
     text: "Tons de azul marinho profundo e azul celeste suave, trazendo uma atmosfera calma, fresca e poética.",
     color: "#1E2D4A",
@@ -744,8 +744,8 @@ interface PricingRow {
   name: string;
   description?: string;
   essencial: boolean | string;
-  cerimonial: boolean | string;
-  isCerimonialExclusive?: boolean;
+  foreverPlus: boolean | string;
+  isForeverPlusExclusive?: boolean;
 }
 
 interface PricingCategory {
@@ -761,33 +761,33 @@ const pricingComparison: PricingCategory[] = [
         name: "Site completo personalizado",
         description: "História do casal, fotos, contagem regressiva e mapa do local",
         essencial: true,
-        cerimonial: true,
+        foreverPlus: true,
       },
       {
         name: "Templates inclusos",
         description: "Design editorial com tipografia e ilustrações autorais",
         essencial: "2 templates base",
-        cerimonial: "Todos os 4 templates",
+        foreverPlus: "Todos os 4 templates",
       },
       {
         name: "Templates exclusivos (Minimalista & Brisa)",
         description: "Estilos minimalista em preto & branco e linho à beira-mar",
         essencial: false,
-        cerimonial: true,
-        isCerimonialExclusive: true,
+        foreverPlus: true,
+        isForeverPlusExclusive: true,
       },
       {
         name: "Galeria de fotos do casal",
         description: "Editor integrado com publicação e atualização em tempo real",
         essencial: true,
-        cerimonial: true,
+        foreverPlus: true,
       },
       {
         name: "Validade e duração do acesso",
         description: "Sem mensalidades ou renovações automáticas",
         essencial: "Até a data do evento",
-        cerimonial: "Até o evento + 3 meses",
-        isCerimonialExclusive: true,
+        foreverPlus: "Até o evento + 3 meses",
+        isForeverPlusExclusive: true,
       },
     ],
   },
@@ -798,32 +798,32 @@ const pricingComparison: PricingCategory[] = [
         name: "Capacidade de convidados",
         description: "Limite de pessoas cadastradas na lista e convites individuais",
         essencial: "Até 50 convidados",
-        cerimonial: "Convidados ilimitados",
-        isCerimonialExclusive: true,
+        foreverPlus: "Convidados ilimitados",
+        isForeverPlusExclusive: true,
       },
       {
         name: "Lista de convidados e controle de envio",
         description: "Acompanhe quem recebeu, abriu e confirmou presença",
         essencial: true,
-        cerimonial: true,
+        foreverPlus: true,
       },
       {
         name: "Convites digitais em PDF com QR Code",
         description: "Arquivo elegante em alta resolução pronto para WhatsApp ou impressão",
         essencial: "Até 50 convites em PDF",
-        cerimonial: "Convites em PDF ilimitados",
+        foreverPlus: "Convites em PDF ilimitados",
       },
       {
         name: "Confirmação de presença (RSVP) individual",
         description: "Cada convidado confirma direto pelo navegador, sem aplicativo",
         essencial: true,
-        cerimonial: true,
+        foreverPlus: true,
       },
       {
         name: "Restrições alimentares e recados aos noivos",
         description: "Coleta de alergias, preferências e mensagens de carinho",
         essencial: true,
-        cerimonial: true,
+        foreverPlus: true,
       },
     ],
   },
@@ -834,13 +834,13 @@ const pricingComparison: PricingCategory[] = [
         name: "Lista de presentes com link próprio",
         description: "Usem seu próprio link de pagamento ou chave bancária — 100% do valor vai direto para vocês",
         essencial: true,
-        cerimonial: true,
+        foreverPlus: true,
       },
       {
         name: "Taxa ou comissão sobre presentes",
         description: "Diferente de outras plataformas, não cobramos taxa nem porcentagem",
         essencial: "0% de taxa",
-        cerimonial: "0% de taxa",
+        foreverPlus: "0% de taxa",
       },
     ],
   },
@@ -851,43 +851,43 @@ const pricingComparison: PricingCategory[] = [
         name: "Gestão de mesas e lugares",
         description: "Distribuição inteligente dos convidados com limite por mesa",
         essencial: false,
-        cerimonial: true,
-        isCerimonialExclusive: true,
+        foreverPlus: true,
+        isForeverPlusExclusive: true,
       },
       {
         name: "Controle de chegada (check-in ao vivo)",
         description: "Registro de chegada em tempo real pelo celular na portaria da festa",
         essencial: false,
-        cerimonial: true,
-        isCerimonialExclusive: true,
+        foreverPlus: true,
+        isForeverPlusExclusive: true,
       },
       {
         name: "Contas dedicadas para equipe da recepção",
         description: "Acesso restrito para recepcionistas sem expor dados privados dos noivos",
         essencial: false,
-        cerimonial: true,
-        isCerimonialExclusive: true,
+        foreverPlus: true,
+        isForeverPlusExclusive: true,
       },
       {
         name: "Relatório compilado para o buffet",
         description: "Visão consolidada de restrições alimentares pronta para a cozinha",
         essencial: false,
-        cerimonial: true,
-        isCerimonialExclusive: true,
+        foreverPlus: true,
+        isForeverPlusExclusive: true,
       },
       {
         name: "Histórico completo de alterações",
         description: "Auditoria detalhada de confirmações e mudanças de convites",
         essencial: false,
-        cerimonial: true,
-        isCerimonialExclusive: true,
+        foreverPlus: true,
+        isForeverPlusExclusive: true,
       },
       {
         name: "Suporte prioritário via WhatsApp",
         description: "Atendimento direto para tirar dúvidas dos noivos com agilidade",
         essencial: false,
-        cerimonial: true,
-        isCerimonialExclusive: true,
+        foreverPlus: true,
+        isForeverPlusExclusive: true,
       },
     ],
   },
@@ -905,8 +905,8 @@ const faqs = [
     "Assim que o pagamento for concluído, sua conta é criada na mesma hora e você já acessa o painel para personalizar fotos, textos, convidados e lista de presentes.",
   ],
   [
-    "Qual a diferença entre os planos Essencial e Cerimonial?",
-    "O plano Essencial (R$ 497) foi pensado para celebrações intimistas de até 50 convidados: inclui o site completo, fotos, convites em PDF com QR Code, lista de presentes com seu próprio link de pagamento e os templates base (Botânico Clássico e Romance Contemporâneo), com acesso até a data do evento. O plano Cerimonial (R$ 997) oferece convidados ilimitados, traz a central do grande dia (mesas, portaria com check-in ao vivo, contas para cerimonial), os templates exclusivos Minimalista Moderno e Brisa Serena e + 3 meses de acesso pós-evento.",
+    "Qual a diferença entre os planos Essencial e Forever +?",
+    "O plano Essencial (R$ 497) foi pensado para celebrações intimistas de até 50 convidados: inclui o site completo, fotos, convites em PDF com QR Code, lista de presentes com seu próprio link de pagamento e os templates base (Botânico Clássico e Romance Contemporâneo), com acesso até a data do evento. O plano Forever + (R$ 997) oferece convidados ilimitados, traz a central do grande dia (mesas, portaria com check-in ao vivo, contas para cerimonial), os templates exclusivos Minimalista Moderno e Brisa Serena e + 3 meses de acesso pós-evento.",
   ],
   [
     "O pagamento é único ou por mensalidade?",
@@ -926,7 +926,7 @@ const faqs = [
   ],
   [
     "O que a equipe da recepção consegue ver?",
-    "No plano Cerimonial, a equipe vê somente o necessário para o dia: nomes, mesas e registro de chegada. Configurações, convites e recados continuam visíveis apenas para vocês.",
+    "No plano Forever +, a equipe vê somente o necessário para o dia: nomes, mesas e registro de chegada. Configurações, convites e recados continuam visíveis apenas para vocês.",
   ],
 ];
 
@@ -1068,12 +1068,12 @@ export function ForeverLandingPage() {
               </p>
               <div className="mt-8 flex items-center gap-2 text-xs text-[#8C877F]">
                 <Heart size={13} className="fill-[#722F37] text-[#722F37]" />
-                <span>Exclusivo do Plano Cerimonial</span>
+                <span>Exclusivo do Forever +</span>
               </div>
             </Reveal>
             <div className="grid sm:grid-cols-2 sm:gap-x-12">
               {modules.map((key, index) => {
-                const isCerimonial = cerimonialModules.has(key);
+                const isForeverPlus = foreverPlusModules.has(key);
                 return (
                   <Reveal key={key} delay={(index % 4) * 0.04}>
                     <div className={`border-t ${line} py-6`}>
@@ -1081,7 +1081,7 @@ export function ForeverLandingPage() {
                         <span className="font-mono text-[10px] text-[#A8A29A]">{String(index + 1).padStart(2, "0")}</span>
                         <div className="flex items-center gap-2">
                           <p className="text-[15px] font-medium text-[#161616]">{moduleCatalog[key].label}</p>
-                          {isCerimonial && <CerimonialHeartTooltip />}
+                          {isForeverPlus && <ForeverPlusHeartTooltip />}
                         </div>
                       </div>
                       <p className="mt-2 pl-8 text-[13px] leading-relaxed text-[#8C877F]">{moduleCatalog[key].description}</p>
@@ -1103,7 +1103,7 @@ export function ForeverLandingPage() {
                 Design de papelaria fina, <Accent>em cada tela.</Accent>
               </h2>
               <p className="mx-auto mt-6 max-w-lg text-[15px] leading-relaxed text-[#6B6760]">
-                Estilos autorais criados pela MAGUI.studio — do site ao convite em PDF. Os templates base estão disponíveis em todos os planos, e os exclusivos integram o Plano Cerimonial.
+                Estilos autorais criados pela MAGUI.studio — do site ao convite em PDF. Os templates base estão disponíveis em todos os planos, e os exclusivos integram o Forever +.
               </p>
             </Reveal>
 
@@ -1123,7 +1123,7 @@ export function ForeverLandingPage() {
                       <div>
                         <div className="flex items-center justify-between gap-3">
                           <span className="text-[11px] uppercase tracking-[0.22em] text-[#8C877F]">{template.mood}</span>
-                          {template.plan === "cerimonial" && <CerimonialHeartTooltip text="Exclusivo do Plano Cerimonial" />}
+                          {template.plan === "foreverPlus" && <ForeverPlusHeartTooltip text="Exclusivo do Forever +" />}
                         </div>
                         <p className="mt-8 font-serif text-[clamp(64px,7vw,96px)] font-light leading-none" style={{ color: template.color }}>
                           Aa<span className="italic">&</span>
@@ -1201,7 +1201,7 @@ export function ForeverLandingPage() {
                   <Check size={13} className="text-[#722F37]" /> Acesso liberado no mesmo instante
                 </span>
                 <span className="flex items-center gap-2">
-                  <Check size={13} className="text-[#722F37]" /> Acesso até o evento (+ 3 meses no Cerimonial)
+                  <Check size={13} className="text-[#722F37]" /> Acesso até o evento (+ 3 meses no Forever +)
                 </span>
               </div>
             </Reveal>
@@ -1223,7 +1223,7 @@ export function ForeverLandingPage() {
                       {/* Column Essencial */}
                       <th className={`w-[28%] border-l ${line} px-6 pb-8 text-center align-bottom`}>
                         <span className="text-[11px] uppercase tracking-[0.2em] text-[#8C877F]">Básico & Completo</span>
-                        <h4 className="mt-1 text-xl font-medium text-[#161616]">Forever Essencial</h4>
+                        <h4 className="mt-1 text-xl font-medium text-[#161616]">Essencial</h4>
                         <div className="mt-3">
                           <p className="font-serif text-[clamp(36px,4vw,48px)] font-light leading-none text-[#161616]">
                             <span className="font-sans text-base font-normal text-[#8C877F] align-super">R$&nbsp;</span>497
@@ -1245,13 +1245,13 @@ export function ForeverLandingPage() {
                         </div>
                       </th>
 
-                      {/* Column Cerimonial */}
+                      {/* Column Forever + */}
                       <th className={`w-[28%] border-l ${line} px-6 pb-8 text-center align-bottom`}>
                         <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] text-[#722F37]">
                           <Heart size={11} className="fill-[#722F37] text-[#722F37]" />
                           <span>Organização & Recepção</span>
                         </div>
-                        <h4 className="mt-1 text-xl font-medium text-[#161616]">Forever Cerimonial</h4>
+                        <h4 className="mt-1 text-xl font-medium text-[#161616]">Forever +</h4>
                         <div className="mt-3">
                           <p className="font-serif text-[clamp(36px,4vw,48px)] font-light leading-none text-[#161616]">
                             <span className="font-sans text-xl font-normal text-[#8C877F] align-super">R$&nbsp;</span>997
@@ -1266,7 +1266,7 @@ export function ForeverLandingPage() {
                             className="inline-flex h-11 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full border border-[#722F3740] bg-[#722F3712] px-4 text-xs font-medium text-[#722F37]"
                           >
                             <Heart size={12} className="fill-[#722F37] text-[#722F37]" />
-                            <span>Assinar Cerimonial</span>
+                            <span>Assinar Forever +</span>
                             <span className="rounded-full bg-[#722F3720] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#722F37]">
                               Em breve
                             </span>
@@ -1309,9 +1309,9 @@ export function ForeverLandingPage() {
                               )}
                             </td>
                             <td className={`border-l ${line} px-6 py-4 text-center align-middle`}>
-                              {typeof row.cerimonial === "boolean" ? (
-                                row.cerimonial ? (
-                                  row.isCerimonialExclusive ? (
+                              {typeof row.foreverPlus === "boolean" ? (
+                                row.foreverPlus ? (
+                                  row.isForeverPlusExclusive ? (
                                     <span className="inline-flex items-center gap-1.5 rounded-full border border-[#722F3730] bg-[#722F3710] px-2.5 py-1 text-[11px] font-medium text-[#722F37]">
                                       <Heart size={11} className="fill-[#722F37] text-[#722F37]" />
                                       Incluso
@@ -1325,7 +1325,7 @@ export function ForeverLandingPage() {
                                   <span className="text-base font-medium text-[#8C877F40]">—</span>
                                 )
                               ) : (
-                                <span className="text-xs font-medium text-[#161616]">{row.cerimonial}</span>
+                                <span className="text-xs font-medium text-[#161616]">{row.foreverPlus}</span>
                               )}
                             </td>
                           </tr>
@@ -1337,7 +1337,7 @@ export function ForeverLandingPage() {
                   <tfoot>
                     <tr className={`border-t ${line}`}>
                       <td className="pt-8 pr-6 text-xs text-[#8C877F]">
-                        Checkout seguro via Stripe em liberação. Plano Essencial com acesso até a data do evento e Plano Cerimonial com + 3 meses pós-evento.
+                        Checkout seguro via Stripe em liberação. Plano Essencial com acesso até a data do evento e Plano Forever + com + 3 meses pós-evento.
                       </td>
                       <td className={`border-l ${line} px-6 pt-8 text-center`}>
                         <button
@@ -1360,7 +1360,7 @@ export function ForeverLandingPage() {
                           className="inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full border border-[#722F3740] bg-[#722F3712] px-4 text-xs font-medium text-[#722F37]"
                         >
                           <Heart size={12} className="fill-[#722F37] text-[#722F37]" />
-                          <span>Assinar Cerimonial</span>
+                          <span>Assinar Forever +</span>
                           <span className="rounded-full bg-[#722F3720] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#722F37]">
                             Em breve
                           </span>
