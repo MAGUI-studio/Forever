@@ -52,6 +52,7 @@ import {
 } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase/client";
 import { PLAN_NAMES, type WeddingPlan } from "@/config/forever";
+import { ForeverLogo } from "@/components/forever/ForeverLogo";
 import type { Invitation, RSVPSettings } from "@/types/guests";
 export function AdminPanel({
   view,
@@ -285,8 +286,8 @@ export function AdminPanel({
         {user && view === "dashboard" && authorized && (
           <nav className="admin-nav flex-nowrap! gap-3! lg:flex-wrap! lg:gap-6!" aria-label="Navegação da administração">
             <div className="flex items-center gap-3.5">
-              <Link href={weddingPath("admin/dashboard")} className="admin-wordmark">
-                {weddingConfig.couple.partner1} <em>&</em> {weddingConfig.couple.partner2}<span>O nosso grande dia</span>
+              <Link href={weddingPath("admin/dashboard")} aria-label="Forever — Início" className="transition-opacity hover:opacity-85">
+                <ForeverLogo className="w-28 sm:w-32" />
               </Link>
               <span className="hidden sm:block h-7 w-px bg-[#80654e30]" aria-hidden="true" />
               <div

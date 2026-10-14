@@ -7,6 +7,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import {AnimatePresence, motion, useReducedMotion} from "framer-motion";
 import {Menu, X, Users, Check, LayoutDashboard, Settings, LogOut, ArrowUpRight, Heart} from "lucide-react";
 import {PLAN_NAMES, type WeddingPlan} from "@/config/forever";
+import {ForeverLogo} from "@/components/forever/ForeverLogo";
 
 type MobileAdminMenuProps = {
   section: "site" | "site-settings" | "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
@@ -36,15 +37,23 @@ export function MobileAdminMenu({role,section,email,busy,authorized,plan,onSetti
       {open && <Dialog.Portal forceMount>
         <Dialog.Overlay asChild forceMount><motion.div className="fixed inset-0 z-[300] bg-black/30 backdrop-blur-sm" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:reducedMotion ? 0 : .25}} /></Dialog.Overlay>
         <Dialog.Content asChild forceMount><motion.div className="fixed inset-y-0 right-0 z-[310] flex w-[min(360px,90vw)] flex-col overflow-y-auto bg-[#fffdfa] p-6 text-[var(--forever-primary,#5D613C)] shadow-2xl outline-none" initial={{x:reducedMotion ? 0 : "100%"}} animate={{x:0}} exit={{x:reducedMotion ? 0 : "100%"}} transition={{duration:reducedMotion ? 0 : .4,ease:[.22,1,.36,1]}}>
-          <div className="flex items-center justify-between gap-4"><Dialog.Title className="font-serif text-3xl">Nosso casamento</Dialog.Title><Dialog.Close asChild><button type="button" aria-label="Fechar menu" className="flex size-11 items-center justify-center rounded-[var(--wedding-radius)] hover:bg-[var(--forever-hover-tint,#5d613c10)]"><X size={22} /></button></Dialog.Close></div>
-          <div className="mt-2 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5" title={`Assinatura: ${PLAN_NAMES[plan ?? "foreverPro"]}`}>
-              <img
-                src={plan === "essencial" ? "/forever/subscription/essential_plan.svg" : "/forever/subscription/pro_plan.svg"}
-                alt={PLAN_NAMES[plan ?? "foreverPro"]}
-                className="h-6 w-auto object-contain"
-              />
-            </div>
+          <div className="flex items-center justify-between gap-4">
+            <Dialog.Title asChild>
+              <div className="flex items-center gap-2.5">
+                <ForeverLogo className="w-24" />
+                <span className="h-5 w-px bg-[#80654e30]" aria-hidden="true" />
+                <img
+                  src={plan === "essencial" ? "/forever/subscription/essential_plan.svg" : "/forever/subscription/pro_plan.svg"}
+                  alt={PLAN_NAMES[plan ?? "foreverPro"]}
+                  className="h-6 w-auto object-contain"
+                />
+              </div>
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <button type="button" aria-label="Fechar menu" className="flex size-11 items-center justify-center rounded-[var(--wedding-radius)] hover:bg-[var(--forever-hover-tint,#5d613c10)]">
+                <X size={22} />
+              </button>
+            </Dialog.Close>
           </div>
           <nav aria-label="Menu mobile do painel" className="mt-8 flex flex-col gap-2">
             {links.filter(link=>(role === "admin" || link.key === "check-in")&&(!sectionModule[link.key]||modules[sectionModule[link.key]!])).map(({href,label,key,icon:Icon}) => <Link key={key} href={path(href)} onClick={()=>setOpen(false)} aria-current={section === key ? "page" : undefined} className={"flex min-h-14 items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm transition-colors hover:bg-[var(--forever-hover-tint,#5d613c10)] " + (section === key ? "bg-[#5d613c10] font-semibold" : "")}><Icon size={19} />{label}</Link>)}
