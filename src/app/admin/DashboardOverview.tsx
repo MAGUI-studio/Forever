@@ -8,7 +8,6 @@ import {
   Clock,
   UserX,
   ArrowUpRight,
-  Calendar,
   Copy,
   Check,
   Heart,
@@ -16,7 +15,9 @@ import {
   Plus,
   Loader2,
   ExternalLink,
+  MessageSquareHeart,
 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { Guest, Invitation, EventTable } from "@/types/guests";
 import type { WeddingConfig } from "@/types/wedding";
 import type { WeddingPlan } from "@/config/forever";
@@ -78,6 +79,31 @@ export function DashboardOverview({
   const openedInvites = activeInvitations.filter((i) => !!i.openedAt).length;
   const sentPct = totalInvites > 0 ? Math.round((sentInvites / totalInvites) * 100) : 0;
 
+  // Real guest messages extracted from personal responses or invitation level
+  const guestMessages: { name: string; message: string }[] = [];
+  activeInvitations.forEach((inv) => {
+    if (inv.personalResponses) {
+      Object.entries(inv.personalResponses).forEach(([guestId, resp]) => {
+        if (resp.message?.trim()) {
+          const g = inv.guests.find((guest) => guest.id === guestId);
+          guestMessages.push({
+            name: g ? g.name : inv.label,
+            message: resp.message.trim(),
+          });
+        }
+      });
+    }
+    if (inv.message?.trim()) {
+      const alreadyAdded = guestMessages.some((m) => m.message === inv.message.trim());
+      if (!alreadyAdded) {
+        guestMessages.push({
+          name: inv.label,
+          message: inv.message.trim(),
+        });
+      }
+    }
+  });
+
   // Real dietary restrictions count
   const dietaryCount = guests.filter((g) => {
     return activeInvitations.some(
@@ -86,18 +112,6 @@ export function DashboardOverview({
         (inv.guests.length === 1 && inv.dietaryRestrictions?.trim())
     );
   }).length;
-
-  // Real guest messages count
-  let messagesCount = 0;
-  activeInvitations.forEach((inv) => {
-    if (inv.personalResponses) {
-      Object.values(inv.personalResponses).forEach((r) => {
-        if (r.message?.trim()) messagesCount++;
-      });
-    } else if (inv.message?.trim()) {
-      messagesCount++;
-    }
-  });
 
   // Date parsing & countdown
   const weddingDateStr = weddingConfig.couple.weddingDate;
@@ -155,90 +169,138 @@ export function DashboardOverview({
 
   return (
     <div className="pt-8 sm:pt-12 space-y-8 pb-12">
-      {/* 1. HERO SECTION: Title & Story on Left, 4 Clean Stat Cards on Right */}
-      <section className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-12">
-        {/* Left: Editorial Heading */}
-        <div className="space-y-4">
-          <p className="admin-eyebrow text-[11px] font-semibold uppercase tracking-wider text-[#80654E]">
-            Com carinho, cada detalhe
-          </p>
+      {/* 1. TOP ROW: Title on Left, Mural de Recados in Middle, 4 Neutral Stat Cards on Right */}
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-6 items-stretch">
+        {/* Left (4 cols): Editorial Title & Story */}
+        <div className="lg:col-span-4 flex flex-col justify-between space-y-4">
+          <div className="space-y-3">
+            <p className="admin-eyebrow text-[11px] font-semibold uppercase tracking-wider text-[#80654E]">
+              Com carinho, cada detalhe
+            </p>
 
-          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-light text-[#161616] leading-[1.1] tracking-tight">
-            Quem faz parte da
-            <br />
-            nossa <em className="italic text-[#722F37]">história.</em>
-          </h1>
+            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-light text-[#161616] leading-[1.12] tracking-tight">
+              Quem faz parte da
+              <br />
+              nossa <em className="italic text-[#722F37]">história.</em>
+            </h1>
 
-          <p className="text-xs sm:text-sm text-[#80654E] max-w-lg leading-relaxed">
-            Um espaço para cuidar dos convites e de quem estará ao nosso lado.
-            {weddingDateStr && formattedWeddingDate !== "Data a definir" && (
-              <span className="block mt-1 text-[#161616] font-medium">
-                {formattedWeddingDate}
-                {daysUntilWedding !== null && daysUntilWedding > 0 && ` · Faltam ${daysUntilWedding} dias`}
-              </span>
-            )}
-          </p>
+            <p className="text-xs sm:text-sm text-[#80654E] max-w-sm leading-relaxed">
+              Um espaço para cuidar dos convites e de quem estará ao nosso lado.
+              {weddingDateStr && formattedWeddingDate !== "Data a definir" && (
+                <span className="block mt-1 text-[#161616] font-medium">
+                  {formattedWeddingDate}
+                  {daysUntilWedding !== null && daysUntilWedding > 0 && ` · Faltam ${daysUntilWedding} dias`}
+                </span>
+              )}
+            </p>
+          </div>
 
           {modules.guestList && (
-            <div className="pt-2 flex flex-wrap items-center gap-3">
+            <div className="pt-2 flex flex-wrap items-center gap-2.5">
               <button
                 type="button"
                 onClick={onOpenNewInvite}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#722F37] px-5 py-2.5 text-xs font-semibold text-white shadow-xs transition-all duration-200 hover:bg-[#5B252C] hover:shadow-sm cursor-pointer"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#722F37] px-4 py-2 text-xs font-semibold text-white shadow-xs transition-all duration-200 hover:bg-[#5B252C] hover:shadow-sm cursor-pointer"
               >
-                <Plus size={15} />
+                <Plus size={14} />
                 <span>Novo convite</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleCopySiteLink}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#722F3730] bg-white px-4 py-2.5 text-xs font-medium text-[#722F37] transition-all duration-200 hover:border-[#722F37] hover:bg-[#722F370a] shadow-xs cursor-pointer"
+                className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-xl border border-[#722F3730] bg-white px-3.5 py-2 text-xs font-medium text-[#722F37] transition-all duration-200 hover:border-[#722F37] hover:bg-[#722F370a] shadow-xs cursor-pointer"
               >
-                {copiedLink ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
+                {copiedLink ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
                 <span>{copiedLink ? "Link copiado!" : "Copiar link do site"}</span>
               </button>
             </div>
           )}
         </div>
 
-        {/* Right: 4 Clean Stat Cards in Forever Red Palette */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4" aria-label="Resumo de convidados">
-          {/* Card 1: Total */}
-          <article className="relative flex min-h-36 sm:min-h-40 flex-col justify-between overflow-hidden rounded-2xl border border-[#722F3725] bg-[#FFFDFB] p-4 sm:p-5 shadow-xs transition-all hover:border-[#722F3740]">
-            <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#722F37] opacity-[0.07] rotate-[-12deg]">
-              <Users size={90} />
+        {/* Middle (4 cols): Mural de Recados using ScrollArea (Where the red box was) */}
+        <article className="lg:col-span-4 flex flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 sm:p-5 shadow-xs h-full min-h-[280px]">
+          <div className="flex items-center justify-between pb-3 border-b border-[#1616160a]">
+            <div className="flex items-center gap-2">
+              <span className="flex size-7 items-center justify-center rounded-lg bg-[#722F3712] text-[#722F37]">
+                <MessageSquareHeart size={15} />
+              </span>
+              <h3 className="text-xs sm:text-sm font-medium text-[#161616]">Mural de recados</h3>
+            </div>
+            <span className="rounded-full bg-[#16161608] px-2 py-0.5 text-[10px] font-medium text-[#6B6760]">
+              {guestMessages.length} {guestMessages.length === 1 ? "recado" : "recados"}
             </span>
-            <p className="relative text-xs sm:text-sm font-medium text-[#6B6760]">Convidados ativos</p>
-            <strong className="relative my-1 font-serif text-4xl sm:text-5xl font-normal text-[#161616]">
+          </div>
+
+          <ScrollArea className="flex-1 mt-3 -mr-2 pr-2.5 max-h-[220px]" showScrollButtons={guestMessages.length > 2}>
+            {guestMessages.length > 0 ? (
+              <div className="space-y-2.5">
+                {guestMessages.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-xl border border-[#1616160a] bg-[#FAF7F5] p-3 text-xs space-y-1 transition-colors hover:border-[#722F3725]"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-[#161616] text-[11px] truncate">{item.name}</span>
+                      <Heart size={11} className="text-[#722F37] fill-[#722F37] shrink-0" />
+                    </div>
+                    <p className="text-[11px] text-[#6B6760] italic leading-relaxed">
+                      “{item.message}”
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center py-8 px-2">
+                <span className="flex size-9 items-center justify-center rounded-full bg-[#722F3710] text-[#722F37] mb-2">
+                  <MessageSquareHeart size={18} />
+                </span>
+                <p className="text-xs font-medium text-[#161616]">Nenhum recado ainda</p>
+                <p className="mt-1 text-[11px] text-[#8C877F] max-w-[200px] leading-relaxed">
+                  Conforme seus convidados confirmarem presença, os recados aparecerão aqui.
+                </p>
+              </div>
+            )}
+          </ScrollArea>
+        </article>
+
+        {/* Right (4 cols): 4 Stat Cards in 2x2 Grid - All Identical Styling (Confirmados is NOT red) */}
+        <div className="lg:col-span-4 grid grid-cols-2 gap-3" aria-label="Resumo de convidados">
+          {/* Card 1: Convidados ativos */}
+          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 shadow-xs transition-all hover:border-[#722F3730]">
+            <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#161616] opacity-[0.05] rotate-[-12deg]">
+              <Users size={80} />
+            </span>
+            <p className="relative text-xs font-medium text-[#6B6760]">Convidados ativos</p>
+            <strong className="relative my-1 font-serif text-3xl sm:text-4xl font-normal text-[#161616]">
               {loading ? "…" : totalGuests}
             </strong>
             <span className="relative text-[11px] text-[#8C877F]">
-              {plan === "essencial" ? `${totalGuests} de 50 vagas ocupadas` : `${totalInvites} convites cadastrados`}
+              {plan === "essencial" ? `${totalGuests} de 50 vagas` : `${totalInvites} convites cadastrados`}
             </span>
           </article>
 
-          {/* Card 2: Confirmados (Forever Red Highlight) */}
-          <article className="relative flex min-h-36 sm:min-h-40 flex-col justify-between overflow-hidden rounded-2xl border border-[#722F3735] bg-[#722F370f] p-4 sm:p-5 shadow-xs transition-all hover:border-[#722F37]">
-            <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#722F37] opacity-10 rotate-[-12deg]">
-              <CheckCircle2 size={90} />
+          {/* Card 2: Confirmados (Identical neutral style like the others, NOT red) */}
+          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 shadow-xs transition-all hover:border-[#722F3730]">
+            <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#161616] opacity-[0.05] rotate-[-12deg]">
+              <CheckCircle2 size={80} />
             </span>
-            <p className="relative text-xs sm:text-sm font-semibold text-[#722F37]">Confirmados</p>
-            <strong className="relative my-1 font-serif text-4xl sm:text-5xl font-semibold text-[#722F37]">
+            <p className="relative text-xs font-medium text-[#6B6760]">Confirmados</p>
+            <strong className="relative my-1 font-serif text-3xl sm:text-4xl font-normal text-[#161616]">
               {loading ? "…" : confirmedGuests.length}
             </strong>
-            <span className="relative text-[11px] font-medium text-[#722F37]">
+            <span className="relative text-[11px] text-[#8C877F]">
               {totalGuests > 0 ? `${confirmedPct}% de presença confirmada` : "Aguardando respostas"}
             </span>
           </article>
 
           {/* Card 3: Pendentes */}
-          <article className="relative flex min-h-36 sm:min-h-40 flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 sm:p-5 shadow-xs transition-all hover:border-[#722F3730]">
-            <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#7A756D] opacity-[0.07] rotate-[-12deg]">
-              <Clock size={90} />
+          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 shadow-xs transition-all hover:border-[#722F3730]">
+            <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#161616] opacity-[0.05] rotate-[-12deg]">
+              <Clock size={80} />
             </span>
-            <p className="relative text-xs sm:text-sm font-medium text-[#6B6760]">Pendentes</p>
-            <strong className="relative my-1 font-serif text-4xl sm:text-5xl font-normal text-[#161616]">
+            <p className="relative text-xs font-medium text-[#6B6760]">Pendentes</p>
+            <strong className="relative my-1 font-serif text-3xl sm:text-4xl font-normal text-[#161616]">
               {loading ? "…" : pendingGuests.length}
             </strong>
             <span className="relative text-[11px] text-[#8C877F]">
@@ -247,12 +309,12 @@ export function DashboardOverview({
           </article>
 
           {/* Card 4: Não comparecerão */}
-          <article className="relative flex min-h-36 sm:min-h-40 flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 sm:p-5 shadow-xs transition-all hover:border-[#722F3730]">
-            <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#8C877F] opacity-[0.07] rotate-[-12deg]">
-              <UserX size={90} />
+          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 shadow-xs transition-all hover:border-[#722F3730]">
+            <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#161616] opacity-[0.05] rotate-[-12deg]">
+              <UserX size={80} />
             </span>
-            <p className="relative text-xs sm:text-sm font-medium text-[#6B6760]">Não comparecerão</p>
-            <strong className="relative my-1 font-serif text-4xl sm:text-5xl font-normal text-[#6B6760]">
+            <p className="relative text-xs font-medium text-[#6B6760]">Não comparecerão</p>
+            <strong className="relative my-1 font-serif text-3xl sm:text-4xl font-normal text-[#161616]">
               {loading ? "…" : declinedGuests.length}
             </strong>
             <span className="relative text-[11px] text-[#8C877F]">
@@ -262,7 +324,7 @@ export function DashboardOverview({
         </div>
       </section>
 
-      {/* 2. UNIFIED CENTRAL PANEL: Seu Site & Andamento do Casamento (Combined in 1 Elegant Card) */}
+      {/* 2. UNIFIED PANEL: Seu Site & Andamento do Casamento */}
       <section className="overflow-hidden rounded-2xl border border-[#722F3725] bg-[#FFFDFB] shadow-xs">
         <div className="grid grid-cols-1 divide-y divide-[#722F3715] lg:grid-cols-2 lg:divide-y-0 lg:divide-x">
           {/* Left Side: Seu Site */}
@@ -388,13 +450,6 @@ export function DashboardOverview({
                     <Link href={weddingPath("admin/buffet")} className="font-semibold underline">
                       {dietaryCount} {dietaryCount === 1 ? "convidado informou" : "convidados informaram"}
                     </Link>
-                  </div>
-                )}
-
-                {messagesCount > 0 && (
-                  <div className="flex items-center justify-between py-1 border-b border-[#16161608] text-[#722F37]">
-                    <span>Recados recebidos:</span>
-                    <span className="font-semibold">{messagesCount} votos de carinho</span>
                   </div>
                 )}
               </div>
