@@ -26,7 +26,7 @@ export const templateCatalog=[
     name: "Minimalista moderno",
     description: "Contraste em preto e branco com linhas puras e design contemporâneo.",
     image: "/forever/icon_black.svg",
-    plan: "foreverPlus" as const,
+    plan: "foreverPro" as const,
     isComingSoon: true as const,
   },
   {
@@ -34,7 +34,7 @@ export const templateCatalog=[
     name: "Brisa serena",
     description: "Tons de azul e linho à beira-mar com atmosfera calma, fresca e poética.",
     image: "/forever/icon_black.svg",
-    plan: "foreverPlus" as const,
+    plan: "foreverPro" as const,
     isComingSoon: true as const,
   },
 ] as const;

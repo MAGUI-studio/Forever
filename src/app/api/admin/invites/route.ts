@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       if (currentGuestCount + data.guests.length > guestLimit) {
         throw new HttpError(
           403,
-          `O plano Essencial permite até ${guestLimit} convidados. Faça o upgrade para o Forever + para ter convidados ilimitados.`
+          `O plano Forever Essencial permite até ${guestLimit} convidados. Faça o upgrade para o Forever PRO para ter convidados ilimitados.`
         );
       }
     }
@@ -140,7 +140,7 @@ export async function PATCH(request: Request) {
         if (otherGuestsCount + data.invitation.guests.length > guestLimit) {
           throw new HttpError(
             403,
-            `O plano Essencial permite até ${guestLimit} convidados. Faça o upgrade para o Forever + para ter convidados ilimitados.`
+            `O plano Forever Essencial permite até ${guestLimit} convidados. Faça o upgrade para o Forever PRO para ter convidados ilimitados.`
           );
         }
       }

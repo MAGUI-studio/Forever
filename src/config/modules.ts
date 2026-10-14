@@ -16,7 +16,7 @@ export const moduleCatalog:Record<WeddingModule,{label:string;description:string
  gifts:{label:"Lista de presentes",description:"Seção de presentes, Pix e pagamento por cartão.",requires:[]},
  siteEditor:{label:"Personalização do site",description:"Edição do conteúdo, fotos, tema e publicação.",requires:[]}
 };
-export const foreverPlusExclusiveModules: ReadonlySet<WeddingModule> = new Set<WeddingModule>([
+export const foreverProExclusiveModules: ReadonlySet<WeddingModule> = new Set<WeddingModule>([
   "checkIn",
   "organization",
   "tables",
@@ -24,10 +24,11 @@ export const foreverPlusExclusiveModules: ReadonlySet<WeddingModule> = new Set<W
   "history",
   "team",
 ]);
+export const foreverPlusExclusiveModules = foreverProExclusiveModules;
 export function resolveModules(stored?:Partial<WeddingModules>, plan?: import("@/config/forever").WeddingPlan):WeddingModules{
   const result=Object.fromEntries(moduleKeys.map(key=>[key,stored?.[key]??true])) as WeddingModules;
   if (plan === "essencial") {
-    for (const key of foreverPlusExclusiveModules) result[key] = false;
+    for (const key of foreverProExclusiveModules) result[key] = false;
   }
   for(let i=0;i<moduleKeys.length;i++)for(const key of moduleKeys)if(moduleCatalog[key].requires.some(parent=>!result[parent]))result[key]=false;
   return result;

@@ -55,7 +55,7 @@ export function TemplateSelect({ value, onValueChange }: { value: TemplateId; on
                         {isComingSoon && (
                           <span className="inline-flex items-center gap-1 rounded-full border border-[#722F3730] bg-[#722F3712] px-2 py-0.5 text-[10px] font-medium text-[#722F37]">
                             <Heart size={9} className="fill-[#722F37]" />
-                            Forever + · Em breve
+                            Forever PRO · Em breve
                           </span>
                         )}
                       </span>

@@ -1,14 +1,16 @@
 import type { WeddingConfig } from "@/types/wedding";
 
-export type WeddingPlan = "essencial" | "foreverPlus";
-export const defaultWeddingPlan: WeddingPlan = "foreverPlus";
+export type WeddingPlan = "essencial" | "foreverPro" | "foreverPlus";
+export const defaultWeddingPlan: WeddingPlan = "foreverPro";
 export const PLAN_GUEST_LIMITS: Record<WeddingPlan, number> = {
   essencial: 50,
+  foreverPro: Infinity,
   foreverPlus: Infinity,
 };
 export const PLAN_NAMES: Record<WeddingPlan, string> = {
-  essencial: "Essencial",
-  foreverPlus: "Forever +",
+  essencial: "Forever Essencial",
+  foreverPro: "Forever PRO",
+  foreverPlus: "Forever PRO",
 };
 export function getWeddingGuestLimit(plan?: WeddingPlan): number {
   if (plan === "essencial") return 50;
