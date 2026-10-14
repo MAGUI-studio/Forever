@@ -57,7 +57,7 @@ export function AdminPanel({
   view: "entry" | "login" | "dashboard";
   section?: "site" | "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
 }) {
-  const {slug,config:weddingConfig,setConfig,setTheme,modules,setModules,setTemplateId,themeStyle,path:weddingPath}=useWedding();
+  const {slug,config:weddingConfig,setConfig,setTheme,modules,setModules,setTemplateId,templateId,themeStyle,path:weddingPath}=useWedding();
   const router = useRouter();
   const [modalState, setModalState] = useAdminModal();
   const [user, setUser] = useState<User | null>(null);
@@ -188,7 +188,7 @@ export function AdminPanel({
   }
   async function downloadPdf(invitation: {label: string; token: string}, key: string) {
     setGeneratingPdf(key); setError("");
-    try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf"); await downloadInvitationPdf(invitation,weddingConfig,slug);}
+    try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf"); await downloadInvitationPdf(invitation,weddingConfig,slug,templateId);}
     catch {setError("Não foi possível gerar o convite. Tente novamente.");}
     finally {setGeneratingPdf(null);}
   }
@@ -524,7 +524,7 @@ export function AdminPanel({
                             setInvites(current => current.map(item => item.id === i.id ? {...item,sentAt:result.sentAt} : item));
 
                           })} icon={<PaperPlaneTiltIcon size={17} weight={i.sentAt ? "fill" : "regular"} aria-hidden="true" />} label={i.sentAt ? "Enviado" : "Marcar enviado"} />}
-                          <ExpandingIconButton disabled={busy || !!generatingPdf || !i.active} onClick={async () => {setGeneratingPdf(i.id);setError("");try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf");await downloadInvitationPdf({...i, token: i.code ?? i.token},weddingConfig,slug);}catch {setError("Não foi possível gerar o convite. Tente novamente.");}finally {setGeneratingPdf(null);}}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={generatingPdf === i.id ? "Gerando convite…" : (i.guests.length > 1 ? "Convite do grupo" : "Baixar convite")} />
+                          <ExpandingIconButton disabled={busy || !!generatingPdf || !i.active} onClick={async () => {setGeneratingPdf(i.id);setError("");try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf");await downloadInvitationPdf({...i, token: i.code ?? i.token},weddingConfig,slug,templateId);}catch {setError("Não foi possível gerar o convite. Tente novamente.");}finally {setGeneratingPdf(null);}}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={generatingPdf === i.id ? "Gerando convite…" : (i.guests.length > 1 ? "Convite do grupo" : "Baixar convite")} />
                           <ExpandingIconButton disabled={busy} onClick={() => openModal("delete-invitation",i.id)} icon={<TrashIcon size={17} aria-hidden="true" />} label={"Excluir"} />
                         </ExpandingIconButtonGroup>
                       </div>

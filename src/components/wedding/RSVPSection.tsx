@@ -175,7 +175,9 @@ export function RSVPSection() {
         confetti({
           particleCount: 80,
           spread: 65,
-          colors: ["#C7B79D", "#5D613C", "#80654E"],
+          colors: romance
+            ? ["#722F37", "#D2B9BD", "#82656C", "#ffffff"]
+            : ["#C7B79D", "#5D613C", "#80654E"],
         });
     } catch (e) {
       setError(
@@ -270,9 +272,9 @@ export function RSVPSection() {
           {invite && (
             <form onSubmit={submit} className="rsvp-response space-y-6">
               <div>
-                <button type="button" className="rsvp-change" disabled={busy} onClick={() => {setInvite(null);setCode("");setSaved(false);setError("");if (window.location.hash) window.history.replaceState(null,"",window.location.pathname + window.location.search);}}>{copy("rsvp.text10")}</button><p className="rsvp-card-eyebrow"><UsersIcon size={16} aria-hidden="true" />{copy("rsvp.text11")}</p><h3 className="font-serif text-3xl">{invite.label}</h3>
+                <button type="button" className={romance ? "rsvp-change text-[var(--forever-primary,#722F37)] font-medium hover:opacity-80" : "rsvp-change"} disabled={busy} onClick={() => {setInvite(null);setCode("");setSaved(false);setError("");if (window.location.hash) window.history.replaceState(null,"",window.location.pathname + window.location.search);}}>{copy("rsvp.text10")}</button><p className={romance ? "rsvp-card-eyebrow text-[var(--forever-accent,#82656C)]" : "rsvp-card-eyebrow"}><UsersIcon size={16} aria-hidden="true" />{copy("rsvp.text11")}</p><h3 className={romance ? "font-serif text-3xl sm:text-4xl text-[var(--forever-primary,#722F37)] font-light tracking-[-0.02em]" : "font-serif text-3xl"}>{invite.label}</h3>
                 {settings.deadline && (
-                  <p className="mt-2 text-sm">{copy("rsvp.text12")}{" "}
+                  <p className={romance ? "mt-2 text-sm text-[var(--forever-accent,#82656C)]" : "mt-2 text-sm"}>{copy("rsvp.text12")}{" "}
                     {new Date(settings.deadline).toLocaleString("pt-BR", {
                       timeZone: "America/Sao_Paulo",
                     })}{" "}{copy("rsvp.text13")}</p>
@@ -283,25 +285,25 @@ export function RSVPSection() {
               ) : (
                 <fieldset disabled={busy} className="space-y-5">
                   {invite.guests.map((g) => (
-                    <details key={g.id} className="rsvp-guest-accordion" open={invite.guests.length === 1 ? true : undefined}>
-                      <summary><span>{g.name}</span><span className="rsvp-guest-summary-status"><AttendanceBadge status={g.status} label={g.status === "confirmado" ? copy("rsvp.text32") : g.status === "recusado" ? copy("rsvp.text33") : copy("rsvp.text34")} /><CaretDownIcon className="rsvp-accordion-caret" size={18} aria-hidden="true" /></span></summary>
-                      <div className="rsvp-guest-accordion-fields">
+                    <details key={g.id} className={romance ? "rsvp-guest-accordion border-b border-[var(--forever-primary,#722F37)]/15 py-1" : "rsvp-guest-accordion"} open={invite.guests.length === 1 ? true : undefined}>
+                      <summary className={romance ? "cursor-pointer list-none text-[var(--forever-primary,#722F37)] font-serif text-xl sm:text-2xl" : undefined}><span>{g.name}</span><span className="rsvp-guest-summary-status"><AttendanceBadge status={g.status} label={g.status === "confirmado" ? copy("rsvp.text32") : g.status === "recusado" ? copy("rsvp.text33") : copy("rsvp.text34")} /><CaretDownIcon className="rsvp-accordion-caret" size={18} aria-hidden="true" /></span></summary>
+                      <div className={romance ? "rsvp-guest-accordion-fields pt-3 pb-6 [&_label>span]:text-[var(--forever-accent,#82656C)]" : "rsvp-guest-accordion-fields"}>
                         <label className="flex flex-col gap-3">
                           <span>{copy("rsvp.text15")}</span>
                           <WeddingSelect label={copy("rsvp.text35") + g.name} disabled={busy} placeholder={copy("rsvp.text16")} value={g.status === "pendente" ? "" : g.status} onValueChange={value => updateGuest(g.id, {status: value as Attendance})} options={[{value:"confirmado",label:copy("rsvp.text36")},{value:"recusado",label:copy("rsvp.text37")}]} />
                         </label>
                         {modules.dietaryRestrictions&&<label className="flex flex-col gap-3">
                           <span>{copy("rsvp.text17")}</span>
-                          <textarea className="guest-input" maxLength={500} rows={3} placeholder={copy("rsvp.text18")} value={g.dietaryRestrictions} onChange={e => updateGuest(g.id, {dietaryRestrictions: e.target.value})} />
+                          <textarea className={romance ? "guest-input border-[var(--forever-primary,#722F37)]/25 bg-white/90 text-[var(--forever-ink,#302329)] placeholder:text-[var(--forever-accent,#82656C)]/60 focus-visible:outline-[var(--forever-primary,#722F37)]!" : "guest-input"} maxLength={500} rows={3} placeholder={copy("rsvp.text18")} value={g.dietaryRestrictions} onChange={e => updateGuest(g.id, {dietaryRestrictions: e.target.value})} />
                         </label>}
                         {modules.messages&&<label className="flex flex-col gap-3">
                           <span>{copy("rsvp.text19")}</span>
-                          <textarea className="guest-input" maxLength={500} rows={3} placeholder={copy("rsvp.text20")} value={g.message} onChange={e => updateGuest(g.id, {message: e.target.value})} />
+                          <textarea className={romance ? "guest-input border-[var(--forever-primary,#722F37)]/25 bg-white/90 text-[var(--forever-ink,#302329)] placeholder:text-[var(--forever-accent,#82656C)]/60 focus-visible:outline-[var(--forever-primary,#722F37)]!" : "guest-input"} maxLength={500} rows={3} placeholder={copy("rsvp.text20")} value={g.message} onChange={e => updateGuest(g.id, {message: e.target.value})} />
                         </label>}
                       </div>
                     </details>
                   ))}
-                  {(!invite.personal && ((modules.messages&&invite.message) || (modules.dietaryRestrictions&&invite.dietaryRestrictions))) && <div className="text-sm space-y-2"><p>{copy("rsvp.text21")}</p>{modules.dietaryRestrictions&&invite.dietaryRestrictions && <p>{copy("rsvp.text22")}{invite.dietaryRestrictions}</p>}{modules.messages&&invite.message && <p>{copy("rsvp.text23")}{invite.message}</p>}</div>}
+                  {(!invite.personal && ((modules.messages&&invite.message) || (modules.dietaryRestrictions&&invite.dietaryRestrictions))) && <div className={romance ? "text-sm space-y-2 text-[var(--forever-accent,#82656C)]" : "text-sm space-y-2"}><p>{copy("rsvp.text21")}</p>{modules.dietaryRestrictions&&invite.dietaryRestrictions && <p>{copy("rsvp.text22")}{invite.dietaryRestrictions}</p>}{modules.messages&&invite.message && <p>{copy("rsvp.text23")}{invite.message}</p>}</div>}
                   <div className="pt-2 flex justify-center">
                     <button
                       type="submit"
