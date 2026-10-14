@@ -4,6 +4,7 @@ import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "firebase/au
 import {clientAuth} from "@/lib/firebase/client";
 import {readApiResponse} from "@/lib/api-response";
 import {useRouter} from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import {Heart,Mail,KeyRound,ArrowUpRight,LockKeyhole,Eye,EyeOff} from "lucide-react";
 import {foreverTheme} from "@/config/brand";
@@ -26,22 +27,22 @@ export function Login(){
 
               <div aria-hidden="true" className="pointer-events-none absolute -bottom-20 -right-20 opacity-[0.06]"><Image src="/forever/icon_white.svg" alt="" width={350} height={350}/></div>
               <div className="admin-scene-copy">
-                <p className="admin-eyebrow">O amor mora nos detalhes</p>
+                <p className="admin-eyebrow">Plataforma Forever</p>
                 <ForeverLogo light className="my-7 w-56 sm:w-72"/>
                 <h1>
-                  Cada presença,
+                  Um site à altura
                   <br />
-                  uma parte da
+                  do seu
                   <br />
-                  <em>nossa história.</em>
+                  <em>grande dia.</em>
                 </h1>
                 <div className="admin-scene-rule">
                   <Heart size={15} strokeWidth={1} aria-hidden="true" />
                 </div>
                 <p>
-                  Um dia especial, rodeado
+                  Convites com QR Code, confirmações
                   <br />
-                  de pessoas que amamos.
+                  em tempo real e gestão do evento.
                 </p>
               </div>
             </aside>
@@ -63,15 +64,15 @@ export function Login(){
                 <span className="admin-lock border-[#722F3720]! bg-[#722F3708]!">
                   <LockKeyhole size={21} strokeWidth={1.2} aria-hidden="true" />
                 </span>
-                <p className="admin-eyebrow text-[#722F37]!">Seu espaço Forever</p>
+                <p className="admin-eyebrow text-[#722F37]!">Painel de Acesso</p>
                 <h2>
                   Bem-vindos
                   <br />
-                  <em>ao nosso espaço.</em>
+                  <em>de volta.</em>
                 </h2>
                 <p>
-                  Entre para organizar os convites e acompanhar cada
-                  confirmação.
+                  Acesse sua conta para gerenciar seu site, convites e
+                  confirmações de presença.
                 </p>
               </div>
               <label className="block">
@@ -107,16 +108,24 @@ export function Login(){
                 </div>
               </label>
               <button
-                className="guest-button admin-login-submit enabled:hover:bg-[#5B252C]!"
+                className="group guest-button admin-login-submit bg-[#722F37]! enabled:hover:bg-[#5B242B]!"
                 disabled={busy}
               >
                 {busy ? "Entrando…" : "Entrar no painel"}
-                <ArrowUpRight size={17} aria-hidden="true" />
+                <ArrowUpRight size={17} aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </button>
               <p className="admin-login-note">
-                <LockKeyhole size={12} aria-hidden="true" /> Acesso reservado às
+                <LockKeyhole size={12} aria-hidden="true" /> Acesso seguro reservado às
                 contas autorizadas.
               </p>
+              <div className="flex items-center justify-between border-t border-[#16161612] pt-4 text-xs text-[#8C877F]">
+                <Link href="/" className="transition-colors hover:text-[#722F37]">
+                  ← Voltar ao início
+                </Link>
+                <Link href="/#preco" className="font-medium text-[#722F37] transition-colors hover:underline">
+                  Conhecer planos
+                </Link>
+              </div>
             </form>
           </div>
 
