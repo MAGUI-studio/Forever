@@ -328,17 +328,6 @@ export function AdminPanel({
                 <DropdownMenu.Label className="admin-profile-label">
                   Espaço dos noivos
                   <span>{user.email}</span>
-                  <div className="mt-2 flex items-center justify-between border-t border-[#16161610] pt-2 font-normal">
-                    <span className="text-[11px] text-[#80654E]">Plano atual:</span>
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
-                      plan === "foreverPro"
-                        ? "border-[#722F3730] bg-[#722F3712] text-[#722F37]"
-                        : "border-[#16161618] bg-[#16161608] text-[#6B6760]"
-                    }`}>
-                      {plan === "foreverPro" && <Heart size={9} className="fill-[#722F37]" />}
-                      {PLAN_NAMES[plan] ?? "Forever Essencial"}
-                    </span>
-                  </div>
                 </DropdownMenu.Label>
                 {plan === "essencial" && (
                   <DropdownMenu.Item asChild>
