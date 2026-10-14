@@ -655,6 +655,29 @@ async function check(title, work) {
     assert.equal((await lookup.POST(request("POST", { token: "123" }))).status, 400);
     assert.equal((await lookup.POST(request("POST", { token: "ZZZ-999" }))).status, 404);
   });
+  await check("códigos determinísticos resolvem convites legados e auto-indexam no banco", async () => {
+    const { deterministicShortCode } = load("src/lib/guest-server.ts");
+    const legacyId = "legacy-invite-xyz";
+    const legacyGuestId = "11111111-2222-3333-4444-555555555555";
+    store.set("weddings/test-couple/invitations/" + legacyId, {
+      active: true,
+      label: "Familia Legado",
+      kind: "group",
+      token: "secret-token-legacy",
+      revision: 1,
+      guests: [
+        { id: legacyGuestId, name: "Convidado Legado", child: false, status: "pendente", checkedIn: false },
+        { id: "22222222-3333-4444-5555-666666666666", name: "Outro Convidado", child: false, status: "pendente", checkedIn: false },
+      ]
+    });
+    const guestCode = deterministicShortCode(legacyId + ":" + legacyGuestId);
+    const res = await lookup.POST(request("POST", { token: guestCode }));
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.equal(body.invitation.label, "Convidado Legado");
+    assert.equal(body.invitation.personal, true);
+    assert(store.has("weddings/test-couple/codes/" + guestCode));
+  });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,
   );

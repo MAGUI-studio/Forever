@@ -143,9 +143,61 @@ export async function resolveInvitation(
     if (directQuery.docs.length > 0) {
       const doc = directQuery.docs[0];
       return {
-        ref: doc.ref,
+        ref: db.collection("invitations").doc(doc.id),
         invitationId: doc.id,
       };
+    }
+
+    // Fallback for legacy invitations created before short codes were persisted
+    const allInvitesSnap = await db.collection("invitations").get();
+    for (const doc of allInvitesSnap.docs) {
+      const item = doc.data() as {
+        kind?: string;
+        code?: string;
+        guestCodes?: Record<string, string>;
+        guests?: { id: string }[];
+      };
+      const mainCode = item.code ?? deterministicShortCode(doc.id);
+      if (mainCode === normalized) {
+        try {
+          await db.collection("codes").doc(normalized).set({
+            invitationId: doc.id,
+            createdAt: new Date().toISOString(),
+          });
+          if (!item.code) {
+            await doc.ref.update({ code: mainCode });
+          }
+        } catch {
+          // ignore auto-heal errors in read path
+        }
+        return {
+          ref: db.collection("invitations").doc(doc.id),
+          invitationId: doc.id,
+        };
+      }
+      for (const g of item.guests ?? []) {
+        const guestCode: string =
+          item.guestCodes?.[g.id] ??
+          (item.kind === "individual" || (item.guests ?? []).length === 1
+            ? mainCode
+            : deterministicShortCode(doc.id + ":" + g.id));
+        if (guestCode === normalized) {
+          try {
+            await db.collection("codes").doc(normalized).set({
+              invitationId: doc.id,
+              guestId: g.id,
+              createdAt: new Date().toISOString(),
+            });
+          } catch {
+            // ignore auto-heal errors in read path
+          }
+          return {
+            ref: db.collection("invitations").doc(doc.id),
+            invitationId: doc.id,
+            guestId: g.id,
+          };
+        }
+      }
     }
   }
 

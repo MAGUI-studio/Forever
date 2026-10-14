@@ -56,16 +56,55 @@ export function RSVPSection() {
   useEffect(() => {
     let active = true;
     const syncHash = () => {
-      const value = window.location.hash.slice(1);
-      if (/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(value)) {
-        setCode(value); setBusy(true); setError("");
-        fetch("/api/rsvp/lookup", {method:"POST",headers:{"Content-Type":"application/json","x-wedding-slug":slug},body:JSON.stringify({token:value})}).then(async response => { const result = await response.json(); if (!response.ok) throw new Error(result.error); if (!active) return; setInvite(result.invitation);setSettings(result.settings);setClosed(!result.settings.enabled || (!!result.settings.deadline && Date.now() > Date.parse(result.settings.deadline))); }).catch(e => {if(active) setError(e.message || copy("rsvp.text25"));}).finally(() => {if(active) setBusy(false);});
+      const raw = window.location.hash.slice(1).trim();
+      if (isValidTokenOrCode(raw)) {
+        const normalized = normalizeTokenOrCode(raw);
+        setCode(normalized);
+        setBusy(true);
+        setError("");
+        setSaved(false);
+        setInvite(null);
+        fetch("/api/rsvp/lookup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-wedding-slug": slug },
+          body: JSON.stringify({ token: normalized }),
+        })
+          .then(async (response) => {
+            const result = await response.json();
+            if (!response.ok) {
+              throw new Error(
+                response.status === 404
+                  ? copy("rsvp.text27")
+                  : response.status === 400
+                  ? copy("rsvp.text28")
+                  : result.error
+              );
+            }
+            if (!active) return;
+            setCode(normalized);
+            setInvite(result.invitation);
+            setSettings(result.settings);
+            setClosed(
+              !result.settings.enabled ||
+                (!!result.settings.deadline &&
+                  Date.now() > Date.parse(result.settings.deadline))
+            );
+          })
+          .catch((e) => {
+            if (active) setError(e.message || copy("rsvp.text25"));
+          })
+          .finally(() => {
+            if (active) setBusy(false);
+          });
       }
     };
     window.addEventListener("hashchange", syncHash);
     queueMicrotask(syncHash);
-    return () => { active = false; window.removeEventListener("hashchange", syncHash); };
-  }, []);
+    return () => {
+      active = false;
+      window.removeEventListener("hashchange", syncHash);
+    };
+  }, [slug]);
 
   async function doLookup(targetCode?: string) {
     const raw = (targetCode ?? code).trim();
@@ -119,7 +158,7 @@ export function RSVPSection() {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-wedding-slug":slug },
         body: JSON.stringify({
-          token: code.trim().toLowerCase(),
+          token: normalizeTokenOrCode(code),
           revision: invite.revision,
           responses: invite.guests.map((g) => ({ id: g.id, status: g.status, ...(modules.messages?{message:g.message}:{}),...(modules.dietaryRestrictions?{dietaryRestrictions:g.dietaryRestrictions}:{}) })),
         }),
@@ -216,7 +255,7 @@ export function RSVPSection() {
           {invite && (
             <form onSubmit={submit} className="rsvp-response space-y-6">
               <div>
-                <button type="button" className="rsvp-change" disabled={busy} onClick={() => {setInvite(null);setCode("");setSaved(false);setError("");if (/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(window.location.hash.slice(1))) window.history.replaceState(null,"",window.location.pathname + window.location.search);}}>{copy("rsvp.text10")}</button><p className="rsvp-card-eyebrow"><UsersIcon size={16} aria-hidden="true" />{copy("rsvp.text11")}</p><h3 className="font-serif text-3xl">{invite.label}</h3>
+                <button type="button" className="rsvp-change" disabled={busy} onClick={() => {setInvite(null);setCode("");setSaved(false);setError("");if (window.location.hash) window.history.replaceState(null,"",window.location.pathname + window.location.search);}}>{copy("rsvp.text10")}</button><p className="rsvp-card-eyebrow"><UsersIcon size={16} aria-hidden="true" />{copy("rsvp.text11")}</p><h3 className="font-serif text-3xl">{invite.label}</h3>
                 {settings.deadline && (
                   <p className="mt-2 text-sm">{copy("rsvp.text12")}{" "}
                     {new Date(settings.deadline).toLocaleString("pt-BR", {
