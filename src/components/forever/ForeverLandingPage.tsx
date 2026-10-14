@@ -262,33 +262,314 @@ function SiteArt() {
   );
 }
 
-/** Deterministic QR-like mark (decorative only, no real data encoded). */
-function QrMark({ className = "" }: { className?: string }) {
-  const size = 21;
-  const cells: [number, number][] = [];
-  let seed = 11;
-  for (let y = 0; y < size; y++)
-    for (let x = 0; x < size; x++) {
-      const finder = (x < 8 && y < 8) || (x > size - 9 && y < 8) || (x < 8 && y > size - 9);
-      seed = (seed * 9301 + 49297) % 233280;
-      if (!finder && seed / 233280 > 0.5) cells.push([x, y]);
-    }
+function RealInvitePdfMockup() {
   return (
-    <svg viewBox="0 0 21 21" className={className} shapeRendering="crispEdges" aria-hidden="true">
-      {[
-        [0, 0],
-        [14, 0],
-        [0, 14],
-      ].map(([x, y]) => (
-        <g key={`${x}-${y}`}>
-          <rect x={x + 0.5} y={y + 0.5} width="6" height="6" fill="none" stroke="currentColor" />
-          <rect x={x + 2} y={y + 2} width="3" height="3" fill="currentColor" />
+    <div
+      className="relative aspect-[148/210] w-full max-w-[320px] sm:max-w-[360px] md:max-w-[390px] shrink-0 overflow-hidden rounded-[10px] bg-[#FAF8F1] shadow-[0_25px_60px_-15px_rgba(45,35,25,0.22),0_4px_14px_rgba(45,35,25,0.06)] ring-1 ring-[#C7B79D]/70 select-none"
+    >
+      <svg
+        viewBox="0 0 148 210"
+        className="size-full"
+        xmlns="http://www.w3.org/2000/svg"
+        shapeRendering="geometricPrecision"
+        textRendering="geometricPrecision"
+      >
+        {/* Paper Background */}
+        <rect width="148" height="210" fill="#FAF8F1" />
+
+        {/* Outer/Inner Rounded Frame: matches createInvitationPdf roundedRect(8, 8, 132, 194, 5, 5) */}
+        <rect
+          x="8"
+          y="8"
+          width="132"
+          height="194"
+          rx="5"
+          ry="5"
+          fill="none"
+          stroke="#C7B79D"
+          strokeWidth="0.32"
+        />
+
+        {/* Botanical corner artwork and floating hearts from buildInvitationArtwork */}
+        <g
+          fill="none"
+          stroke="#C5B99F"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {/* Top-Left leafy branch */}
+          <g transform="translate(3 5) scale(.14)">
+            <path d="M32 386C74 331 85 283 104 229S141 128 149 33" />
+            <path d="M62 335C21 329 5 301 12 275C43 278 67 303 62 335Z" />
+            <path d="M70 316C112 324 146 300 149 268C116 267 85 286 70 316Z" />
+            <path d="M86 274C50 263 34 237 39 211C68 216 88 239 86 274Z" />
+            <path d="M94 252C130 262 165 242 173 210C144 206 111 220 94 252Z" />
+            <path d="M110 214C75 196 65 169 77 142C104 154 118 183 110 214Z" />
+            <path d="M119 190C151 202 182 183 192 153C163 145 136 159 119 190Z" />
+            <path d="M135 146C107 126 100 102 109 77C134 89 143 118 135 146Z" />
+            <path d="M142 117C168 122 189 102 191 76C167 75 148 91 142 117Z" />
+            <path d="M148 66C127 50 125 26 138 8C155 21 157 45 148 66Z" />
+          </g>
+
+          {/* Top-Right floral cluster */}
+          <g transform="translate(116 10) scale(.14)">
+            <path d="M60 350C112 257 117 199 107 81M95 252C78 205 56 184 40 165M109 207C148 176 158 145 165 122" />
+            <path d="M82 298C41 288 21 261 30 235C65 242 86 267 82 298ZM98 260C138 269 170 240 172 215C139 217 110 232 98 260Z" />
+            <g transform="translate(107 64) scale(1)">
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(0)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(60)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(120)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(180)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(240)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(300)" />
+              <circle r="9" />
+            </g>
+            <g transform="translate(36 150) scale(0.75)">
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(0)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(60)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(120)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(180)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(240)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(300)" />
+              <circle r="9" />
+            </g>
+            <g transform="translate(166 104) scale(0.7)">
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(0)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(60)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(120)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(180)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(240)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(300)" />
+              <circle r="9" />
+            </g>
+          </g>
+
+          {/* Bottom-Right leafy branch */}
+          <g transform="translate(144 204) rotate(180) scale(.13)">
+            <path d="M32 386C74 331 85 283 104 229S141 128 149 33" />
+            <path d="M62 335C21 329 5 301 12 275C43 278 67 303 62 335Z" />
+            <path d="M70 316C112 324 146 300 149 268C116 267 85 286 70 316Z" />
+            <path d="M86 274C50 263 34 237 39 211C68 216 88 239 86 274Z" />
+            <path d="M94 252C130 262 165 242 173 210C144 206 111 220 94 252Z" />
+            <path d="M110 214C75 196 65 169 77 142C104 154 118 183 110 214Z" />
+            <path d="M119 190C151 202 182 183 192 153C163 145 136 159 119 190Z" />
+            <path d="M135 146C107 126 100 102 109 77C134 89 143 118 135 146Z" />
+            <path d="M142 117C168 122 189 102 191 76C167 75 148 91 142 117Z" />
+            <path d="M148 66C127 50 125 26 138 8C155 21 157 45 148 66Z" />
+          </g>
+
+          {/* Bottom-Left floral cluster */}
+          <g transform="translate(5 159) scale(.105)">
+            <path d="M60 350C112 257 117 199 107 81M95 252C78 205 56 184 40 165M109 207C148 176 158 145 165 122" />
+            <path d="M82 298C41 288 21 261 30 235C65 242 86 267 82 298ZM98 260C138 269 170 240 172 215C139 217 110 232 98 260Z" />
+            <g transform="translate(107 64) scale(1)">
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(0)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(60)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(120)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(180)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(240)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(300)" />
+              <circle r="9" />
+            </g>
+            <g transform="translate(36 150) scale(0.75)">
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(0)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(60)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(120)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(180)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(240)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(300)" />
+              <circle r="9" />
+            </g>
+            <g transform="translate(166 104) scale(0.7)">
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(0)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(60)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(120)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(180)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(240)" />
+              <ellipse cx="0" cy="-22" rx="13" ry="22" transform="rotate(300)" />
+              <circle r="9" />
+            </g>
+          </g>
+
+          {/* Floating Hearts */}
+          <g transform="translate(16 106) rotate(-15) scale(.24)">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z" />
+          </g>
+          <g transform="translate(127 83) rotate(12) scale(.22)">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z" />
+          </g>
+          <g transform="translate(71.5 64.5) scale(.21)">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z" />
+          </g>
         </g>
-      ))}
-      {cells.map(([x, y]) => (
-        <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill="currentColor" />
-      ))}
-    </svg>
+
+        {/* Divider lines flanking the center heart at y=67 */}
+        <line x1="54" y1="67" x2="68" y2="67" stroke="#C7B79D" strokeWidth="0.25" strokeLinecap="round" />
+        <line x1="80" y1="67" x2="94" y2="67" stroke="#C7B79D" strokeWidth="0.25" strokeLinecap="round" />
+
+        {/* 1. Top Headline at y=25 */}
+        <text
+          x="74"
+          y="25"
+          textAnchor="middle"
+          fill="#80654E"
+          fontFamily="var(--font-serif), 'Cormorant Garamond', Georgia, serif"
+          fontStyle="italic"
+          fontSize="3.9"
+        >
+          O amor em cada detalhe.
+        </text>
+
+        {/* 2. Couple Names at y=49 */}
+        <text
+          x="74"
+          y="49"
+          textAnchor="middle"
+          fontFamily="var(--font-serif), 'Cormorant Garamond', Georgia, serif"
+          fontWeight="300"
+          fontSize="11.4"
+        >
+          <tspan fill="#3D2501">Marina </tspan>
+          <tspan fill="#5D613C" fontStyle="italic">&amp;</tspan>
+          <tspan fill="#3D2501"> Lucas</tspan>
+        </text>
+
+        {/* 3. Opening line 1 at y=79 */}
+        <text
+          x="74"
+          y="79"
+          textAnchor="middle"
+          fill="#80654E"
+          fontFamily="var(--font-serif), 'Cormorant Garamond', Georgia, serif"
+          fontStyle="italic"
+          fontSize="4.25"
+        >
+          Com alegria no coração
+        </text>
+
+        {/* 4. Opening line 2 at y=85 */}
+        <text
+          x="74"
+          y="85"
+          textAnchor="middle"
+          fill="#80654E"
+          fontFamily="var(--font-serif), 'Cormorant Garamond', Georgia, serif"
+          fontSize="3.9"
+        >
+          Convidam você para celebrar esse momento tão especial
+        </text>
+
+        {/* 5. Guest Name at y=98 */}
+        <text
+          x="74"
+          y="98"
+          textAnchor="middle"
+          fill="#5D613C"
+          fontFamily="var(--font-serif), 'Cormorant Garamond', Georgia, serif"
+          fontStyle="italic"
+          fontSize="6.8"
+        >
+          Família Silva
+        </text>
+
+        {/* 6. Date & Time at y=110 */}
+        <text
+          x="74"
+          y="110"
+          textAnchor="middle"
+          fill="#5D613C"
+          fontFamily="var(--font-serif), 'Cormorant Garamond', Georgia, serif"
+          fontSize="4.6"
+        >
+          12 de setembro de 2027 | 16h30
+        </text>
+
+        {/* 7. Place Name at y=122 */}
+        <text
+          x="74"
+          y="122"
+          textAnchor="middle"
+          fill="#3D2501"
+          fontFamily="var(--font-serif), 'Cormorant Garamond', Georgia, serif"
+          fontSize="6.8"
+        >
+          Espaço Jardim
+        </text>
+
+        {/* 8. Address at y=129 */}
+        <text
+          x="74"
+          y="129"
+          textAnchor="middle"
+          fill="#80654E"
+          fontFamily="var(--font-serif), 'Cormorant Garamond', Georgia, serif"
+          fontSize="3.55"
+        >
+          Av. das Hortênsias, 1420 - Jardim América
+        </text>
+
+        {/* 9. City/State at y=133.5 */}
+        <text
+          x="74"
+          y="133.5"
+          textAnchor="middle"
+          fill="#80654E"
+          fontFamily="var(--font-serif), 'Cormorant Garamond', Georgia, serif"
+          fontSize="3.55"
+        >
+          São Paulo - SP
+        </text>
+
+        {/* 10. QR Box at (54, 140, 40, 40, rx=3) */}
+        <rect
+          x="54"
+          y="140"
+          width="40"
+          height="40"
+          rx="3"
+          ry="3"
+          fill="#FAF8F1"
+          stroke="#C7B79D"
+          strokeWidth="0.28"
+        />
+
+        {/* Real QR Code at (56, 142) size 36x36 */}
+        <svg x="56" y="142" width="36" height="36" viewBox="0 0 37 37" shapeRendering="crispEdges">
+          <path fill="#FAF8F1" d="M0 0h37v37H0z" />
+          <path
+            stroke="#3D2501"
+            strokeWidth="1"
+            d="M0 0.5h7m3 0h1m2 0h1m3 0h2m1 0h3m1 0h2m2 0h1m1 0h7M0 1.5h1m5 0h1m2 0h2m1 0h1m1 0h1m2 0h1m1 0h1m1 0h2m2 0h4m1 0h1m5 0h1M0 2.5h1m1 0h3m1 0h1m1 0h1m4 0h1m1 0h1m2 0h5m1 0h1m2 0h1m2 0h1m1 0h3m1 0h1M0 3.5h1m1 0h3m1 0h1m1 0h2m1 0h3m1 0h1m1 0h1m1 0h1m2 0h1m2 0h2m3 0h1m1 0h3m1 0h1M0 4.5h1m1 0h3m1 0h1m1 0h1m1 0h2m3 0h1m2 0h3m2 0h1m6 0h1m1 0h3m1 0h1M0 5.5h1m5 0h1m1 0h3m2 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h1m2 0h1m2 0h1m5 0h1M0 6.5h7m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m1 0h7M8 7.5h1m1 0h3m3 0h1m9 0h1M0 8.5h1m1 0h5m4 0h2m1 0h2m2 0h5m1 0h2m1 0h1m2 0h5M2 9.5h2m3 0h1m1 0h3m1 0h4m4 0h1m3 0h1m2 0h1m4 0h1m1 0h1M0 10.5h2m3 0h3m2 0h1m1 0h1m5 0h1m1 0h5m1 0h2m1 0h3m2 0h3M1 11.5h1m6 0h1m1 0h1m1 0h1m3 0h1m4 0h1m1 0h1m2 0h3m2 0h1m4 0h1M1 12.5h1m3 0h2m5 0h1m4 0h2m3 0h2m1 0h2m1 0h3m1 0h5M2 13.5h1m1 0h2m3 0h1m1 0h2m1 0h1m1 0h6m1 0h1m1 0h1m2 0h1m2 0h1M3 14.5h1m1 0h3m4 0h6m3 0h1m4 0h4m1 0h3m1 0h2M0 15.5h1m2 0h3m1 0h3m1 0h1m2 0h1m2 0h3m1 0h4m1 0h4m1 0h2m2 0h1M1 16.5h1m1 0h2m1 0h1m1 0h1m4 0h1m1 0h2m4 0h1m2 0h4m1 0h2m1 0h1m1 0h2M0 17.5h3m1 0h1m2 0h3m1 0h1m3 0h1m1 0h2m1 0h1m1 0h1m1 0h1m1 0h1m1 0h1m2 0h1m2 0h2M3 18.5h2m1 0h2m3 0h2m1 0h3m2 0h1m1 0h1m5 0h3m4 0h3M1 19.5h1m1 0h1m1 0h1m5 0h1m1 0h1m1 0h1m3 0h4m1 0h1m1 0h2m1 0h1m1 0h1m4 0h1M0 20.5h1m5 0h2m2 0h1m1 0h1m2 0h1m1 0h1m1 0h2m1 0h1m2 0h2m2 0h2m1 0h3M1 21.5h3m3 0h1m2 0h1m1 0h3m1 0h1m1 0h3m2 0h1m4 0h2m3 0h1M0 22.5h1m1 0h1m1 0h4m1 0h2m3 0h3m1 0h1m1 0h1m1 0h1m1 0h2m1 0h1m1 0h5m2 0h1M0 23.5h1m1 0h3m3 0h1m1 0h1m2 0h1m1 0h2m6 0h1m2 0h1m1 0h1m2 0h2m2 0h1M2 24.5h2m2 0h1m2 0h1m1 0h1m1 0h3m2 0h1m1 0h8m1 0h4m1 0h1m1 0h1M0 25.5h1m4 0h1m1 0h1m1 0h2m2 0h1m1 0h2m6 0h1m4 0h1m2 0h1m2 0h1M0 26.5h1m2 0h5m2 0h1m2 0h2m5 0h1m1 0h1m1 0h5m1 0h2m1 0h4M0 27.5h1m2 0h1m1 0h1m1 0h1m1 0h2m1 0h1m1 0h1m1 0h1m4 0h3m2 0h3m3 0h1m2 0h2M0 28.5h1m2 0h1m1 0h3m2 0h1m1 0h2m2 0h3m5 0h3m1 0h5m1 0h1m1 0h1M8 29.5h1m1 0h3m1 0h1m1 0h6m1 0h4m1 0h1m3 0h2m1 0h1M0 30.5h7m5 0h1m2 0h1m1 0h1m2 0h2m6 0h1m1 0h1m1 0h1m1 0h3M0 31.5h1m5 0h1m1 0h1m1 0h1m1 0h1m2 0h4m1 0h3m1 0h1m1 0h1m1 0h1m3 0h2m1 0h2M0 32.5h1m1 0h3m1 0h1m1 0h2m1 0h1m4 0h1m2 0h1m1 0h1m1 0h1m1 0h8m1 0h1m1 0h1M0 33.5h1m1 0h3m1 0h1m1 0h3m1 0h1m1 0h2m1 0h2m1 0h1m1 0h2m5 0h2m1 0h1m3 0h1M0 34.5h1m1 0h3m1 0h1m1 0h1m2 0h1m1 0h4m2 0h1m2 0h1m1 0h1m1 0h1m6 0h4M0 35.5h1m5 0h1m3 0h1m2 0h1m1 0h1m3 0h4m3 0h3m1 0h1m1 0h1m3 0h1M0 36.5h7m1 0h2m2 0h1m2 0h1m1 0h1m1 0h1m2 0h5m2 0h2m1 0h5"
+          />
+        </svg>
+
+        {/* 11. Confirmation Title at y=188 */}
+        <text
+          x="74"
+          y="188"
+          textAnchor="middle"
+          fill="#5D613C"
+          fontFamily="var(--font-serif), 'Cormorant Garamond', Georgia, serif"
+          fontSize="3.55"
+          letterSpacing="1.2"
+        >
+          CONFIRME SUA PRESENÇA
+        </text>
+
+        {/* 12. Confirmation Subtitle at y=197 */}
+        <text
+          x="74"
+          y="197"
+          textAnchor="middle"
+          fill="#80654E"
+          fontFamily="var(--font-serif), 'Cormorant Garamond', Georgia, serif"
+          fontSize="3.55"
+        >
+          Leia o QR Code ou toque aqui para responder
+        </text>
+      </svg>
+    </div>
   );
 }
 
@@ -299,36 +580,28 @@ function InviteArt() {
     ["Respondido", "12 mar"],
   ];
   return (
-    <div className="flex w-full max-w-md items-center gap-10">
-      <div className={`flex aspect-[148/210] w-52 shrink-0 flex-col items-center rounded-[6px] border ${line} px-5 pb-5 pt-7 text-center`}>
-        <span className="font-serif text-[10px] italic text-[#8C877F]">Com alegria no coração</span>
-        <span className="mt-3 font-serif text-2xl font-light leading-none text-[#161616]">
-          Marina <span className="italic text-[#722F37]">&</span> Lucas
-        </span>
-        <span className="mt-3 h-px w-10 bg-[#16161620]" />
-        <span className="mt-3 font-serif text-sm italic text-[#722F37]">Família Souza</span>
-        <span className="mt-1 text-[8px] uppercase tracking-[0.2em] text-[#8C877F]">12 de setembro de 2027</span>
-        <QrMark className="mt-auto size-16 text-[#161616]" />
-        <span className="mt-2 text-[7px] uppercase tracking-[0.24em] text-[#722F37]">Confirme sua presença</span>
-      </div>
+    <div className="flex w-full max-w-xl flex-col items-center gap-8 sm:flex-row sm:items-center sm:gap-10">
+      <RealInvitePdfMockup />
 
-      <div className="relative flex-1">
-        <span aria-hidden="true" className="absolute left-[5px] top-2 bottom-2 w-px bg-[#16161618]" />
-        {steps.map(([label, date], index) => (
-          <div key={label} className="relative flex items-start gap-4 pb-7 last:pb-0">
-            <span
-              className={`relative mt-1 size-[11px] rounded-full border ${
-                index === 2 ? "border-[#722F37] bg-[#722F37]" : "border-[#16161640] bg-[#F1F1F1]"
-              }`}
-            />
-            <div>
-              <span className="block text-sm text-[#161616]">{label}</span>
-              <span className="text-[11px] text-[#8C877F]">{date}</span>
+      <div className="flex w-full max-w-xs flex-col sm:flex-1">
+        <div className="relative">
+          <span aria-hidden="true" className="absolute left-[5px] top-2 bottom-2 w-px bg-[#16161618]" />
+          {steps.map(([label, date], index) => (
+            <div key={label} className="relative flex items-start gap-4 pb-7 last:pb-0">
+              <span
+                className={`relative mt-1 size-[11px] rounded-full border ${
+                  index === 2 ? "border-[#722F37] bg-[#722F37]" : "border-[#16161640] bg-[#F1F1F1]"
+                }`}
+              />
+              <div>
+                <span className="block text-sm text-[#161616]">{label}</span>
+                <span className="text-[11px] text-[#8C877F]">{date}</span>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
         <p className={`mt-6 border-t ${line} pt-4 text-xs text-[#6B6760]`}>
-          <span className="font-serif text-xl text-[#161616]">4</span> de 4 presenças confirmadas
+          <span className="font-serif text-xl text-[#161616]">4</span> de 4 presenças confirmadas · Família Silva
         </p>
       </div>
     </div>
