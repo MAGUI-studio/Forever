@@ -1,0 +1,1345 @@
+"use client";
+
+import { useState, Fragment, type ReactNode } from "react";
+import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
+import { ArrowRight, ArrowUp, ArrowUpRight, Check, Heart, Plus } from "lucide-react";
+import { ForeverLogo } from "./ForeverLogo";
+import { BotanicalClassicBranch, BotanicalClassicOrnaments } from "@/components/wedding/templates/BotanicalClassicOrnaments";
+import { moduleCatalog, moduleKeys } from "@/config/modules";
+
+const STUDIO_URL = "https://magui.studio";
+const line = "border-[#16161612]";
+const cerimonialModules = new Set<string>(["checkIn", "tables", "buffet", "history", "team"]);
+
+function InstagramIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7}>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function LinkedinIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M5.4 7.5a2.1 2.1 0 1 0 0-4.2 2.1 2.1 0 0 0 0 4.2ZM3.6 9h3.6v12H3.6V9Zm5.9 0H13v1.6c.5-.9 1.6-1.9 3.6-1.9 3.8 0 4.5 2.4 4.5 5.5V21h-3.6v-6c0-1.4 0-3.1-1.9-3.1s-2.2 1.5-2.2 3V21H9.5V9Z" />
+    </svg>
+  );
+}
+
+function XIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg aria-hidden="true" width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3l-4.9-7.4L5.5 22H2.3l7.2-8.4L.8 2h6.5l4.5 6.8L18.9 2Zm-1.1 18h1.7L6.3 3.9H4.5L17.8 20Z" />
+    </svg>
+  );
+}
+
+/* ---------- primitives ---------- */
+
+function CerimonialHeartTooltip({ text = "Exclusivo do Plano Cerimonial" }: { text?: string }) {
+  return (
+    <span className="group/tooltip relative inline-flex items-center" tabIndex={0} aria-label={text}>
+      <span className="inline-flex cursor-help items-center justify-center p-0.5 text-[#722F37] transition-transform group-hover/tooltip:scale-125 focus:outline-none">
+        <Heart size={14} className="fill-[#722F37] text-[#722F37]" />
+      </span>
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#722F37] px-2.5 py-1 text-[11px] font-medium text-white shadow-lg opacity-0 transition-all duration-200 group-hover/tooltip:opacity-100 group-hover/tooltip:translate-y-0 translate-y-1 group-focus-within/tooltip:opacity-100"
+      >
+        {text}
+        <span
+          aria-hidden="true"
+          className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-[#722F37]"
+        />
+      </span>
+    </span>
+  );
+}
+
+function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+  const reduced = useReducedMotion();
+  return (
+    <motion.div
+      className={className}
+      initial={reduced ? false : { opacity: 0, y: 22 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function Eyebrow({ children }: { children: ReactNode }) {
+  return <p className="text-[11px] font-medium uppercase tracking-[0.26em] text-[#722F37]">{children}</p>;
+}
+
+function Accent({ children }: { children: ReactNode }) {
+  return <em className="font-serif font-normal italic tracking-[-0.01em] text-[#722F37]">{children}</em>;
+}
+
+function PrimaryButton({ href, children, external = false }: { href: string; children: ReactNode; external?: boolean }) {
+  const className =
+    "group inline-flex h-12 items-center gap-3 rounded-full bg-[#722F37] pl-6 pr-2 text-sm font-medium text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-lg hover:shadow-[#722F3725]";
+  const content = (
+    <>
+      <span>{children}</span>
+      <span className="grid size-8 place-items-center rounded-full bg-white/15 transition-colors duration-300 group-hover:bg-white/25">
+        <ArrowUpRight size={15} className="transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+      </span>
+    </>
+  );
+  return external ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+      {content}
+    </a>
+  ) : (
+    <Link href={href} className={className}>
+      {content}
+    </Link>
+  );
+}
+
+function GhostButton({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="group inline-flex h-12 items-center gap-2 px-2 text-sm font-medium text-[#161616] transition-colors hover:text-[#722F37]"
+    >
+      <span>{children}</span>
+      <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1.5" />
+    </Link>
+  );
+}
+
+
+/* ---------- hero preview ---------- */
+
+function FloatingNote({ className, children, delay = 0 }: { className: string; children: ReactNode; delay?: number }) {
+  const reduced = useReducedMotion();
+  return (
+    <motion.div
+      aria-hidden="true"
+      className={`absolute z-10 hidden items-center gap-2.5 rounded-full border ${line} bg-[#F1F1F1]/90 px-4 py-2.5 text-xs text-[#161616] shadow-[0_12px_40px_-16px_rgba(22,22,22,0.25)] backdrop-blur-md lg:flex ${className}`}
+      initial={reduced ? false : { opacity: 0, y: 10 }}
+      animate={reduced ? undefined : { opacity: 1, y: [0, -6, 0] }}
+      transition={{ opacity: { duration: 0.6, delay }, y: { duration: 7, repeat: Infinity, ease: "easeInOut", delay } }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function HeroPreview() {
+  return (
+    <div className="relative mx-auto mt-20 max-w-5xl sm:mt-24">
+      {/* concentric hairlines */}
+      <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 -z-0 -translate-x-1/2 -translate-y-1/2">
+        <div className="size-[900px] rounded-full border border-[#722F370d]" />
+        <div className="absolute inset-[110px] rounded-full border border-[#722F370d]" />
+        <div className="absolute inset-[220px] rounded-full border border-[#722F370d]" />
+      </div>
+
+      <FloatingNote className="-left-8 -bottom-6" delay={0.6}>
+        <span className="grid size-5 place-items-center rounded-full bg-[#722F37] text-white">
+          <Check size={11} strokeWidth={3} />
+        </span>
+        Família Souza confirmou 4 presenças
+      </FloatingNote>
+      <FloatingNote className="-right-8 top-[12%]" delay={1.2}>
+        <span className="size-1.5 rounded-full bg-[#2F7A4A]" />
+        Convite aberto agora
+      </FloatingNote>
+
+      <div className={`relative rounded-[30px] border ${line} p-2`}>
+        <div className={`overflow-hidden rounded-[24px] border ${line} bg-[#F1F1F1]`}>
+          {/* browser bar */}
+          <div className={`flex items-center gap-4 border-b ${line} px-5 py-3.5`}>
+            <div className="flex gap-1.5" aria-hidden="true">
+              <span className="size-2.5 rounded-full bg-[#722F37] transition-opacity hover:opacity-80" />
+              <span className="size-2.5 rounded-full bg-[#C7B79D] transition-opacity hover:opacity-80" />
+              <span className="size-2.5 rounded-full bg-[#5D613C] transition-opacity hover:opacity-80" />
+            </div>
+            <div className="mx-auto flex items-center gap-2 text-[11px] text-[#8C877F]">
+              <span className="size-1 rounded-full bg-[#8C877F]" />
+              forever.magui.studio/marina-e-lucas
+            </div>
+            <span className="w-10" />
+          </div>
+
+          {/* mini wedding site */}
+          <div className="grid md:grid-cols-[1.15fr_1fr]">
+            <div className="flex flex-col px-7 py-10 sm:px-12 sm:py-14">
+              <div className="flex gap-5 text-[10px] uppercase tracking-[0.2em] text-[#8C877F]">
+                <span>História</span>
+                <span>Cerimônia</span>
+                <span className="hidden sm:inline">Presentes</span>
+                <span className="text-[#722F37]">RSVP</span>
+              </div>
+              <p className="mt-14 font-serif text-sm italic text-[#6B6760]">Vamos nos casar</p>
+              <p className="mt-2 font-serif text-[clamp(44px,6vw,72px)] font-light leading-[0.95] tracking-[-0.02em] text-[#161616]">
+                Marina <span className="italic text-[#722F37]">&</span>
+                <br />
+                Lucas
+              </p>
+              <p className="mt-5 text-xs tracking-[0.18em] text-[#6B6760] uppercase">12 · setembro · 2027</p>
+
+              <div className={`mt-10 grid max-w-sm grid-cols-4 divide-x divide-[#16161612] border-y ${line}`}>
+                {[
+                  ["142", "dias"],
+                  ["08", "horas"],
+                  ["35", "min"],
+                  ["12", "seg"],
+                ].map(([value, label]) => (
+                  <div key={label} className="py-3 text-center">
+                    <span className="block font-serif text-2xl font-light text-[#161616]">{value}</span>
+                    <span className="text-[9px] uppercase tracking-[0.2em] text-[#8C877F]">{label}</span>
+                  </div>
+                ))}
+              </div>
+
+              <span className="group mt-10 inline-flex w-fit items-center gap-2 rounded-full bg-[#722F37] px-5 py-2.5 text-xs font-medium text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b]">
+                <span>Confirmar presença</span>
+                <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
+              </span>
+            </div>
+
+            <div className={`relative hidden items-center justify-center border-l ${line} p-10 md:flex`}>
+              <div className="arch-frame relative flex h-[340px] w-[230px] items-end justify-center overflow-hidden border border-[#722F3726]">
+                <div className="absolute inset-3 arch-frame border border-[#722F3714]" />
+                <div className="w-40 text-[#722F37] opacity-40">
+                  <BotanicalClassicBranch />
+                </div>
+              </div>
+              <p className="absolute bottom-8 font-serif text-xs italic text-[#8C877F]">Espaço Jardim · São Paulo</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- feature illustrations (line-drawn, no fills) ---------- */
+
+function Toggle({ on }: { on: boolean }) {
+  return (
+    <span className={`relative h-4 w-7 rounded-full transition-colors ${on ? "bg-[#722F37]" : "bg-[#16161620]"}`}>
+      <span className={`absolute top-0.5 size-3 rounded-full bg-white ${on ? "left-3.5" : "left-0.5"}`} />
+    </span>
+  );
+}
+
+function SiteArt() {
+  const sections = ["Capa", "Nossa história", "Cerimônia e recepção", "Traje", "Lista de presentes", "Galeria", "Confirmação de presença"];
+  return (
+    <div className="w-full max-w-md">
+      <div className={`flex items-center justify-between border-b ${line} pb-4 text-xs`}>
+        <span className="text-[#6B6760]">Seções do site</span>
+        <span className="inline-flex items-center gap-2 font-medium text-[#2F7A4A]">
+          <span className="size-1.5 rounded-full bg-[#2F7A4A]" /> Publicado
+        </span>
+      </div>
+      {sections.map((section, index) => (
+        <div key={section} className={`flex items-center justify-between border-b ${line} py-3.5`}>
+          <span className="flex items-center gap-5">
+            <span className="w-5 font-mono text-[10px] text-[#A8A29A]">{String(index + 1).padStart(2, "0")}</span>
+            <span className="text-sm text-[#161616]">{section}</span>
+          </span>
+          {section === "Galeria" ? <Toggle on /> : <span className="text-[11px] text-[#A8A29A]">Editar</span>}
+        </div>
+      ))}
+      <div className="mt-5 flex items-center gap-3 text-xs text-[#6B6760]">
+        <span className="font-serif text-base italic text-[#722F37]">Aa</span>
+        Template · Romance Contemporâneo
+      </div>
+    </div>
+  );
+}
+
+/** Deterministic QR-like mark (decorative only, no real data encoded). */
+function QrMark({ className = "" }: { className?: string }) {
+  const size = 21;
+  const cells: [number, number][] = [];
+  let seed = 11;
+  for (let y = 0; y < size; y++)
+    for (let x = 0; x < size; x++) {
+      const finder = (x < 8 && y < 8) || (x > size - 9 && y < 8) || (x < 8 && y > size - 9);
+      seed = (seed * 9301 + 49297) % 233280;
+      if (!finder && seed / 233280 > 0.5) cells.push([x, y]);
+    }
+  return (
+    <svg viewBox="0 0 21 21" className={className} shapeRendering="crispEdges" aria-hidden="true">
+      {[
+        [0, 0],
+        [14, 0],
+        [0, 14],
+      ].map(([x, y]) => (
+        <g key={`${x}-${y}`}>
+          <rect x={x + 0.5} y={y + 0.5} width="6" height="6" fill="none" stroke="currentColor" />
+          <rect x={x + 2} y={y + 2} width="3" height="3" fill="currentColor" />
+        </g>
+      ))}
+      {cells.map(([x, y]) => (
+        <rect key={`${x}-${y}`} x={x} y={y} width="1" height="1" fill="currentColor" />
+      ))}
+    </svg>
+  );
+}
+
+function InviteArt() {
+  const steps = [
+    ["Enviado", "10 mar"],
+    ["Aberto", "10 mar"],
+    ["Respondido", "12 mar"],
+  ];
+  return (
+    <div className="flex w-full max-w-md items-center gap-10">
+      <div className={`flex aspect-[148/210] w-52 shrink-0 flex-col items-center rounded-[6px] border ${line} px-5 pb-5 pt-7 text-center`}>
+        <span className="font-serif text-[10px] italic text-[#8C877F]">Com alegria no coração</span>
+        <span className="mt-3 font-serif text-2xl font-light leading-none text-[#161616]">
+          Marina <span className="italic text-[#722F37]">&</span> Lucas
+        </span>
+        <span className="mt-3 h-px w-10 bg-[#16161620]" />
+        <span className="mt-3 font-serif text-sm italic text-[#722F37]">Família Souza</span>
+        <span className="mt-1 text-[8px] uppercase tracking-[0.2em] text-[#8C877F]">12 de setembro de 2027</span>
+        <QrMark className="mt-auto size-16 text-[#161616]" />
+        <span className="mt-2 text-[7px] uppercase tracking-[0.24em] text-[#722F37]">Confirme sua presença</span>
+      </div>
+
+      <div className="relative flex-1">
+        <span aria-hidden="true" className="absolute left-[5px] top-2 bottom-2 w-px bg-[#16161618]" />
+        {steps.map(([label, date], index) => (
+          <div key={label} className="relative flex items-start gap-4 pb-7 last:pb-0">
+            <span
+              className={`relative mt-1 size-[11px] rounded-full border ${
+                index === 2 ? "border-[#722F37] bg-[#722F37]" : "border-[#16161640] bg-[#F1F1F1]"
+              }`}
+            />
+            <div>
+              <span className="block text-sm text-[#161616]">{label}</span>
+              <span className="text-[11px] text-[#8C877F]">{date}</span>
+            </div>
+          </div>
+        ))}
+        <p className={`mt-6 border-t ${line} pt-4 text-xs text-[#6B6760]`}>
+          <span className="font-serif text-xl text-[#161616]">4</span> de 4 presenças confirmadas
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function CheckInArt() {
+  const guests: [string, string, boolean][] = [
+    ["Família Souza", "Mesa 03", true],
+    ["Ana e Bruno Lima", "Mesa 07", true],
+    ["Carla Mendes", "Mesa 07", false],
+    ["Família Duarte", "Mesa 12", true],
+    ["Paulo Ribeiro", "Mesa 05", false],
+  ];
+  return (
+    <div className="w-full max-w-md">
+      <div className="flex items-end justify-between">
+        <div>
+          <span className="text-xs text-[#6B6760]">Chegadas</span>
+          <p className="font-serif text-5xl font-light leading-none text-[#161616]">
+            86<span className="text-2xl text-[#A8A29A]"> / 120</span>
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-2 text-xs text-[#2F7A4A]">
+          <span className="size-1.5 animate-pulse rounded-full bg-[#2F7A4A]" /> Ao vivo
+        </span>
+      </div>
+      <div className="mt-5 h-px w-full bg-[#16161618]">
+        <div className="h-px bg-[#722F37]" style={{ width: "72%" }} />
+      </div>
+      <div className="mt-4">
+        {guests.map(([name, table, arrived]) => (
+          <div key={name} className={`flex items-center justify-between border-b ${line} py-3.5`}>
+            <span className="text-sm text-[#161616]">{name}</span>
+            <span className="flex items-center gap-5">
+              <span className="text-[11px] text-[#8C877F]">{table}</span>
+              {arrived ? (
+                <span className="grid size-5 place-items-center rounded-full bg-[#722F37] text-white">
+                  <Check size={11} strokeWidth={3} />
+                </span>
+              ) : (
+                <span className="size-5 rounded-full border border-[#16161630]" />
+              )}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- content ---------- */
+
+const features = [
+  {
+    id: "site",
+    index: "01",
+    eyebrow: "O site",
+    title: (
+      <>
+        Um site com a cara de vocês, <Accent>pronto em minutos.</Accent>
+      </>
+    ),
+    text: "Escolham um template, contem a história do casal e reúnam cerimônia, recepção, traje e presentes em um só endereço. Editem em rascunho e publiquem quando tudo estiver perfeito.",
+    bullets: ["Templates com tipografia e ilustrações exclusivas", "Editor com rascunho, pré-visualização e publicação", "Galeria de fotos, mapa e lista de presentes"],
+    art: <SiteArt />,
+  },
+  {
+    id: "convites",
+    index: "02",
+    eyebrow: "Convites e confirmação",
+    title: (
+      <>
+        Cada convidado com <br />
+        <Accent>o seu próprio convite.</Accent>
+      </>
+    ),
+    text: "Cadastrem famílias ou convidados individuais. Cada convite tem um link exclusivo e vira um PDF elegante com QR Code — basta enviar pelo WhatsApp ou imprimir.",
+    bullets: ["Confirmação individual de cada pessoa do convite", "Restrições alimentares e recados aos noivos", "Acompanhamento de envio, abertura e respostas"],
+    art: <InviteArt />,
+  },
+  {
+    id: "evento",
+    index: "03",
+    eyebrow: "No grande dia",
+    title: (
+      <>
+        A recepção sabe quem chegou. <Accent>Em tempo real.</Accent>
+      </>
+    ),
+    text: "Criem contas para a equipe da recepção, distribuam os convidados nas mesas e registrem cada chegada pelo celular. Sem planilhas, sem papel, sem filas na entrada.",
+    bullets: ["Contas de recepção com acesso restrito", "Mesas e lugares com controle de capacidade", "Resumo alimentar pronto para o buffet"],
+    art: <CheckInArt />,
+  },
+];
+
+const pillars = [
+  ["Site personalizado", "Templates editoriais"],
+  ["Convites com QR Code", "PDF pronto para enviar"],
+  ["Confirmação de presença", "Sem app e sem cadastro"],
+  ["Controle de chegada", "Equipe em tempo real"],
+];
+
+const templates = [
+  {
+    name: "Botânico Clássico",
+    plan: "essencial" as const,
+    mood: "Ar livre, campo e jardim",
+    text: "Folhagens desenhadas à mão, tons de oliva e areia e uma atmosfera acolhedora para celebrações ao ar livre.",
+    color: "#5D613C",
+    swatches: ["#5D613C", "#80654E", "#C7B79D", "#3D2501"],
+  },
+  {
+    name: "Romance Contemporâneo",
+    plan: "essencial" as const,
+    mood: "Editorial, urbano e intimista",
+    text: "Tipografia de impacto, tons de vinho e rosé e uma diagramação limpa inspirada em revistas de moda.",
+    color: "#722F37",
+    swatches: ["#722F37", "#82656C", "#D2B9BD", "#302329"],
+  },
+  {
+    name: "Minimalista Moderno",
+    plan: "cerimonial" as const,
+    mood: "Alta costura e contemporâneo",
+    text: "Contraste em preto e branco com linhas puras e tipografia marcante para casamentos minimalistas e cosmopolitas.",
+    color: "#161616",
+    swatches: ["#161616", "#444444", "#9E9E9E", "#F5F5F5"],
+  },
+  {
+    name: "Brisa Serena",
+    plan: "cerimonial" as const,
+    mood: "Beira-mar, linho e leveza",
+    text: "Tons de azul marinho profundo e azul celeste suave, trazendo uma atmosfera calma, fresca e poética.",
+    color: "#1E2D4A",
+    swatches: ["#1E2D4A", "#457B9D", "#A8DADC", "#EBF2F7"],
+  },
+];
+
+interface PricingRow {
+  name: string;
+  description?: string;
+  essencial: boolean | string;
+  cerimonial: boolean | string;
+  isCerimonialExclusive?: boolean;
+}
+
+interface PricingCategory {
+  category: string;
+  rows: PricingRow[];
+}
+
+const pricingComparison: PricingCategory[] = [
+  {
+    category: "Site & Design",
+    rows: [
+      {
+        name: "Site completo personalizado",
+        description: "História do casal, fotos, contagem regressiva e mapa do local",
+        essencial: true,
+        cerimonial: true,
+      },
+      {
+        name: "Templates inclusos",
+        description: "Design editorial com tipografia e ilustrações autorais",
+        essencial: "2 templates base",
+        cerimonial: "Todos os 4 templates",
+      },
+      {
+        name: "Templates exclusivos (Minimalista & Brisa)",
+        description: "Estilos minimalista em preto & branco e linho à beira-mar",
+        essencial: false,
+        cerimonial: true,
+        isCerimonialExclusive: true,
+      },
+      {
+        name: "Galeria de fotos do casal",
+        description: "Editor integrado com publicação e atualização em tempo real",
+        essencial: true,
+        cerimonial: true,
+      },
+      {
+        name: "Validade e duração do acesso",
+        description: "Sem mensalidades ou renovações automáticas",
+        essencial: "Até a data do evento",
+        cerimonial: "Até o evento + 3 meses",
+        isCerimonialExclusive: true,
+      },
+    ],
+  },
+  {
+    category: "Convites & Confirmação (RSVP)",
+    rows: [
+      {
+        name: "Capacidade de convidados",
+        description: "Limite de pessoas cadastradas na lista e convites individuais",
+        essencial: "Até 50 convidados",
+        cerimonial: "Convidados ilimitados",
+        isCerimonialExclusive: true,
+      },
+      {
+        name: "Lista de convidados e controle de envio",
+        description: "Acompanhe quem recebeu, abriu e confirmou presença",
+        essencial: true,
+        cerimonial: true,
+      },
+      {
+        name: "Convites digitais em PDF com QR Code",
+        description: "Arquivo elegante em alta resolução pronto para WhatsApp ou impressão",
+        essencial: "Até 50 convites em PDF",
+        cerimonial: "Convites em PDF ilimitados",
+      },
+      {
+        name: "Confirmação de presença (RSVP) individual",
+        description: "Cada convidado confirma direto pelo navegador, sem aplicativo",
+        essencial: true,
+        cerimonial: true,
+      },
+      {
+        name: "Restrições alimentares e recados aos noivos",
+        description: "Coleta de alergias, preferências e mensagens de carinho",
+        essencial: true,
+        cerimonial: true,
+      },
+    ],
+  },
+  {
+    category: "Lista de Presentes",
+    rows: [
+      {
+        name: "Lista de presentes com link próprio",
+        description: "Usem seu próprio link de pagamento ou chave bancária — 100% do valor vai direto para vocês",
+        essencial: true,
+        cerimonial: true,
+      },
+      {
+        name: "Taxa ou comissão sobre presentes",
+        description: "Diferente de outras plataformas, não cobramos taxa nem porcentagem",
+        essencial: "0% de taxa",
+        cerimonial: "0% de taxa",
+      },
+    ],
+  },
+  {
+    category: "Organização & Recepção (Grande Dia)",
+    rows: [
+      {
+        name: "Gestão de mesas e lugares",
+        description: "Distribuição inteligente dos convidados com limite por mesa",
+        essencial: false,
+        cerimonial: true,
+        isCerimonialExclusive: true,
+      },
+      {
+        name: "Controle de chegada (check-in ao vivo)",
+        description: "Registro de chegada em tempo real pelo celular na portaria da festa",
+        essencial: false,
+        cerimonial: true,
+        isCerimonialExclusive: true,
+      },
+      {
+        name: "Contas dedicadas para equipe da recepção",
+        description: "Acesso restrito para recepcionistas sem expor dados privados dos noivos",
+        essencial: false,
+        cerimonial: true,
+        isCerimonialExclusive: true,
+      },
+      {
+        name: "Relatório compilado para o buffet",
+        description: "Visão consolidada de restrições alimentares pronta para a cozinha",
+        essencial: false,
+        cerimonial: true,
+        isCerimonialExclusive: true,
+      },
+      {
+        name: "Histórico completo de alterações",
+        description: "Auditoria detalhada de confirmações e mudanças de convites",
+        essencial: false,
+        cerimonial: true,
+        isCerimonialExclusive: true,
+      },
+      {
+        name: "Suporte prioritário via WhatsApp",
+        description: "Atendimento direto para tirar dúvidas dos noivos com agilidade",
+        essencial: false,
+        cerimonial: true,
+        isCerimonialExclusive: true,
+      },
+    ],
+  },
+];
+
+const steps = [
+  ["Criem a conta", "Escolham o plano e criem o acesso em segundos para começar a montar o site na hora."],
+  ["Personalizem tudo", "Textos, fotos, templates, lista de presentes e convidados — tudo editável pelo painel."],
+  ["Compartilhem e celebrem", "Convites com QR Code enviados, confirmações em tempo real e recepção organizada no dia."],
+];
+
+const faqs = [
+  [
+    "Como começo a usar o meu site?",
+    "Assim que o pagamento for concluído, sua conta é criada na mesma hora e você já acessa o painel para personalizar fotos, textos, convidados e lista de presentes.",
+  ],
+  [
+    "Qual a diferença entre os planos Essencial e Cerimonial?",
+    "O plano Essencial (R$ 497) foi pensado para celebrações intimistas de até 50 convidados: inclui o site completo, fotos, convites em PDF com QR Code, lista de presentes com seu próprio link de pagamento e os templates base (Botânico Clássico e Romance Contemporâneo), com acesso até a data do evento. O plano Cerimonial (R$ 997) oferece convidados ilimitados, traz a central do grande dia (mesas, portaria com check-in ao vivo, contas para cerimonial), os templates exclusivos Minimalista Moderno e Brisa Serena e + 3 meses de acesso pós-evento.",
+  ],
+  [
+    "O pagamento é único ou por mensalidade?",
+    "É um pagamento único. Não cobramos mensalidades nem qualquer taxa ou comissão sobre os presentes que vocês receberem.",
+  ],
+  [
+    "Os convidados precisam baixar algum aplicativo?",
+    "Não. O convidado abre o link ou lê o QR Code do convite e confirma a presença direto pelo navegador, sem criar conta.",
+  ],
+  [
+    "Podemos trocar de template depois?",
+    "Sim. A troca pode ser feita a qualquer momento pelo painel e todo o conteúdo personalizado é preservado.",
+  ],
+  [
+    "Como funciona a lista de presentes?",
+    "Vocês cadastram os presentes e incluem o link de pagamento ou chave bancária de sua preferência. Os convidados compram e o valor cai direto para vocês, sem intermediários e com taxa zero da nossa parte.",
+  ],
+  [
+    "O que a equipe da recepção consegue ver?",
+    "No plano Cerimonial, a equipe vê somente o necessário para o dia: nomes, mesas e registro de chegada. Configurações, convites e recados continuam visíveis apenas para vocês.",
+  ],
+];
+
+/* ---------- page ---------- */
+
+export function ForeverLandingPage() {
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const modules = moduleKeys.filter(key => key !== "organization");
+
+  return (
+    <div id="inicio" className="min-h-screen bg-[#F1F1F1] text-[#161616] selection:bg-[#722F3722]">
+      {/* Header */}
+      <header className="w-full">
+        <div className="mx-auto flex h-[72px] max-w-6xl items-center justify-between px-6 sm:px-10">
+          <Link href="/" aria-label="Forever — início">
+            <ForeverLogo className="w-28" />
+          </Link>
+          <nav className="hidden items-center gap-9 text-[13px] text-[#6B6760] md:flex">
+            <a href="#recursos" className="transition-colors hover:text-[#161616]">Recursos</a>
+            <a href="#modulos" className="transition-colors hover:text-[#161616]">Módulos</a>
+            <a href="#templates" className="transition-colors hover:text-[#161616]">Templates</a>
+            <a href="#preco" className="transition-colors hover:text-[#161616]">Preço</a>
+            <a href="#duvidas" className="transition-colors hover:text-[#161616]">Dúvidas</a>
+          </nav>
+          <div className="flex items-center gap-5">
+            <Link href="/login" className="hidden text-[13px] text-[#161616] transition-colors hover:text-[#722F37] sm:block">
+              Entrar
+            </Link>
+            <a
+              href="#preco"
+              className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-[#722F37] px-4 text-[13px] font-medium text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-md hover:shadow-[#722F3725]"
+            >
+              <span>Criar meu site</span>
+              <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        {/* Hero */}
+        <section className="relative overflow-hidden px-6 pb-24 pt-20 sm:px-10 sm:pt-28">
+          <BotanicalClassicOrnaments variant="botanical" tone="paper" />
+          <div className="relative mx-auto max-w-4xl text-center">
+            <Reveal delay={0.08}>
+              <h1 className="text-[clamp(44px,7vw,96px)] font-medium leading-[0.98] tracking-[-0.05em] text-[#161616]">
+                Um site à altura
+                <br />
+                do seu <Accent>grande dia.</Accent>
+              </h1>
+            </Reveal>
+            <Reveal delay={0.16}>
+              <p className="mx-auto mt-8 max-w-xl text-base leading-relaxed text-[#6B6760] sm:text-lg">
+                Site personalizado, convites com QR Code, confirmação de presença e controle de chegada. Elegante para os
+                convidados, simples para vocês.
+              </p>
+            </Reveal>
+            <Reveal delay={0.24} className="mt-10 flex flex-wrap items-center justify-center gap-4">
+              <PrimaryButton href="#preco">
+                Criar meu site
+              </PrimaryButton>
+              <GhostButton href="/login">Já tenho conta</GhostButton>
+            </Reveal>
+          </div>
+
+          <Reveal delay={0.3}>
+            <HeroPreview />
+          </Reveal>
+        </section>
+
+        {/* Pillars */}
+        <section className={`border-y ${line}`}>
+          <div className={`mx-auto grid max-w-6xl grid-cols-2 lg:grid-cols-4 lg:divide-x divide-[#16161612]`}>
+            {pillars.map(([title, detail], index) => (
+              <div key={title} className="px-6 py-8 sm:px-10">
+                <span className="font-mono text-[10px] text-[#A8A29A]">{String(index + 1).padStart(2, "0")}</span>
+                <p className="mt-3 text-sm font-medium text-[#161616]">{title}</p>
+                <p className="mt-1 text-xs text-[#8C877F]">{detail}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Features */}
+        <section id="recursos" className="relative overflow-clip scroll-mt-20 px-6 sm:px-10">
+          <BotanicalClassicOrnaments variant="floral" tone="paper" />
+          <div className="relative mx-auto max-w-6xl">
+            <Reveal className="max-w-2xl pb-8 pt-28 sm:pt-36">
+              <Eyebrow>Recursos</Eyebrow>
+              <h2 className="mt-5 text-[clamp(34px,4.6vw,60px)] font-medium leading-[1.02] tracking-[-0.045em]">
+                Do primeiro convite <br className="hidden sm:block" />
+                ao último <Accent>brinde.</Accent>
+              </h2>
+            </Reveal>
+
+            {features.map((feature, index) => (
+              <article
+                key={feature.id}
+                id={feature.id}
+                className={`grid scroll-mt-20 items-center gap-14 border-t ${line} py-20 sm:py-28 lg:grid-cols-2 lg:gap-24`}
+              >
+                <Reveal className={index % 2 ? "lg:order-2" : ""}>
+                  <div className="flex items-center gap-4">
+                    <span className="font-mono text-xs text-[#A8A29A]">{feature.index}</span>
+                    <span className="h-px w-8 bg-[#16161626]" />
+                    <Eyebrow>{feature.eyebrow}</Eyebrow>
+                  </div>
+                  <h3 className="mt-6 text-[clamp(28px,3.2vw,42px)] font-medium leading-[1.08] tracking-[-0.04em]">{feature.title}</h3>
+                  <p className="mt-6 max-w-md text-[15px] leading-relaxed text-[#6B6760]">{feature.text}</p>
+                  <ul className="mt-8 max-w-md">
+                    {feature.bullets.map(bullet => (
+                      <li key={bullet} className={`flex items-center gap-3 border-t ${line} py-3.5 text-sm text-[#161616]`}>
+                        <Check size={14} className="shrink-0 text-[#722F37]" />
+                        {bullet}
+                      </li>
+                    ))}
+                  </ul>
+                </Reveal>
+                <Reveal delay={0.12} className={`flex justify-center ${index % 2 ? "lg:order-1 lg:justify-start" : "lg:justify-end"}`}>
+                  {feature.art}
+                </Reveal>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* Modules index */}
+        <section id="modulos" className={`relative overflow-clip scroll-mt-20 border-t ${line} px-6 py-28 sm:px-10 sm:py-36`}>
+          <BotanicalClassicOrnaments variant="hearts" tone="paper" />
+          <div className="relative mx-auto grid max-w-6xl gap-16 lg:grid-cols-[1fr_1.6fr] lg:gap-24">
+            <Reveal className="lg:sticky lg:top-32 lg:self-start">
+              <Eyebrow>Módulos</Eyebrow>
+              <h2 className="mt-5 text-[clamp(32px,4vw,52px)] font-medium leading-[1.04] tracking-[-0.045em]">
+                Recursos modulares. <br />
+                <Accent>Ativem só o que usar.</Accent>
+              </h2>
+              <p className="mt-6 max-w-sm text-[15px] leading-relaxed text-[#6B6760]">
+                Cada celebração tem seu próprio ritmo. Ativem e desativem os recursos do seu plano a qualquer momento — o painel se molda às escolhas de vocês.
+              </p>
+              <div className="mt-8 flex items-center gap-2 text-xs text-[#8C877F]">
+                <Heart size={13} className="fill-[#722F37] text-[#722F37]" />
+                <span>Exclusivo do Plano Cerimonial</span>
+              </div>
+            </Reveal>
+            <div className="grid sm:grid-cols-2 sm:gap-x-12">
+              {modules.map((key, index) => {
+                const isCerimonial = cerimonialModules.has(key);
+                return (
+                  <Reveal key={key} delay={(index % 4) * 0.04}>
+                    <div className={`border-t ${line} py-6`}>
+                      <div className="flex items-baseline gap-4">
+                        <span className="font-mono text-[10px] text-[#A8A29A]">{String(index + 1).padStart(2, "0")}</span>
+                        <div className="flex items-center gap-2">
+                          <p className="text-[15px] font-medium text-[#161616]">{moduleCatalog[key].label}</p>
+                          {isCerimonial && <CerimonialHeartTooltip />}
+                        </div>
+                      </div>
+                      <p className="mt-2 pl-8 text-[13px] leading-relaxed text-[#8C877F]">{moduleCatalog[key].description}</p>
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Templates */}
+        <section id="templates" className={`relative overflow-clip scroll-mt-20 border-t ${line} px-6 py-28 sm:px-10 sm:py-36`}>
+          <BotanicalClassicOrnaments variant="vows" tone="paper" />
+          <div className="relative mx-auto max-w-6xl">
+            <Reveal className="mx-auto max-w-2xl text-center">
+              <Eyebrow>Templates</Eyebrow>
+              <h2 className="mt-5 text-[clamp(32px,4.4vw,56px)] font-medium leading-[1.04] tracking-[-0.045em]">
+                Design de papelaria fina, <Accent>em cada tela.</Accent>
+              </h2>
+              <p className="mx-auto mt-6 max-w-lg text-[15px] leading-relaxed text-[#6B6760]">
+                Estilos autorais criados pela MAGUI.studio — do site ao convite em PDF. Os templates base estão disponíveis em todos os planos, e os exclusivos integram o Plano Cerimonial.
+              </p>
+            </Reveal>
+
+            <div className={`mt-20 grid border-y ${line} md:grid-cols-2`}>
+              {templates.map((template, index) => {
+                const isRightCol = index % 2 === 1;
+                const isSecondRow = index >= 2;
+                return (
+                  <Reveal key={template.name} delay={index * 0.08}>
+                    <div
+                      className={`flex h-full flex-col justify-between px-6 py-12 sm:px-12 ${
+                        index > 0 ? `border-t ${line} md:border-t-0` : ""
+                      } ${isSecondRow ? `md:border-t ${line}` : ""} ${
+                        !isRightCol ? `md:border-r ${line}` : ""
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="text-[11px] uppercase tracking-[0.22em] text-[#8C877F]">{template.mood}</span>
+                          {template.plan === "cerimonial" && <CerimonialHeartTooltip text="Exclusivo do Plano Cerimonial" />}
+                        </div>
+                        <p className="mt-8 font-serif text-[clamp(64px,7vw,96px)] font-light leading-none" style={{ color: template.color }}>
+                          Aa<span className="italic">&</span>
+                        </p>
+                        <h3 className="mt-8 font-serif text-3xl font-normal text-[#161616]">{template.name}</h3>
+                        <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#6B6760]">{template.text}</p>
+                      </div>
+                      <div className="mt-10 flex items-center gap-2">
+                        {template.swatches.map(color => (
+                          <span key={color} className="size-6 rounded-full ring-1 ring-[#16161618]" style={{ background: color }} />
+                        ))}
+                      </div>
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Process */}
+        <section className={`relative overflow-clip border-t ${line} px-6 py-28 sm:px-10 sm:py-36`}>
+          <BotanicalClassicOrnaments variant="botanical" tone="paper" />
+          <div className="relative mx-auto max-w-6xl">
+            <Reveal className="max-w-2xl">
+              <Eyebrow>Como funciona</Eyebrow>
+              <h2 className="mt-5 text-[clamp(32px,4.4vw,56px)] font-medium leading-[1.04] tracking-[-0.045em]">
+                Três passos até o <Accent>sim.</Accent>
+              </h2>
+            </Reveal>
+            <div className="mt-20 grid gap-12 md:grid-cols-3 md:gap-10">
+              {steps.map(([title, text], index) => (
+                <Reveal key={title} delay={index * 0.1}>
+                  <div className="relative">
+                    <div className="flex items-center gap-4">
+                      <span className="grid size-10 shrink-0 place-items-center rounded-full border border-[#722F37] font-serif text-lg text-[#722F37]">
+                        {index + 1}
+                      </span>
+                      <span className="h-px flex-1 bg-[#16161618]" />
+                    </div>
+                    <h3 className="mt-8 text-xl font-medium tracking-[-0.02em]">{title}</h3>
+                    <p className="mt-3 max-w-xs text-sm leading-relaxed text-[#6B6760]">{text}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing */}
+        <section id="preco" className={`relative overflow-clip scroll-mt-20 border-t ${line} px-6 py-28 sm:px-10 sm:py-36`}>
+          <BotanicalClassicOrnaments variant="vows" tone="paper" />
+          <div className="relative mx-auto max-w-6xl">
+            <Reveal className="max-w-2xl">
+              <Eyebrow>Preço</Eyebrow>
+              <h2 className="mt-5 text-[clamp(32px,4vw,52px)] font-medium leading-[1.04] tracking-[-0.045em]">
+                Dois planos feitos para o <br />
+                <Accent>tamanho da sua celebração.</Accent>
+              </h2>
+              <p className="mt-6 text-[15px] leading-relaxed text-[#6B6760]">
+                Pagamento único, sem mensalidades e com 0% de comissão sobre seus presentes. Compare os recursos lado a lado e escolham o plano ideal.
+              </p>
+            </Reveal>
+
+            {/* Guarantees bar */}
+            <Reveal delay={0.05}>
+              <div className={`mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 border-y ${line} py-4 text-xs text-[#8C877F]`}>
+                <span className="flex items-center gap-2">
+                  <Check size={13} className="text-[#722F37]" /> Pagamento seguro via Stripe
+                </span>
+                <span className="flex items-center gap-2">
+                  <Check size={13} className="text-[#722F37]" /> 0% de comissão sobre presentes (link próprio)
+                </span>
+                <span className="flex items-center gap-2">
+                  <Check size={13} className="text-[#722F37]" /> Acesso liberado no mesmo instante
+                </span>
+                <span className="flex items-center gap-2">
+                  <Check size={13} className="text-[#722F37]" /> Acesso até o evento (+ 3 meses no Cerimonial)
+                </span>
+              </div>
+            </Reveal>
+
+            {/* SaaS Comparison Table */}
+            <Reveal delay={0.1} className="mt-14">
+              <div className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
+                <table className="w-full min-w-[700px] border-collapse text-left">
+                  <thead>
+                    <tr className={`border-b ${line}`}>
+                      <th className="w-[44%] pb-8 pr-6 align-bottom">
+                        <span className="text-xs uppercase tracking-[0.2em] text-[#8C877F]">Comparativo</span>
+                        <h3 className="mt-1 text-2xl font-medium text-[#161616]">Recursos por plano</h3>
+                        <p className="mt-2 text-xs leading-relaxed text-[#6B6760]">
+                          Transparência total em cada funcionalidade.
+                        </p>
+                      </th>
+
+                      {/* Column Essencial */}
+                      <th className={`w-[28%] border-l ${line} px-6 pb-8 text-center align-bottom`}>
+                        <span className="text-[11px] uppercase tracking-[0.2em] text-[#8C877F]">Básico & Completo</span>
+                        <h4 className="mt-1 text-xl font-medium text-[#161616]">Forever Essencial</h4>
+                        <div className="mt-3">
+                          <p className="font-serif text-[clamp(36px,4vw,48px)] font-light leading-none text-[#161616]">
+                            <span className="font-sans text-base font-normal text-[#8C877F] align-super">R$&nbsp;</span>497
+                          </p>
+                          <span className="mt-1 block text-[11px] text-[#8C877F]">Pagamento único · Até 50 convidados</span>
+                        </div>
+                        <div className="mt-5">
+                          <button
+                            type="button"
+                            disabled
+                            aria-disabled="true"
+                            className="inline-flex h-11 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full border border-[#16161625] bg-[#16161610] px-4 text-xs font-medium text-[#716D68]"
+                          >
+                            <span>Assinar Essencial</span>
+                            <span className="rounded-full bg-[#16161615] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#716D68]">
+                              Em breve
+                            </span>
+                          </button>
+                        </div>
+                      </th>
+
+                      {/* Column Cerimonial */}
+                      <th className={`w-[28%] border-l ${line} px-6 pb-8 text-center align-bottom`}>
+                        <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] text-[#722F37]">
+                          <Heart size={11} className="fill-[#722F37] text-[#722F37]" />
+                          <span>Organização & Recepção</span>
+                        </div>
+                        <h4 className="mt-1 text-xl font-medium text-[#161616]">Forever Cerimonial</h4>
+                        <div className="mt-3">
+                          <p className="font-serif text-[clamp(36px,4vw,48px)] font-light leading-none text-[#161616]">
+                            <span className="font-sans text-xl font-normal text-[#8C877F] align-super">R$&nbsp;</span>997
+                          </p>
+                          <span className="mt-1 block text-[11px] text-[#8C877F]">Pagamento único · Convidados ilimitados</span>
+                        </div>
+                        <div className="mt-5">
+                          <button
+                            type="button"
+                            disabled
+                            aria-disabled="true"
+                            className="inline-flex h-11 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full border border-[#722F3740] bg-[#722F3712] px-4 text-xs font-medium text-[#722F37]"
+                          >
+                            <Heart size={12} className="fill-[#722F37] text-[#722F37]" />
+                            <span>Assinar Cerimonial</span>
+                            <span className="rounded-full bg-[#722F3720] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#722F37]">
+                              Em breve
+                            </span>
+                          </button>
+                        </div>
+                      </th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    {pricingComparison.map(section => (
+                      <Fragment key={section.category}>
+                        <tr className={`border-t ${line}`}>
+                          <td colSpan={3} className="pt-8 pb-3 text-[11px] uppercase tracking-[0.24em] font-semibold text-[#722F37]">
+                            {section.category}
+                          </td>
+                        </tr>
+                        {section.rows.map(row => (
+                          <tr
+                            key={row.name}
+                            className="border-t border-[#1616160d] transition-colors hover:bg-[#16161604]"
+                          >
+                            <td className="py-4 pr-6 align-middle">
+                              <p className="text-sm font-medium text-[#161616]">{row.name}</p>
+                              {row.description && (
+                                <p className="mt-0.5 text-xs text-[#8C877F]">{row.description}</p>
+                              )}
+                            </td>
+                            <td className={`border-l ${line} px-6 py-4 text-center align-middle`}>
+                              {typeof row.essencial === "boolean" ? (
+                                row.essencial ? (
+                                  <span className="mx-auto inline-grid size-6 place-items-center rounded-full bg-[#2F7A4A12] text-[#2F7A4A]">
+                                    <Check size={14} strokeWidth={2.5} />
+                                  </span>
+                                ) : (
+                                  <span className="text-base font-medium text-[#8C877F40]">—</span>
+                                )
+                              ) : (
+                                <span className="text-xs font-medium text-[#6B6760]">{row.essencial}</span>
+                              )}
+                            </td>
+                            <td className={`border-l ${line} px-6 py-4 text-center align-middle`}>
+                              {typeof row.cerimonial === "boolean" ? (
+                                row.cerimonial ? (
+                                  row.isCerimonialExclusive ? (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full border border-[#722F3730] bg-[#722F3710] px-2.5 py-1 text-[11px] font-medium text-[#722F37]">
+                                      <Heart size={11} className="fill-[#722F37] text-[#722F37]" />
+                                      Incluso
+                                    </span>
+                                  ) : (
+                                    <span className="mx-auto inline-grid size-6 place-items-center rounded-full bg-[#722F3712] text-[#722F37]">
+                                      <Check size={14} strokeWidth={2.5} />
+                                    </span>
+                                  )
+                                ) : (
+                                  <span className="text-base font-medium text-[#8C877F40]">—</span>
+                                )
+                              ) : (
+                                <span className="text-xs font-medium text-[#161616]">{row.cerimonial}</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </Fragment>
+                    ))}
+                  </tbody>
+
+                  <tfoot>
+                    <tr className={`border-t ${line}`}>
+                      <td className="pt-8 pr-6 text-xs text-[#8C877F]">
+                        Checkout seguro via Stripe em liberação. Plano Essencial com acesso até a data do evento e Plano Cerimonial com + 3 meses pós-evento.
+                      </td>
+                      <td className={`border-l ${line} px-6 pt-8 text-center`}>
+                        <button
+                          type="button"
+                          disabled
+                          aria-disabled="true"
+                          className="inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full border border-[#16161625] bg-[#16161610] px-4 text-xs font-medium text-[#716D68]"
+                        >
+                          <span>Assinar Essencial</span>
+                          <span className="rounded-full bg-[#16161615] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#716D68]">
+                            Em breve
+                          </span>
+                        </button>
+                      </td>
+                      <td className={`border-l ${line} px-6 pt-8 text-center`}>
+                        <button
+                          type="button"
+                          disabled
+                          aria-disabled="true"
+                          className="inline-flex h-10 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full border border-[#722F3740] bg-[#722F3712] px-4 text-xs font-medium text-[#722F37]"
+                        >
+                          <Heart size={12} className="fill-[#722F37] text-[#722F37]" />
+                          <span>Assinar Cerimonial</span>
+                          <span className="rounded-full bg-[#722F3720] px-2 py-0.5 text-[9px] uppercase tracking-wider text-[#722F37]">
+                            Em breve
+                          </span>
+                        </button>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section id="duvidas" className={`relative overflow-clip scroll-mt-20 border-t ${line} px-6 py-28 sm:px-10 sm:py-36`}>
+          <BotanicalClassicOrnaments variant="floral" tone="paper" />
+          <div className="relative mx-auto grid max-w-6xl gap-16 lg:grid-cols-[1fr_1.6fr] lg:gap-24">
+            <Reveal>
+              <Eyebrow>Dúvidas</Eyebrow>
+              <h2 className="mt-5 text-[clamp(32px,4vw,52px)] font-medium leading-[1.04] tracking-[-0.045em]">
+                Perguntas <Accent>frequentes.</Accent>
+              </h2>
+              <p className="mt-6 max-w-sm text-[15px] leading-relaxed text-[#6B6760]">
+                Tire suas dúvidas sobre o funcionamento da plataforma, pagamentos e personalização.
+              </p>
+            </Reveal>
+            <div className={`border-b ${line}`}>
+              {faqs.map(([question, answer], index) => {
+                const open = openFaq === index;
+                return (
+                  <div key={question} className={`border-t ${line}`}>
+                    <button
+                      type="button"
+                      aria-expanded={open}
+                      onClick={() => setOpenFaq(open ? null : index)}
+                      className="flex w-full items-center justify-between gap-6 py-6 text-left text-base font-medium text-[#161616] transition-colors hover:text-[#722F37]"
+                    >
+                      {question}
+                      <Plus size={18} className={`shrink-0 text-[#722F37] transition-transform duration-300 ${open ? "rotate-45" : ""}`} />
+                    </button>
+                    <div className={`grid transition-[grid-template-rows] duration-300 ease-out ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
+                      <div className="overflow-hidden">
+                        <p className="max-w-xl pb-6 text-[15px] leading-relaxed text-[#6B6760]">{answer}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className={`relative overflow-hidden border-t ${line} px-6 py-32 text-center sm:px-10 sm:py-44`}>
+          <BotanicalClassicOrnaments variant="hearts" tone="paper" />
+          <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="size-[640px] rounded-full border border-[#722F370f]" />
+            <div className="absolute inset-[90px] rounded-full border border-[#722F370f]" />
+          </div>
+          <Reveal className="relative mx-auto max-w-3xl">
+            <Eyebrow>Forever</Eyebrow>
+            <h2 className="mt-6 text-[clamp(40px,6vw,84px)] font-medium leading-[0.98] tracking-[-0.05em]">
+              Vamos começar o <br />
+              seu <Accent>para sempre?</Accent>
+            </h2>
+            <p className="mx-auto mt-8 max-w-md text-base leading-relaxed text-[#6B6760]">
+              Crie o site do seu casamento em poucos minutos. Sem burocracia, pronto para usar na mesma hora.
+            </p>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+              <PrimaryButton href="#preco">
+                Ver plano e começar
+              </PrimaryButton>
+              <GhostButton href="/login">Acessar meu painel</GhostButton>
+            </div>
+          </Reveal>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className={`border-t ${line} px-6 pt-16 pb-12 sm:px-10 sm:pt-20`}>
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-12 lg:grid-cols-[1.3fr_2fr] lg:gap-20">
+            {/* Brand side */}
+            <div>
+              <Link href="/" aria-label="Forever — início" className="inline-block">
+                <ForeverLogo className="w-28" />
+              </Link>
+              <p className="mt-5 text-sm font-medium text-[#161616]">
+                Feito para guardar o que importa.
+              </p>
+              <p className="mt-2 max-w-sm text-xs leading-relaxed text-[#6B6760]">
+                O site do seu casamento com tipografia autoral, convites em PDF com QR Code exclusivo e organização completa para o grande dia.
+              </p>
+              <div className="mt-6 flex items-center gap-2">
+                <a
+                  href="https://www.instagram.com/_magui.studio"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram da MAGUI.studio (abre em nova aba)"
+                  className="grid size-9 place-items-center rounded-full border border-[#16161615] bg-[#16161606] text-[#6B6760] transition-colors hover:border-[#722F37] hover:bg-[#722F3710] hover:text-[#722F37]"
+                >
+                  <InstagramIcon size={15} />
+                </a>
+                <a
+                  href="https://www.linkedin.com/company/magui-studio"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn da MAGUI.studio (abre em nova aba)"
+                  className="grid size-9 place-items-center rounded-full border border-[#16161615] bg-[#16161606] text-[#6B6760] transition-colors hover:border-[#722F37] hover:bg-[#722F3710] hover:text-[#722F37]"
+                >
+                  <LinkedinIcon size={15} />
+                </a>
+                <a
+                  href="https://x.com/magui_studio"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="X da MAGUI.studio (abre em nova aba)"
+                  className="grid size-9 place-items-center rounded-full border border-[#16161615] bg-[#16161606] text-[#6B6760] transition-colors hover:border-[#722F37] hover:bg-[#722F3710] hover:text-[#722F37]"
+                >
+                  <XIcon size={14} />
+                </a>
+                <span className="ml-2 text-[11px] text-[#8C877F]">
+                  Acompanhe o studio
+                </span>
+              </div>
+            </div>
+
+            {/* Links columns */}
+            <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-3">
+              <div>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#722F37]">
+                  Explore o Forever
+                </h3>
+                <ul className="mt-4 space-y-3 text-xs">
+                  <li>
+                    <a href="#recursos" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                      Recursos
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#modulos" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                      Módulos
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#templates" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                      Templates
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#preco" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                      Preço
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#duvidas" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                      Dúvidas frequentes
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#722F37]">
+                  Seu espaço
+                </h3>
+                <ul className="mt-4 space-y-3 text-xs">
+                  <li>
+                    <a href="#preco" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                      Criar meu site
+                    </a>
+                  </li>
+                  <li>
+                    <Link href="/login" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                      Acessar meu painel
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/login" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                      Área da recepção
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#722F37]">
+                  Por trás do Forever
+                </h3>
+                <ul className="mt-4 space-y-3 text-xs">
+                  <li>
+                    <a
+                      href={STUDIO_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group inline-flex items-center gap-1 text-[#6B6760] transition-colors hover:text-[#161616]"
+                    >
+                      <span>MAGUI.studio</span>
+                      <ArrowUpRight size={11} className="text-[#8C877F] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://portfolio.magui.studio/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group inline-flex items-center gap-1 text-[#6B6760] transition-colors hover:text-[#161616]"
+                    >
+                      <span>Nosso portfólio</span>
+                      <ArrowUpRight size={11} className="text-[#8C877F] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="https://flow.magui.studio/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group inline-flex items-center gap-1 text-[#6B6760] transition-colors hover:text-[#161616]"
+                    >
+                      <span>Flow</span>
+                      <ArrowUpRight size={11} className="text-[#8C877F] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className={`mt-14 flex flex-col gap-5 border-t ${line} pt-8 sm:flex-row sm:items-center sm:justify-between text-xs text-[#8C877F]`}>
+            <a
+              href={STUDIO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group inline-flex w-fit items-center gap-1 hover:text-[#161616] transition-colors"
+            >
+              <span>Um produto</span>
+              <strong className="font-medium text-[#161616] group-hover:underline">MAGUI.studio</strong>
+              <ArrowUpRight size={12} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </a>
+            <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3">
+              <span>© {new Date().getFullYear()} Forever. Todos os direitos reservados.</span>
+              <a
+                href="#inicio"
+                className="group inline-flex items-center gap-1 hover:text-[#722F37] transition-colors"
+              >
+                <span>Voltar ao topo</span>
+                <ArrowUp size={12} className="transition-transform duration-300 group-hover:-translate-y-1" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
