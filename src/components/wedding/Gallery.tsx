@@ -41,7 +41,7 @@ export function Gallery({
 
   if(currentTemplate === "contemporary-romance") {
     return (
-      <section id="galeria" className="relative isolate overflow-hidden bg-[color-mix(in_srgb,var(--forever-sand)_18%,#fffdfa)] px-6 py-20 text-[var(--forever-ink)] sm:px-12 sm:py-28 lg:px-20">
+      <section id="galeria" className="relative isolate overflow-hidden bg-transparent px-6 py-20 text-[var(--forever-ink)] sm:px-12 sm:py-28 lg:px-20">
         {/* Efeito de corações flutuantes no fundo se for estilo romântico/relicário */}
         {style === "relicario" && (
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 text-[var(--forever-primary)]">

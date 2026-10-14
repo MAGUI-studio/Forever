@@ -3,7 +3,7 @@ import {useSiteCopy} from "./useSiteCopy";
 import {useWedding} from "./WeddingProvider";
 import { AttendanceBadge } from "@/components/ui/AttendanceBadge";
 import { useEffect, useState } from "react";
-import { EnvelopeOpenIcon, CheckCircleIcon, PaperPlaneTiltIcon, UsersIcon, CaretDownIcon } from "@phosphor-icons/react";
+import { EnvelopeOpenIcon, CheckCircleIcon, PaperPlaneTiltIcon, UsersIcon, CaretDownIcon, ArrowRightIcon } from "@phosphor-icons/react";
 import { WeddingSelect } from "@/components/ui/WeddingSelect";
 import confetti from "canvas-confetti";
 import { WeddingOrnaments } from "./WeddingOrnaments";
@@ -193,24 +193,23 @@ export function RSVPSection() {
       className="rsvp-section relative overflow-hidden bg-none! px-6 py-20 text-[var(--forever-ink,#3D2501)]"
     >
       <WeddingOrnaments variant="vows" tone="paper" />
-      <div className={romance?"rsvp-shell relative z-10 w-full max-w-none! space-y-10 sm:space-y-12":"rsvp-shell relative z-10 mx-auto max-w-2xl space-y-8"}>
+      <div className={romance?"rsvp-shell relative z-10 mx-auto max-w-4xl space-y-10 sm:space-y-12":"rsvp-shell relative z-10 mx-auto max-w-2xl space-y-8"}>
         <div className="text-center">
-          {romance&&<div className="relative mb-14"><RomancePhoto src={rsvpImage} className="aspect-[2/1] rounded-t-[3rem] sm:aspect-[3/1] sm:rounded-t-[5rem]" sizes="100vw"/><span aria-hidden="true" className="absolute -bottom-7 left-1/2 flex size-16 -translate-x-1/2 items-center justify-center rounded-full border-[6px] border-[var(--forever-paper)] bg-[var(--forever-primary)] text-white"><EnvelopeOpenIcon size={25} weight="thin"/></span></div>}
+          {romance&&<div className="relative mb-14"><RomancePhoto src={rsvpImage} className="aspect-[2/1] rounded-t-[3rem] sm:aspect-[3/1] sm:rounded-t-[5rem]" sizes="100vw"/><span aria-hidden="true" className="absolute -bottom-7 left-1/2 flex size-16 -translate-x-1/2 items-center justify-center rounded-full border-[6px] border-[var(--forever-paper)] bg-[var(--forever-primary,#722F37)] text-white"><EnvelopeOpenIcon size={25} weight="thin"/></span></div>}
           {!romance&&<span className="rsvp-emblem"><EnvelopeOpenIcon size={30} weight="duotone" aria-hidden="true" /></span>}<p className="cinema-eyebrow">{copy("rsvp.text1")}</p>
           <h2 className="font-serif text-5xl sm:text-7xl">{copy("rsvp.text2")}<em className="text-[var(--forever-primary,#5D613C)]">{copy("rsvp.text3")}</em>
           </h2>
           <p className={(romance?"mx-auto max-w-xl leading-7 ":"")+"mt-5 text-[var(--forever-accent,#80654E)]"}>{copy("rsvp.text4")}</p>
-          {!invite && !busy && <p className="mt-5 text-[var(--forever-accent,#80654E)]">{copy("rsvp.text5")}</p>}
         </div>
-        <div className={romance?"rsvp-card w-full rounded-2xl! border-0! bg-transparent! p-6! shadow-none! sm:p-8! [&_.guest-input]:rounded-xl! [&_.guest-button]:rounded-xl! [&_.guest-button]:text-white! [&_.rsvp-person]:rounded-xl! [&_.rsvp-person]:border-[var(--forever-primary)]/20! [&_.rsvp-person]:bg-transparent!":"rsvp-card"}>
+        <div className={(romance?"rsvp-card rounded-3xl border border-[var(--forever-primary,#722F37)]/15 bg-white/80 p-7 sm:p-10 shadow-[0_20px_50px_rgba(50,21,28,0.06)] backdrop-blur-md [&_.guest-input]:rounded-xl! [&_.guest-button]:rounded-full! [&_.guest-button]:text-white! [&_.rsvp-person]:rounded-2xl! [&_.rsvp-person]:border-[var(--forever-primary,#722F37)]/15! [&_.rsvp-person]:bg-white/60!":"rsvp-card rounded-[var(--wedding-radius)] border border-[#e3dccf] bg-[#fffdfa] p-7 sm:p-10 shadow-[0_15px_60px_#3d250107]") + (invite ? " mx-auto max-w-2xl" : " mx-auto max-w-lg")}>
           {!invite && (
             <form onSubmit={lookup} className="space-y-6">
-              <div className="text-center">
-                <label className="block text-sm font-medium text-[var(--forever-ink,#3D2501)]">
+              <div className="text-center space-y-1.5">
+                <label className="block text-xs font-mono uppercase tracking-[0.2em] text-[var(--forever-primary,#722F37)] font-semibold">
                   {copy("rsvp.text6")}
                 </label>
-                <p className="mt-1 text-xs text-[var(--forever-accent,#80654E)]">
-                  Digite os 6 dígitos do código que você recebeu (ex: A6V-CDF)
+                <p className="text-xs text-[var(--forever-accent,#82656C)]">
+                  Digite os 6 dígitos do código que você recebeu
                 </p>
               </div>
               <RSVPCodeInput
@@ -226,13 +225,29 @@ export function RSVPSection() {
                 hasError={!!error}
                 autoFocus
               />
-              <button
-                type="submit"
-                className="guest-button w-full cursor-pointer transition-all hover:opacity-95 disabled:opacity-50"
-                disabled={busy || code.replace(/[^A-Za-z0-9]/g, "").length < 6}
-              >
-                {busy ? "Consultando convite…" : copy("rsvp.text31")}
-              </button>
+              <div className="flex justify-center pt-2">
+                <button
+                  type="submit"
+                  className={
+                    romance
+                      ? "inline-flex min-h-[48px] w-full max-w-[280px] items-center justify-center gap-2.5 rounded-full bg-[var(--forever-primary,#722F37)] px-7 py-3 text-xs uppercase tracking-[0.18em] font-medium text-white shadow-sm transition-all hover:bg-[var(--forever-primary-hover,#5B252C)] hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none cursor-pointer"
+                      : "inline-flex min-h-[48px] w-full max-w-[280px] items-center justify-center gap-2.5 rounded-[var(--wedding-radius)] bg-[#5D613C] px-7 py-3 font-mono text-xs uppercase tracking-[0.14em] font-semibold text-[#fffdfa] shadow-xs transition-all hover:bg-[#4b4f30] hover:shadow-sm active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none cursor-pointer"
+                  }
+                  disabled={busy || code.replace(/[^A-Za-z0-9]/g, "").length < 6}
+                >
+                  {busy ? (
+                    <span className="flex items-center gap-2">
+                      <span className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      <span>Consultando…</span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <span>{copy("rsvp.text31")}</span>
+                      <ArrowRightIcon size={14} weight="bold" />
+                    </span>
+                  )}
+                </button>
+              </div>
             </form>
           )}
           {busy && !invite && <div className="rsvp-loading" role="status"><span className="wedding-skeleton" /><span className="wedding-skeleton" /><p>{copy("rsvp.text8")}</p></div>}
@@ -287,9 +302,19 @@ export function RSVPSection() {
                     </details>
                   ))}
                   {(!invite.personal && ((modules.messages&&invite.message) || (modules.dietaryRestrictions&&invite.dietaryRestrictions))) && <div className="text-sm space-y-2"><p>{copy("rsvp.text21")}</p>{modules.dietaryRestrictions&&invite.dietaryRestrictions && <p>{copy("rsvp.text22")}{invite.dietaryRestrictions}</p>}{modules.messages&&invite.message && <p>{copy("rsvp.text23")}{invite.message}</p>}</div>}
-                  <button className="guest-button w-full" disabled={busy}>
-                    <PaperPlaneTiltIcon size={18} aria-hidden="true" />{busy ? "Salvando…" : copy("rsvp.text38")}
-                  </button>
+                  <div className="pt-2 flex justify-center">
+                    <button
+                      type="submit"
+                      className={
+                        romance
+                          ? "inline-flex min-h-[48px] w-full max-w-sm items-center justify-center gap-2.5 rounded-full bg-[var(--forever-primary,#722F37)] px-7 py-3 text-xs uppercase tracking-[0.18em] font-medium text-white shadow-sm transition-all hover:bg-[var(--forever-primary-hover,#5B252C)] hover:shadow-md cursor-pointer disabled:opacity-50"
+                          : "guest-button w-full max-w-sm"
+                      }
+                      disabled={busy}
+                    >
+                      <PaperPlaneTiltIcon size={18} aria-hidden="true" />{busy ? "Salvando…" : copy("rsvp.text38")}
+                    </button>
+                  </div>
                 </fieldset>
               )}
             </form>

@@ -8,7 +8,17 @@ import {useWedding} from "./WeddingProvider";
 import {formatCurrency} from "@/lib/utils";
 import type {GiftItem} from "@/types/wedding";
 import {PixModal} from "./PixModal";
-import {ArrowUpDown,ArrowUpRight,Plus,Search,X} from "lucide-react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import { CaretDownIcon, CheckIcon } from "@phosphor-icons/react";
+import { ArrowUpDown, ArrowUpRight, Plus, Search, X } from "lucide-react";
+
+type SortOption = "default" | "price-asc" | "price-desc";
+
+const sortOptions: { id: SortOption; label: string; desc: string }[] = [
+  { id: "default", label: "Ordem padrão", desc: "Seleção curada pelos noivos" },
+  { id: "price-asc", label: "Menor valor", desc: "Do mais acessível ao maior" },
+  { id: "price-desc", label: "Maior valor", desc: "Do maior valor ao menor" },
+];
 
 export function GiftList(){
  const copy=useSiteCopy();
@@ -17,10 +27,12 @@ export function GiftList(){
  const [visibleCount,setVisibleCount]=useState(6);
  const [selectedGift,setSelectedGift]=useState<GiftItem|null>(null);
  const [searchQuery,setSearchQuery]=useState("");
- const [sortBy,setSortBy]=useState<"default"|"price-asc"|"price-desc">("default");
+ const [sortBy,setSortBy]=useState<SortOption>("default");
  const [catalogHeight,setCatalogHeight]=useState<number|null>(null);
  const grid=useRef<HTMLDivElement>(null);
  const reduced=useReducedMotion();
+
+ const currentSort = sortOptions.find(o => o.id === sortBy) || sortOptions[0];
 
  const filteredGifts=useMemo(()=>{
   const normalize=(s:string)=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
@@ -63,45 +75,80 @@ export function GiftList(){
     <p data-cinema-copy className="font-serif italic text-xl sm:text-2xl text-[#80654E]">{copy("gifts.text5")}</p>
     <p data-cinema-copy className="text-sm sm:text-base text-[#80654E] font-light leading-[1.8] max-w-2xl mx-auto">{copy("gifts.text6")}</p>
    </div>
+
    {!gifts.length?<p role="status" className="py-12 text-center font-serif text-xl text-[#80654E]">A lista de presentes ainda está vazia. Em breve os noivos poderão compartilhar suas escolhas por aqui.</p>:<>
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 max-w-4xl mx-auto">
-     <div className="relative flex-1">
-      <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#80654E]/70 pointer-events-none" aria-hidden="true"/>
-      <input
-       type="text"
-       value={searchQuery}
-       onChange={e=>setSearchQuery(e.target.value)}
-       placeholder="Buscar presente ou cota…"
-       aria-label="Buscar presente ou cota"
-       className="w-full rounded-[var(--wedding-radius)] border border-[#5d613c25] bg-[#fffdfa] pl-11 pr-10 py-3 text-sm text-[#3D2501] placeholder-[#80654E]/60 shadow-xs outline-none transition-colors focus:border-[#5D613C] focus:ring-1 focus:ring-[#5D613C]"
-      />
-      {searchQuery&&(
-       <button
-        type="button"
-        onClick={()=>setSearchQuery("")}
-        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[#80654E] hover:text-[#3D2501] transition-colors"
-        aria-label="Limpar busca"
-       >
-        <X size={16}/>
-       </button>
-      )}
-     </div>
-     <div className="relative shrink-0">
-      <div className="flex items-center gap-2 rounded-[var(--wedding-radius)] border border-[#5d613c25] bg-[#fffdfa] px-3.5 py-3 shadow-xs">
-       <ArrowUpDown size={16} className="text-[#5D613C] shrink-0" aria-hidden="true"/>
-       <span className="text-xs text-[#80654E] shrink-0">Ordenar:</span>
-       <select
-        value={sortBy}
-        onChange={e=>setSortBy(e.target.value as "default"|"price-asc"|"price-desc")}
-        aria-label="Ordenar presentes por valor"
-        className="bg-transparent text-sm font-medium text-[#3D2501] outline-none cursor-pointer pr-1"
-       >
-        <option value="default">Ordem padrão</option>
-        <option value="price-asc">Menor valor</option>
-        <option value="price-desc">Maior valor</option>
-       </select>
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 max-w-4xl mx-auto">
+      {/* Busca personalizada no estilo do template */}
+      <div className="relative flex-1 group">
+        <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5D613C] pointer-events-none transition-colors group-focus-within:text-[#3D2501]" aria-hidden="true"/>
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={e=>setSearchQuery(e.target.value)}
+          placeholder="Buscar presente, cota ou categoria…"
+          aria-label="Buscar na lista de presentes"
+          className="w-full rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] pl-11 pr-10 py-3 text-sm font-sans text-[#3D2501] placeholder-[#80654E]/50 shadow-[0_1px_3px_#3d250106] outline-none transition-all hover:border-[#5D613C]/40 focus:border-[#5D613C] focus:ring-2 focus:ring-[#5D613C]/15"
+        />
+        {searchQuery&&(
+          <button
+            type="button"
+            onClick={()=>setSearchQuery("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 flex size-6 items-center justify-center rounded-full text-[#80654E] hover:bg-[#5d613c15] hover:text-[#3D2501] transition-colors"
+            aria-label="Limpar busca"
+          >
+            <X size={14}/>
+          </button>
+        )}
       </div>
-     </div>
+
+      {/* Dropdown de ordenação sem padrão do HTML (Radix customizado) */}
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            className="inline-flex min-h-[48px] shrink-0 items-center justify-between gap-3 rounded-[var(--wedding-radius)] border border-[#5d613c20] bg-[#fffdfa] px-4 py-2.5 text-xs font-mono uppercase tracking-[0.14em] text-[#3D2501] shadow-[0_1px_3px_#3d250106] transition-all hover:border-[#5D613C]/50 hover:bg-[#fffdfa] focus-visible:outline-2 focus-visible:outline-[#5D613C] cursor-pointer"
+            aria-label="Opções de ordenação dos presentes"
+          >
+            <span className="flex items-center gap-2">
+              <ArrowUpDown size={15} className="text-[#5D613C] shrink-0" aria-hidden="true" />
+              <span className="text-[#80654E] font-serif italic normal-case text-sm">Ordenar:</span>
+              <span className="font-semibold text-[#5D613C]">{currentSort.label}</span>
+            </span>
+            <CaretDownIcon size={14} weight="bold" className="text-[#80654E] transition-transform duration-200" aria-hidden="true" />
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Content
+          align="end"
+          sideOffset={8}
+          className="z-50 min-w-56 overflow-hidden rounded-[var(--wedding-radius)] border border-[#5d613c25] bg-[#fffdfa] p-1.5 shadow-[0_16px_40px_#3d250118] animate-in fade-in-0 zoom-in-95"
+        >
+          <DropdownMenu.Label className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-[#80654E]">
+            Ordenar presentes
+          </DropdownMenu.Label>
+          <DropdownMenu.Separator className="my-1 h-px bg-[#5d613c15]" />
+          {sortOptions.map((option) => {
+            const isSelected = sortBy === option.id;
+            return (
+              <DropdownMenu.Item
+                key={option.id}
+                onSelect={() => setSortBy(option.id)}
+                className={
+                  "group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-xs outline-none transition-colors " +
+                  (isSelected
+                    ? "bg-[#5D613C] text-[#fffdfa] shadow-xs"
+                    : "text-[#3D2501] hover:bg-[#5d613c12] focus:bg-[#5d613c12]")
+                }
+              >
+                <div>
+                  <p className={"font-semibold " + (isSelected ? "text-[#fffdfa]" : "text-[#3D2501]")}>{option.label}</p>
+                  <p className={"text-[10px] " + (isSelected ? "text-[#fffdfa]/85" : "text-[#80654E]")}>{option.desc}</p>
+                </div>
+                {isSelected && <CheckIcon size={15} weight="bold" className="shrink-0 ml-2 text-[#fffdfa]" />}
+              </DropdownMenu.Item>
+            );
+          })}
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
     </div>
 
     {!filteredGifts.length?(

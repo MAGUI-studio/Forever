@@ -150,12 +150,12 @@ export function RSVPCodeInput({
               onKeyDown={(e) => handleKeyDown(idx, e)}
               onPaste={handlePaste}
               aria-label={`Dígito ${idx + 1} de 6`}
-              className={`h-13 w-10 sm:h-15 sm:w-12 rounded-[var(--wedding-radius,12px)] border text-center font-mono text-xl sm:text-2xl font-semibold uppercase transition-all select-all ${
+              className={`h-12 w-10 sm:h-14 sm:w-12 rounded-xl sm:rounded-2xl border text-center font-mono text-xl sm:text-2xl font-semibold uppercase transition-all select-all ${
                 hasError
-                  ? "border-red-400 bg-red-50/40 text-red-900 focus:border-red-500 focus:ring-2 focus:ring-red-200"
+                  ? "border-rose-400 bg-rose-50/60 text-rose-900 focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
                   : digits[idx]
-                  ? "border-[var(--forever-primary,#5D613C)]/50 bg-[#fffdfa] text-[var(--forever-ink,#3D2501)] focus:border-[var(--forever-primary,#5D613C)] focus:ring-2 focus:ring-[var(--forever-primary,#5D613C)]/20"
-                  : "border-[#5d613c25] bg-[#fffdfa] text-[var(--forever-ink,#3D2501)] hover:border-[var(--forever-primary,#5D613C)]/40 focus:border-[var(--forever-primary,#5D613C)] focus:ring-2 focus:ring-[var(--forever-primary,#5D613C)]/20"
+                  ? "border-[var(--forever-primary,#722F37)] bg-white text-[var(--forever-ink,#302329)] shadow-xs focus:border-[var(--forever-primary,#722F37)] focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
+                  : "border-[var(--forever-primary,#722F37)]/25 bg-white/70 text-[var(--forever-ink,#302329)] hover:border-[var(--forever-primary,#722F37)]/50 focus:border-[var(--forever-primary,#722F37)] focus:bg-white focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
               } outline-none disabled:opacity-50 disabled:cursor-not-allowed`}
             />
           ))}
@@ -164,7 +164,7 @@ export function RSVPCodeInput({
         {/* Separator hyphen */}
         <span
           aria-hidden="true"
-          className="px-0.5 text-lg sm:text-2xl font-medium text-[var(--forever-accent,#80654E)] select-none opacity-60"
+          className="px-0.5 text-lg sm:text-2xl font-medium text-[var(--forever-primary,#722F37)]/40 select-none"
         >
           —
         </span>
@@ -189,12 +189,12 @@ export function RSVPCodeInput({
               onKeyDown={(e) => handleKeyDown(idx, e)}
               onPaste={handlePaste}
               aria-label={`Dígito ${idx + 1} de 6`}
-              className={`h-13 w-10 sm:h-15 sm:w-12 rounded-[var(--wedding-radius,12px)] border text-center font-mono text-xl sm:text-2xl font-semibold uppercase transition-all select-all ${
+              className={`h-12 w-10 sm:h-14 sm:w-12 rounded-xl sm:rounded-2xl border text-center font-mono text-xl sm:text-2xl font-semibold uppercase transition-all select-all ${
                 hasError
-                  ? "border-red-400 bg-red-50/40 text-red-900 focus:border-red-500 focus:ring-2 focus:ring-red-200"
+                  ? "border-rose-400 bg-rose-50/60 text-rose-900 focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
                   : digits[idx]
-                  ? "border-[var(--forever-primary,#5D613C)]/50 bg-[#fffdfa] text-[var(--forever-ink,#3D2501)] focus:border-[var(--forever-primary,#5D613C)] focus:ring-2 focus:ring-[var(--forever-primary,#5D613C)]/20"
-                  : "border-[#5d613c25] bg-[#fffdfa] text-[var(--forever-ink,#3D2501)] hover:border-[var(--forever-primary,#5D613C)]/40 focus:border-[var(--forever-primary,#5D613C)] focus:ring-2 focus:ring-[var(--forever-primary,#5D613C)]/20"
+                  ? "border-[var(--forever-primary,#722F37)] bg-white text-[var(--forever-ink,#302329)] shadow-xs focus:border-[var(--forever-primary,#722F37)] focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
+                  : "border-[var(--forever-primary,#722F37)]/25 bg-white/70 text-[var(--forever-ink,#302329)] hover:border-[var(--forever-primary,#722F37)]/50 focus:border-[var(--forever-primary,#722F37)] focus:bg-white focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
               } outline-none disabled:opacity-50 disabled:cursor-not-allowed`}
             />
           ))}
