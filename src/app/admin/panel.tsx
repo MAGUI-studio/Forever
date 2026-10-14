@@ -414,10 +414,10 @@ export function AdminPanel({
 
                       <div className="grid grid-cols-2 gap-1.5">
                         {[
-                          { href: "tables", label: "Mesas e lugares", description: "Distribuição e assentos", icon: LayoutGrid, key: "tables" as const },
-                          { href: "buffet", label: "Alimentação & buffet", description: "Restrições alimentares", icon: Utensils, key: "buffet" as const },
-                          { href: "history", label: "Histórico", description: "Auditoria de alterações", icon: History, key: "history" as const },
-                          { href: "team", label: "Equipe da recepção", description: "Contas e portaria", icon: UserCheck, key: "team" as const },
+                          { href: "tables", label: "Mesas e lugares", description: "Organização de mesas e assentos", icon: LayoutGrid, key: "tables" as const },
+                          { href: "buffet", label: "Alimentação & buffet", description: "Restrições e preferências alimentares", icon: Utensils, key: "buffet" as const },
+                          { href: "history", label: "Histórico", description: "Auditoria e registro de alterações", icon: History, key: "history" as const },
+                          { href: "team", label: "Equipe da recepção", description: "Acessos da equipe para a portaria", icon: UserCheck, key: "team" as const },
                         ]
                           .filter(item => modules[item.key])
                           .map(item => {
@@ -442,7 +442,7 @@ export function AdminPanel({
                                     {item.label}
                                   </span>
                                 </div>
-                                <p className="text-[11px] text-[#82656C] leading-snug">
+                                <p className="mt-1 text-[11px] text-[#82656C] leading-snug">
                                   {item.description}
                                 </p>
                               </Link>
