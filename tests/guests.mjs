@@ -621,6 +621,40 @@ async function check(title, work) {
     const cleanup=load("src/app/api/admin/gallery/cleanup/route.ts");
     assert.equal((await cleanup.POST(new Request("https://example.org/api/admin/gallery/cleanup",{method:"POST"}))).status,401);
   });
+  await check("códigos curtos de 6 caracteres (3-3) funcionam para convites gerais e individuais", async () => {
+    for(const key of [...store.keys()]) if(key.split("/").length>2&&!key.includes("/members/")) store.delete(key);
+    await admin.POST(request("POST", invitation));
+    const list = await (await admin.GET(request("GET"))).json();
+    const item = list.invitations[0];
+    assert.match(item.code, /^[2-9A-Z]{3}-[2-9A-Z]{3}$/);
+    assert.equal(typeof item.personalCodes, "object");
+    const gCode = item.personalCodes[guests[0].id];
+    assert.match(gCode, /^[2-9A-Z]{3}-[2-9A-Z]{3}$/);
+
+    // Consulta pelo código geral (com hífen e sem hífen em minúsculo)
+    const viewGeneral = await (await lookup.POST(request("POST", { token: item.code }))).json();
+    assert.equal(viewGeneral.invitation.guests.length, 2);
+    const viewNoHyphen = await (await lookup.POST(request("POST", { token: item.code.replace("-","").toLowerCase() }))).json();
+    assert.equal(viewNoHyphen.invitation.guests.length, 2);
+
+    // Consulta pelo código pessoal (deve isolar a pessoa)
+    const viewPersonal = await (await lookup.POST(request("POST", { token: gCode }))).json();
+    assert.equal(viewPersonal.invitation.personal, true);
+    assert.equal(viewPersonal.invitation.guests.length, 1);
+    assert.equal(viewPersonal.invitation.guests[0].id, guests[0].id);
+
+    // Resposta via código pessoal
+    const rsvpRes = await rsvp.POST(request("POST", {
+      token: gCode,
+      revision: 1,
+      responses: [{ id: guests[0].id, status: "confirmado", message: "Presença confirmada via 2FA" }]
+    }));
+    assert.equal(rsvpRes.status, 200);
+
+    // Validação de formato incorreto e código inexistente
+    assert.equal((await lookup.POST(request("POST", { token: "123" }))).status, 400);
+    assert.equal((await lookup.POST(request("POST", { token: "ZZZ-999" }))).status, 404);
+  });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,
   );

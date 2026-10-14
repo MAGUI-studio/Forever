@@ -9,8 +9,8 @@ import {
   HttpError,
   reply,
   sameOrigin,
-  invitationDocumentId,
-  authorizedGuests,
+  resolveInvitation,
+  resolveAuthorizedGuests,
   tokenSchema,
 } from "@/lib/guest-server";
 import type { Guest } from "@/types/guests";
@@ -44,7 +44,8 @@ export async function POST(request: Request) {
     const db = await publicWeddingDatabase(request);
     if(!modules.dietaryRestrictions&&(data.dietaryRestrictions?.trim()||data.responses.some(r=>r.dietaryRestrictions?.trim())))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
     if(!modules.messages&&(data.message?.trim()||data.responses.some(r=>r.message?.trim())))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
-    const ref = db.collection("invitations").doc(invitationDocumentId(data.token));
+    const resolved = await resolveInvitation(db, data.token);
+    const ref = resolved.ref;
     await db.runTransaction(async (t) => {
       const snap = await t.get(ref);
       const configSnap = await t.get(db.doc("settings/rsvp"));
@@ -66,7 +67,8 @@ export async function POST(request: Request) {
           "Este convite foi atualizado. Consulte o código novamente antes de responder.",
         );
       const guests = current.guests as Guest[];
-      const allowed = authorizedGuests(data.token, current as {token: string; guests: Guest[]});
+      const allowed = resolveAuthorizedGuests(data.token, current as {token: string; guests: Guest[]}, resolved.guestId);
+      const isPersonal = Boolean(resolved.guestId) || data.token.includes('.');
       const responses = new Map(data.responses.map((r) => [r.id, r.status]));
       if (
         responses.size !== allowed.length ||
@@ -78,7 +80,7 @@ export async function POST(request: Request) {
           "Responda apenas pelas pessoas do convite, sem repetir nomes.",
         );
       const now = new Date().toISOString();
-      audit(t,db,"Convidado · "+(data.token.includes(".") ? allowed[0].name : current.label),"Resposta de presença",current.label,data.responses.map(r=>guests.find(g=>g.id===r.id)?.name+": "+r.status).join("; "));
+      audit(t,db,"Convidado · "+(isPersonal ? allowed[0].name : current.label),"Resposta de presença",current.label,data.responses.map(r=>guests.find(g=>g.id===r.id)?.name+": "+r.status).join("; "));
       t.update(ref, {
         guests: guests.map((g) => responses.has(g.id) ? ({
           ...g,
@@ -91,13 +93,13 @@ export async function POST(request: Request) {
         personalResponses: {
           ...(current.personalResponses ?? {}),
           ...Object.fromEntries(data.responses.map(r => [r.id, {
-            message: modules.messages?(r.message ?? (data.token.includes('.') ? data.message : undefined) ?? current.personalResponses?.[r.id]?.message ?? ""):(current.personalResponses?.[r.id]?.message??""),
-            dietaryRestrictions: modules.dietaryRestrictions?(r.dietaryRestrictions ?? (data.token.includes('.') ? data.dietaryRestrictions : undefined) ?? current.personalResponses?.[r.id]?.dietaryRestrictions ?? ""):(current.personalResponses?.[r.id]?.dietaryRestrictions??""),
+            message: modules.messages?(r.message ?? (isPersonal ? data.message : undefined) ?? current.personalResponses?.[r.id]?.message ?? ""):(current.personalResponses?.[r.id]?.message??""),
+            dietaryRestrictions: modules.dietaryRestrictions?(r.dietaryRestrictions ?? (isPersonal ? data.dietaryRestrictions : undefined) ?? current.personalResponses?.[r.id]?.dietaryRestrictions ?? ""):(current.personalResponses?.[r.id]?.dietaryRestrictions??""),
             respondedAt: now,
           }])),
         },
-        ...(modules.messages&&!data.token.includes('.') && data.message !== undefined ? {message: data.message} : {}),
-        ...(modules.dietaryRestrictions&&!data.token.includes('.') && data.dietaryRestrictions !== undefined ? {dietaryRestrictions: data.dietaryRestrictions} : {}),
+        ...(modules.messages&&!isPersonal && data.message !== undefined ? {message: data.message} : {}),
+        ...(modules.dietaryRestrictions&&!isPersonal && data.dietaryRestrictions !== undefined ? {dietaryRestrictions: data.dietaryRestrictions} : {}),
       });
     });
     return reply({ success: true, revision: data.revision + 1 });

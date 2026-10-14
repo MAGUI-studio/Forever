@@ -10,6 +10,24 @@ import { WeddingOrnaments } from "./WeddingOrnaments";
 import {romanceAssets} from "@/config/templates/romance-assets";
 import {resolveTemplateImage} from "@/lib/template-images";
 import {RomancePhoto} from "./templates/RomanceMotion";
+import { RSVPCodeInput } from "./RSVPCodeInput";
+
+function isValidTokenOrCode(val: string): boolean {
+  const clean = val.trim();
+  return (
+    /^[2-9A-Za-z]{3}-?[2-9A-Za-z]{3}$/.test(clean) ||
+    /^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(clean)
+  );
+}
+
+function normalizeTokenOrCode(val: string): string {
+  const clean = val.trim();
+  const digitsOnly = clean.replace(/[^A-Za-z0-9]/g, "");
+  if (digitsOnly.length === 6) {
+    return digitsOnly.slice(0, 3).toUpperCase() + "-" + digitsOnly.slice(3).toUpperCase();
+  }
+  return clean.toLowerCase();
+}
 import type { Attendance, RSVPSettings } from "@/types/guests";
 type PublicInvite = {
   personal?: boolean;
@@ -49,10 +67,10 @@ export function RSVPSection() {
     return () => { active = false; window.removeEventListener("hashchange", syncHash); };
   }, []);
 
-  async function lookup(event: React.FormEvent) {
-    event.preventDefault();
-    const token = code.trim().toLowerCase();
-    if (!/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/.test(token)) {setError(copy("rsvp.text26")); return;}
+  async function doLookup(targetCode?: string) {
+    const raw = (targetCode ?? code).trim();
+    if (!isValidTokenOrCode(raw)) {setError(copy("rsvp.text26")); return;}
+    const token = normalizeTokenOrCode(raw);
     setBusy(true);
     setError("");
     setSaved(false);
@@ -61,7 +79,7 @@ export function RSVPSection() {
       const response = await fetch("/api/rsvp/lookup", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-wedding-slug":slug },
-        body: JSON.stringify({ token: code.trim().toLowerCase() }),
+        body: JSON.stringify({ token }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(response.status === 404 ? copy("rsvp.text27") : response.status === 400 ? copy("rsvp.text28") : result.error);
@@ -75,14 +93,15 @@ export function RSVPSection() {
             Date.now() > Date.parse(result.settings.deadline)),
       );
     } catch (e) {
-      setError(
-        e instanceof Error
-          ? e.message
-          : copy("rsvp.text25"),
-      );
+      setError((e as Error).message || copy("rsvp.text25"));
     } finally {
       setBusy(false);
     }
+  }
+
+  async function lookup(event: React.FormEvent) {
+    event.preventDefault();
+    await doLookup();
   }
   function updateGuest(id: string, patch: Partial<PublicInvite["guests"][number]>) {
     setSaved(false);
@@ -145,29 +164,38 @@ export function RSVPSection() {
           {!invite && !busy && <p className="mt-5 text-[var(--forever-accent,#80654E)]">{copy("rsvp.text5")}</p>}
         </div>
         <div className={romance?"rsvp-card w-full rounded-2xl! border-0! bg-transparent! p-6! shadow-none! sm:p-8! [&_.guest-input]:rounded-xl! [&_.guest-button]:rounded-xl! [&_.guest-button]:text-white! [&_.rsvp-person]:rounded-xl! [&_.rsvp-person]:border-[var(--forever-primary)]/20! [&_.rsvp-person]:bg-transparent!":"rsvp-card"}>
-          {!invite && <form onSubmit={lookup} className="space-y-4">
-            <label className="block text-sm" htmlFor="invite-code">{copy("rsvp.text6")}</label>
-            <input
-              id="invite-code"
-              aria-invalid={!!error}
-              aria-describedby={error ? "rsvp-error" : undefined}
-              autoComplete="off"
-              required
-              maxLength={166}
-              value={code}
-              onChange={(e) => {
-                setCode(e.target.value);
-                setInvite(null);
-                setSaved(false);
-              }}
-              className="guest-input"
-              disabled={busy}
-              placeholder={copy("rsvp.text7")}
-            />
-            <button className="guest-button w-full" disabled={busy}>
-              {busy ? "Aguarde…" : copy("rsvp.text31")}
-            </button>
-          </form>}
+          {!invite && (
+            <form onSubmit={lookup} className="space-y-6">
+              <div className="text-center">
+                <label className="block text-sm font-medium text-[var(--forever-ink,#3D2501)]">
+                  {copy("rsvp.text6")}
+                </label>
+                <p className="mt-1 text-xs text-[var(--forever-accent,#80654E)]">
+                  Digite os 6 dígitos do código que você recebeu (ex: A6V-CDF)
+                </p>
+              </div>
+              <RSVPCodeInput
+                value={code}
+                onChange={(val) => {
+                  setCode(val);
+                  if (error) setError("");
+                }}
+                onSubmit={(ready) => {
+                  void doLookup(ready);
+                }}
+                disabled={busy}
+                hasError={!!error}
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="guest-button w-full cursor-pointer transition-all hover:opacity-95 disabled:opacity-50"
+                disabled={busy || code.replace(/[^A-Za-z0-9]/g, "").length < 6}
+              >
+                {busy ? "Consultando convite…" : copy("rsvp.text31")}
+              </button>
+            </form>
+          )}
           {busy && !invite && <div className="rsvp-loading" role="status"><span className="wedding-skeleton" /><span className="wedding-skeleton" /><p>{copy("rsvp.text8")}</p></div>}
           {error && (
             <p

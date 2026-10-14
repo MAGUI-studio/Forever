@@ -1,8 +1,8 @@
 import {isPlatformAdmin} from "./platform-access";
 import {resolveModules,type WeddingModule} from "@/config/modules";
 import "server-only";
-import {scopedDatabase,findWedding} from "./wedding-server";
-import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import {scopedDatabase,findWedding,type WeddingDatabase} from "./wedding-server";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { services } from "./firebase/admin";
 export class HttpError extends Error {
@@ -66,12 +66,102 @@ export async function requireAdmin(request: Request,module?:WeddingModule) {
   if(module)assertModule(access.wedding,module);
   return access.db;
 }
-export const tokenSchema = z.string().regex(/^(?:[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/);
+
+export const SHORT_CODE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+
+export function generateShortCode(): string {
+  const bytes = randomBytes(6);
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += SHORT_CODE_ALPHABET[bytes[i] % SHORT_CODE_ALPHABET.length];
+  }
+  return code.slice(0, 3) + "-" + code.slice(3);
+}
+
+export function deterministicShortCode(seed: string): string {
+  const hash = createHash("sha256").update(seed).digest();
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += SHORT_CODE_ALPHABET[hash[i] % SHORT_CODE_ALPHABET.length];
+  }
+  return code.slice(0, 3) + "-" + code.slice(3);
+}
+
+export function normalizeShortCode(input: string): string | null {
+  const clean = input.trim().replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+  if (clean.length !== 6) return null;
+  return clean.slice(0, 3) + "-" + clean.slice(3);
+}
+
+export const tokenSchema = z.string().regex(/^(?:[2-9A-Za-z]{3}-?[2-9A-Za-z]{3}|[a-f0-9]{48}|[a-f0-9]{64}\.[a-f0-9-]{36}\.[a-f0-9]{64})$/);
+
+export const lookupRateLimit = new Map<string, { count: number; resetAt: number }>();
+
+export function checkLookupRateLimit(request: Request) {
+  if (process.env.NODE_ENV === "test") return;
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    request.headers.get("x-real-ip") ||
+    "anonymous";
+  const now = Date.now();
+  const entry = lookupRateLimit.get(ip);
+  if (entry && entry.resetAt > now) {
+    if (entry.count >= 20) {
+      throw new HttpError(429, "Muitas tentativas de consulta. Aguarde alguns minutos antes de tentar novamente.");
+    }
+    entry.count += 1;
+  } else {
+    lookupRateLimit.set(ip, { count: 1, resetAt: now + 5 * 60 * 1000 });
+  }
+}
+
 export const invitationDocumentId = (token: string) => token.includes('.') ? token.split('.')[0] : tokenId(token);
+
+export type ResolvedInvitation = {
+  ref: ReturnType<WeddingDatabase["doc"]>;
+  invitationId: string;
+  guestId?: string;
+  isLegacy?: boolean;
+};
+
+export async function resolveInvitation(
+  db: WeddingDatabase,
+  token: string
+): Promise<ResolvedInvitation> {
+  const normalized = normalizeShortCode(token);
+  if (normalized) {
+    const codeSnap = await db.collection("codes").doc(normalized).get();
+    if (codeSnap.exists) {
+      const data = codeSnap.data() as { invitationId: string; guestId?: string };
+      return {
+        ref: db.collection("invitations").doc(data.invitationId),
+        invitationId: data.invitationId,
+        guestId: data.guestId,
+      };
+    }
+    const directQuery = await db.collection("invitations").where("code", "==", normalized).limit(1).get();
+    if (directQuery.docs.length > 0) {
+      const doc = directQuery.docs[0];
+      return {
+        ref: doc.ref,
+        invitationId: doc.id,
+      };
+    }
+  }
+
+  const docId = invitationDocumentId(token);
+  return {
+    ref: db.collection("invitations").doc(docId),
+    invitationId: docId,
+    isLegacy: true,
+  };
+}
+
 export function personalToken(id: string, secret: string, guestId: string) {
  const payload = id + '.' + guestId;
  return payload + '.' + createHmac('sha256', secret).update(payload).digest('hex');
 }
+
 export function authorizedGuests(token: string, invitation: {token: string; guests: import('@/types/guests').Guest[]}) {
  if (!token.includes('.')) return invitation.guests;
  const [id, guestId] = token.split('.');
@@ -81,6 +171,23 @@ export function authorizedGuests(token: string, invitation: {token: string; gues
  if (!guests.length) throw new HttpError(404, 'Convite não encontrado.');
  return guests;
 }
+
+export function resolveAuthorizedGuests(
+  token: string,
+  invitation: { token: string; guests: import('@/types/guests').Guest[] },
+  guestId?: string
+) {
+  if (guestId) {
+    const guests = invitation.guests.filter((g) => g.id === guestId);
+    if (!guests.length) throw new HttpError(404, "Convite não encontrado.");
+    return guests;
+  }
+  if (token.includes(".")) {
+    return authorizedGuests(token, invitation);
+  }
+  return invitation.guests;
+}
+
 export const tokenId = (token: string) =>
   createHash("sha256").update(token).digest("hex");
 export const guestSchema = z

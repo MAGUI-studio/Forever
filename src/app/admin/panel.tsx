@@ -501,7 +501,7 @@ export function AdminPanel({
 
                           <ExpandingIconButton disabled={busy} onClick={() => open(i)} icon={<PencilSimpleIcon size={17} aria-hidden="true" />} label={"Editar"} />
                           <ExpandingIconButton disabled={busy || !i.active} onClick={() => void action(async () => {
-                            await navigator.clipboard.writeText(invitationUrl(i.token,slug));
+                            await navigator.clipboard.writeText(invitationUrl(i.code ?? i.token,slug));
                             setCopiedId(i.id); if (copyTimer.current) clearTimeout(copyTimer.current);
                             copyTimer.current = setTimeout(() => setCopiedId(null), 3000);
                           })} icon={copiedId === i.id ? <CheckIcon size={17} weight="bold" aria-hidden="true" /> : <CopyIcon size={17} aria-hidden="true" />} label={copiedId === i.id ? "Copiado" : (i.guests.length > 1 ? "Copiar link do grupo" : "Copiar link")} />
@@ -510,7 +510,7 @@ export function AdminPanel({
                             setInvites(current => current.map(item => item.id === i.id ? {...item,sentAt:result.sentAt} : item));
 
                           })} icon={<PaperPlaneTiltIcon size={17} weight={i.sentAt ? "fill" : "regular"} aria-hidden="true" />} label={i.sentAt ? "Enviado" : "Marcar enviado"} />}
-                          <ExpandingIconButton disabled={busy || !!generatingPdf || !i.active} onClick={async () => {setGeneratingPdf(i.id);setError("");try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf");await downloadInvitationPdf(i,weddingConfig,slug);}catch {setError("Não foi possível gerar o convite. Tente novamente.");}finally {setGeneratingPdf(null);}}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={generatingPdf === i.id ? "Gerando convite…" : (i.guests.length > 1 ? "Convite do grupo" : "Baixar convite")} />
+                          <ExpandingIconButton disabled={busy || !!generatingPdf || !i.active} onClick={async () => {setGeneratingPdf(i.id);setError("");try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf");await downloadInvitationPdf({...i, token: i.code ?? i.token},weddingConfig,slug);}catch {setError("Não foi possível gerar o convite. Tente novamente.");}finally {setGeneratingPdf(null);}}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={generatingPdf === i.id ? "Gerando convite…" : (i.guests.length > 1 ? "Convite do grupo" : "Baixar convite")} />
                           <ExpandingIconButton disabled={busy} onClick={() => openModal("delete-invitation",i.id)} icon={<TrashIcon size={17} aria-hidden="true" />} label={"Excluir"} />
                         </ExpandingIconButtonGroup>
                       </div>
@@ -525,8 +525,8 @@ export function AdminPanel({
                               </span>
                               <span className="rsvp-guest-summary-status">
                                 <ExpandingIconButtonGroup as="span" className="admin-guest-quick-actions">
-                                  <ExpandingIconButton type="button" aria-label={"Baixar convite de " + g.name} disabled={busy || generatingPdf === g.id || !i.active} onClick={event => {event.preventDefault(); event.stopPropagation(); void downloadPdf({label:g.name, token:i.personalTokens?.[g.id] ?? i.token},g.id);}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={"Convite pessoal"} />
-                                  <ExpandingIconButton type="button" aria-label={copiedId === g.id ? "Link copiado" : "Copiar link de " + g.name} disabled={busy || !i.active} onClick={event => {event.preventDefault(); event.stopPropagation(); void copyInvitationLink(i.personalTokens?.[g.id] ?? i.token, g.id);}} icon={copiedId === g.id ? <CheckIcon size={17} weight="bold" aria-hidden="true" /> : <CopyIcon size={17} aria-hidden="true" />} label={copiedId === g.id ? "Copiado" : "Copiar link"} />
+                                  <ExpandingIconButton type="button" aria-label={"Baixar convite de " + g.name} disabled={busy || generatingPdf === g.id || !i.active} onClick={event => {event.preventDefault(); event.stopPropagation(); void downloadPdf({label:g.name, token:i.personalCodes?.[g.id] ?? i.code ?? i.personalTokens?.[g.id] ?? i.token},g.id);}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={"Convite pessoal"} />
+                                  <ExpandingIconButton type="button" aria-label={copiedId === g.id ? "Link copiado" : "Copiar link de " + g.name} disabled={busy || !i.active} onClick={event => {event.preventDefault(); event.stopPropagation(); void copyInvitationLink(i.personalCodes?.[g.id] ?? i.code ?? i.personalTokens?.[g.id] ?? i.token, g.id);}} icon={copiedId === g.id ? <CheckIcon size={17} weight="bold" aria-hidden="true" /> : <CopyIcon size={17} aria-hidden="true" />} label={copiedId === g.id ? "Copiado" : "Copiar link"} />
                                 </ExpandingIconButtonGroup>
                                 <AttendanceBadge status={g.status} className="max-[600px]:col-start-2 max-[600px]:row-start-1 max-[600px]:w-[140px] max-[600px]:text-[11px] max-[380px]:w-[125px] max-[380px]:text-[10px]" />
                                 <CaretDownIcon className="rsvp-accordion-caret" size={18} aria-hidden="true" />

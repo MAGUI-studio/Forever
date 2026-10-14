@@ -8,8 +8,9 @@ import {
   HttpError,
   reply,
   sameOrigin,
-  invitationDocumentId,
-  authorizedGuests,
+  resolveInvitation,
+  resolveAuthorizedGuests,
+  checkLookupRateLimit,
   tokenSchema,
 } from "@/lib/guest-server";
 export const runtime = "nodejs";
@@ -21,8 +22,10 @@ export async function POST(request: Request) {
       .parse(await body(request));
     const wedding=await requestWedding(request,true);assertModule(wedding,"rsvp");const modules=resolveModules(wedding.modules);
     const db = await publicWeddingDatabase(request);
+    checkLookupRateLimit(request);
+    const resolved = await resolveInvitation(db, token);
     const [snap, settings] = await Promise.all([
-      db.collection("invitations").doc(invitationDocumentId(token)).get(),
+      resolved.ref.get(),
       db.doc("settings/rsvp").get(),
     ]);
     const data = snap.data();
@@ -31,15 +34,15 @@ export async function POST(request: Request) {
         404,
         "Convite não encontrado. Confira o código ou fale com os noivos.",
       );
-    const allowed = authorizedGuests(token, data as {token: string; guests: import('@/types/guests').Guest[]});
-    const personal = token.includes('.');
+    const allowed = resolveAuthorizedGuests(token, data as {token: string; guests: import('@/types/guests').Guest[]}, resolved.guestId);
+    const personal = Boolean(resolved.guestId) || token.includes('.');
     const notes = personal ? data.personalResponses?.[allowed[0].id] : data;
     // Opening a valid link tracks access without invalidating an RSVP form.
-    const invitationRef = db.collection("invitations").doc(invitationDocumentId(token));
+    const invitationRef = resolved.ref;
     await db.runTransaction(async t => {
       const latest = await t.get(invitationRef), current = latest.data();
       if (!current?.active) throw new HttpError(404,"Convite não encontrado.");
-      authorizedGuests(token, current as {token:string; guests:import('@/types/guests').Guest[]});
+      resolveAuthorizedGuests(token, current as {token:string; guests:import('@/types/guests').Guest[]}, resolved.guestId);
       const now = new Date().toISOString();
       if(modules.invitationTracking)t.update(invitationRef, {openedAt:current.openedAt ?? now, ...(personal ? {personalOpenedAt:{...(current.personalOpenedAt ?? {}),[allowed[0].id]:current.personalOpenedAt?.[allowed[0].id] ?? now}} : {})});
     });
