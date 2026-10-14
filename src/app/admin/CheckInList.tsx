@@ -4,7 +4,7 @@ import {useWedding} from "@/components/wedding/WeddingProvider";
 import {DashboardSkeleton} from "./skeleton";
 import {AdminContainer} from "./AdminContainer";
 import {useState} from "react";
-import {Search, RefreshCw, Check, Undo2, Users, Clock, DoorOpen} from "lucide-react";
+import {Search, RefreshCw, Check, Undo2, Users, Clock, DoorOpen, ChevronDown} from "lucide-react";
 import {WeddingSelect} from "@/components/ui/WeddingSelect";
 import {AttendanceBadge} from "@/components/ui/AttendanceBadge";
 import {ExpandingIconButton, ExpandingIconButtonGroup} from "@/components/ui/ExpandingIconButton";
@@ -26,6 +26,7 @@ export function CheckInList({invitations,tables,busy,loading = false,onToggle,on
   const {modules}=useWedding();
   const [query,setQuery] = useState("");
   const [filter,setFilter] = useState("all");
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const active = invitations.filter(i => i.active);
   const confirmed = active.flatMap(i => i.guests.filter(g => g.status === "confirmado"));
   const arrived = confirmed.filter(g => g.checkedIn).length;
@@ -52,17 +53,87 @@ export function CheckInList({invitations,tables,busy,loading = false,onToggle,on
     <p className="mb-4 text-[10px] text-[var(--forever-accent,#77736c)]">Atualização automática a cada 15 segundos enquanto esta página estiver aberta. Use “Desfazer chegada” para corrigir uma marcação.</p>
     <div className="space-y-8">
       {loading && <DashboardSkeleton checkIn />}
-      {sections.filter(section=>section.items.length).map(section=><section key={section.id} className="space-y-5"><SectionDivider title={section.title} count={section.items.length} />
+      {sections.filter(section=>section.items.length).map(section=><section key={section.id} className="space-y-5">
+        <SectionDivider
+          title={section.title}
+          count={section.items.length}
+          actions={
+            <button
+              type="button"
+              className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--wedding-radius)] px-2 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#722f3710)] focus-visible:outline-2 focus-visible:outline-[var(--forever-primary,#722F37)]"
+              onClick={() =>
+                setCollapsed((current) => {
+                  const allExpanded = section.items.every(
+                    ({ invitation: invite }) => !current[invite.id],
+                  );
+                  return {
+                    ...current,
+                    ...Object.fromEntries(
+                      section.items.map(({ invitation: invite }) => [
+                        invite.id,
+                        allExpanded,
+                      ]),
+                    ),
+                  };
+                })
+              }
+            >
+              <ChevronDown
+                size={14}
+                className={
+                  section.items.every(
+                    ({ invitation: invite }) => !collapsed[invite.id],
+                  )
+                    ? "rotate-180 transition-transform"
+                    : "transition-transform"
+                }
+                aria-hidden="true"
+              />
+              {section.items.every(
+                ({ invitation: invite }) => !collapsed[invite.id],
+              )
+                ? "Recolher todos"
+                : "Expandir todos"}
+            </button>
+          }
+        />
         {section.items.map(({invitation,guests})=><article key={invitation.id} className="rounded-[var(--wedding-radius)] border border-[#722f3720] bg-[#fffefbdb] p-5 sm:p-7">
-          <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-serif text-3xl text-[var(--forever-ink,#161616)]">{invitation.label}</h2>{guests.filter(g=>!g.checkedIn).length>1&&<button disabled={busy} type="button" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#722F37)] hover:bg-[var(--forever-hover-tint,#722f3710)] disabled:opacity-40" onClick={()=>onToggle(invitation,guests.filter(g=>!g.checkedIn).map(g=>g.id),true)}><Check size={16}/>Registrar chegada de {guests.filter(g=>!g.checkedIn).length} pessoas</button>}</div>
-          <p className="mt-2 text-xs text-[var(--forever-accent,#77736c)]">{guests.length} {guests.length === 1 ? "pessoa" : "pessoas"} nesta lista</p>
-          <div className="mt-4 divide-y divide-[#722f3715]">{guests.map(guest=><div key={guest.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-4 last:pb-0 sm:flex sm:justify-between">
-            <div className="min-w-0"><p className="text-sm break-words text-[var(--forever-primary,#722F37)]">{guest.name}{guest.child ? " · Criança" : ""}</p>{modules.tables&&<p className="mt-1 text-xs text-[var(--forever-accent,#77736c)]">{tables.find(t=>t.id===guest.tableId)?.name??"Mesa ainda não definida"}{guest.seat?" · Lugar "+guest.seat:""}</p>}{guest.checkedInAt&&<p className="mt-1 text-[10px] text-[var(--forever-accent,#77736c)]">Chegada às {new Date(guest.checkedInAt).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</p>}</div>
-            <div className="contents sm:flex sm:items-center sm:gap-3">
-              <AttendanceBadge status={guest.checkedIn ? "confirmado" : "pendente"} label={guest.checkedIn ? "Já chegou" : "Aguardando chegada"} className="w-[145px]! text-[11px]!" />
-              <ExpandingIconButtonGroup className="col-span-2 flex justify-end"><ExpandingIconButton icon={guest.checkedIn ? <Undo2 size={17} aria-hidden="true" /> : <Check size={17} aria-hidden="true" />} label={guest.checkedIn ? "Desfazer chegada" : "Registrar chegada"} aria-label={(guest.checkedIn ? "Desfazer chegada de " : "Registrar chegada de ") + guest.name} aria-pressed={guest.checkedIn} disabled={busy} onClick={()=>onToggle(invitation,[guest.id],!guest.checkedIn)} /></ExpandingIconButtonGroup>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-serif text-3xl text-[var(--forever-ink,#161616)]">
+                <button
+                  type="button"
+                  className="admin-invite-toggle"
+                  aria-expanded={!collapsed[invitation.id]}
+                  aria-controls={"checkin-body-" + invitation.id}
+                  aria-label={(collapsed[invitation.id] ? "Expandir convite " : "Recolher convite ") + invitation.label}
+                  onClick={() => setCollapsed(current => ({...current, [invitation.id]: !current[invitation.id]}))}
+                >
+                  <span>{invitation.label}</span>
+                  <ChevronDown size={20} className={collapsed[invitation.id] ? "" : "is-expanded"} aria-hidden="true" />
+                </button>
+              </h2>
+              <p className="mt-1 text-xs text-[var(--forever-accent,#77736c)]">{guests.length} {guests.length === 1 ? "pessoa" : "pessoas"} nesta lista</p>
             </div>
-          </div>)}</div>
+            {guests.filter(g=>!g.checkedIn).length>1&&<button disabled={busy} type="button" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#722F37)] hover:bg-[var(--forever-hover-tint,#722f3710)] disabled:opacity-40" onClick={()=>onToggle(invitation,guests.filter(g=>!g.checkedIn).map(g=>g.id),true)}><Check size={16}/>Registrar chegada de {guests.filter(g=>!g.checkedIn).length} pessoas</button>}
+          </div>
+          <div
+            id={"checkin-body-" + invitation.id}
+            className="admin-invite-collapse"
+            data-open={!collapsed[invitation.id]}
+            aria-hidden={!!collapsed[invitation.id]}
+            inert={collapsed[invitation.id] ? true : undefined}
+          >
+            <div className="admin-invite-collapse-inner">
+              <div className="mt-4 divide-y divide-[#722f3715]">{guests.map(guest=><div key={guest.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-4 last:pb-0 sm:flex sm:justify-between">
+                <div className="min-w-0"><p className="text-sm break-words text-[var(--forever-primary,#722F37)]">{guest.name}{guest.child ? " · Criança" : ""}</p>{modules.tables&&<p className="mt-1 text-xs text-[var(--forever-accent,#77736c)]">{tables.find(t=>t.id===guest.tableId)?.name??"Mesa ainda não definida"}{guest.seat?" · Lugar "+guest.seat:""}</p>}{guest.checkedInAt&&<p className="mt-1 text-[10px] text-[var(--forever-accent,#77736c)]">Chegada às {new Date(guest.checkedInAt).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</p>}</div>
+                <div className="contents sm:flex sm:items-center sm:gap-3">
+                  <AttendanceBadge status={guest.checkedIn ? "confirmado" : "pendente"} label={guest.checkedIn ? "Já chegou" : "Aguardando chegada"} className="w-[145px]! text-[11px]!" />
+                  <ExpandingIconButtonGroup className="col-span-2 flex justify-end"><ExpandingIconButton icon={guest.checkedIn ? <Undo2 size={17} aria-hidden="true" /> : <Check size={17} aria-hidden="true" />} label={guest.checkedIn ? "Desfazer chegada" : "Registrar chegada"} aria-label={(guest.checkedIn ? "Desfazer chegada de " : "Registrar chegada de ") + guest.name} aria-pressed={guest.checkedIn} disabled={busy} onClick={()=>onToggle(invitation,[guest.id],!guest.checkedIn)} /></ExpandingIconButtonGroup>
+                </div>
+              </div>)}</div>
+            </div>
+          </div>
         </article>)}
       </section>)}
       {!loading && !filtered.length && <div className="rounded-[var(--wedding-radius)] bg-[#fffdfa] px-6 py-12 text-center"><Users size={28} className="mx-auto text-[var(--forever-primary,#722F37)]" aria-hidden="true" /><h2 className="mt-4 font-serif text-2xl text-[var(--forever-ink,#161616)]">{confirmed.length ? "Nenhum convidado encontrado" : "Aguardando as confirmações"}</h2><p className="mt-3 text-sm text-[var(--forever-accent,#77736c)]">{confirmed.length ? "Ajuste a busca ou o filtro para consultar outras pessoas." : "Os convidados com presença confirmada aparecerão aqui."}</p></div>}
