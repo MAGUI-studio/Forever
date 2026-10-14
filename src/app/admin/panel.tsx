@@ -327,18 +327,18 @@ export function AdminPanel({
                   aria-current={section === "guests" ? "page" : undefined}
                   className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
                     section === "guests"
-                      ? "border-[#5D613C30] bg-[#5D613C15] font-semibold text-[var(--forever-primary,#5D613C)] shadow-xs"
-                      : "border-transparent bg-white/40 text-[var(--forever-accent,#80654E)] hover:border-[#5D613C20] hover:bg-[#5D613C0d] hover:text-[var(--forever-primary,#5D613C)]"
+                      ? "border-[#722F3735] bg-[#722F3714] font-semibold text-[#722F37] shadow-xs"
+                      : "border-transparent bg-white/40 text-[#6B6760] hover:border-[#722F3725] hover:bg-[#722F370a] hover:text-[#722F37]"
                   }`}
                 >
                   <span
-                    className="pointer-events-none absolute -right-1.5 -bottom-1.5 size-9 text-[var(--forever-primary,#5D613C)] opacity-[0.08] transition-all duration-300 group-hover:scale-125 group-hover:opacity-[0.18]"
+                    className="pointer-events-none absolute -right-1.5 -bottom-1.5 size-9 text-[#722F37] opacity-[0.08] transition-all duration-300 group-hover:scale-125 group-hover:opacity-[0.18]"
                     aria-hidden="true"
                   >
                     <Users className="size-full" />
                   </span>
                   <span className="relative z-10 flex items-center gap-2">
-                    <Users size={15} className="text-[var(--forever-primary,#5D613C)] shrink-0" aria-hidden="true" />
+                    <Users size={15} className="text-[#722F37] shrink-0" aria-hidden="true" />
                     <span>Lista de convidados</span>
                   </span>
                 </Link>
@@ -350,18 +350,18 @@ export function AdminPanel({
                   aria-current={section === "check-in" ? "page" : undefined}
                   className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
                     section === "check-in"
-                      ? "border-[#5D613C30] bg-[#5D613C15] font-semibold text-[var(--forever-primary,#5D613C)] shadow-xs"
-                      : "border-transparent bg-white/40 text-[var(--forever-accent,#80654E)] hover:border-[#5D613C20] hover:bg-[#5D613C0d] hover:text-[var(--forever-primary,#5D613C)]"
+                      ? "border-[#722F3735] bg-[#722F3714] font-semibold text-[#722F37] shadow-xs"
+                      : "border-transparent bg-white/40 text-[#6B6760] hover:border-[#722F3725] hover:bg-[#722F370a] hover:text-[#722F37]"
                   }`}
                 >
                   <span
-                    className="pointer-events-none absolute -right-1.5 -bottom-1.5 size-9 text-[var(--forever-primary,#5D613C)] opacity-[0.08] transition-all duration-300 group-hover:scale-125 group-hover:opacity-[0.18]"
+                    className="pointer-events-none absolute -right-1.5 -bottom-1.5 size-9 text-[#722F37] opacity-[0.08] transition-all duration-300 group-hover:scale-125 group-hover:opacity-[0.18]"
                     aria-hidden="true"
                   >
                     <Check className="size-full" />
                   </span>
                   <span className="relative z-10 flex items-center gap-2">
-                    <Check size={15} className="text-[var(--forever-primary,#5D613C)] shrink-0" aria-hidden="true" />
+                    <Check size={15} className="text-[#722F37] shrink-0" aria-hidden="true" />
                     <span>Controle de chegada</span>
                   </span>
                 </Link>
@@ -379,22 +379,22 @@ export function AdminPanel({
                     onClick={() => setOrgOpen(prev => !prev)}
                     className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
                       orgOpen || ["tables", "buffet", "history", "team"].includes(section)
-                        ? "border-[#5D613C30] bg-[#5D613C15] font-semibold text-[var(--forever-primary,#5D613C)] shadow-xs"
-                        : "border-transparent bg-white/40 text-[var(--forever-accent,#80654E)] hover:border-[#5D613C20] hover:bg-[#5D613C0d] hover:text-[var(--forever-primary,#5D613C)]"
+                        ? "border-[#722F3735] bg-[#722F3714] font-semibold text-[#722F37] shadow-xs"
+                        : "border-transparent bg-white/40 text-[#6B6760] hover:border-[#722F3725] hover:bg-[#722F370a] hover:text-[#722F37]"
                     }`}
                   >
                     <span
-                      className="pointer-events-none absolute -right-1.5 -bottom-1.5 size-9 text-[var(--forever-primary,#5D613C)] opacity-[0.08] transition-all duration-300 group-hover:scale-125 group-hover:opacity-[0.18]"
+                      className="pointer-events-none absolute -right-1.5 -bottom-1.5 size-9 text-[#722F37] opacity-[0.08] transition-all duration-300 group-hover:scale-125 group-hover:opacity-[0.18]"
                       aria-hidden="true"
                     >
                       <LayoutGrid className="size-full" />
                     </span>
                     <span className="relative z-10 flex items-center gap-1.5">
-                      <LayoutGrid size={15} className="shrink-0 text-[var(--forever-primary,#5D613C)]" />
+                      <LayoutGrid size={15} className="shrink-0 text-[#722F37]" />
                       <span>Organização</span>
                       <ChevronDown
                         size={13}
-                        className={`transition-transform duration-200 text-[var(--forever-primary,#5D613C)] ${orgOpen ? "rotate-180" : ""}`}
+                        className={`transition-transform duration-200 text-[#722F37] ${orgOpen ? "rotate-180" : ""}`}
                       />
                     </span>
                   </button>
@@ -402,10 +402,10 @@ export function AdminPanel({
                   {orgOpen && (
                     <div
                       role="menu"
-                      className="absolute top-full left-1/2 -translate-x-1/2 z-50 mt-2 w-[460px] rounded-2xl border border-[#5D613C25] bg-[#FFFDFB] p-3 shadow-xl shadow-[#00000010] animate-in fade-in-0 zoom-in-95 duration-150"
+                      className="absolute top-full left-1/2 -translate-x-1/2 z-50 mt-2 w-[460px] rounded-2xl border border-[#722F3725] bg-[#FFFDFB] p-3 shadow-xl shadow-[#722F3712] animate-in fade-in-0 zoom-in-95 duration-150"
                     >
-                      <div className="px-3 py-1.5 border-b border-[#5D613C15] mb-2 flex items-center justify-between">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--forever-accent,#80654E)]">
+                      <div className="px-3 py-1.5 border-b border-[#722F3715] mb-2 flex items-center justify-between">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-[#722F37]">
                           Central do Grande Dia
                         </span>
                         <span className="text-[10px] text-[#8C877F]">Recursos de Gestão</span>
@@ -429,19 +429,19 @@ export function AdminPanel({
                                 onClick={() => setOrgOpen(false)}
                                 className={`group/item relative flex flex-col gap-1 rounded-xl p-3 text-left transition-all duration-200 border ${
                                   isActive
-                                    ? "border-[#5D613C30] bg-[#5D613C12] text-[var(--forever-primary,#5D613C)] font-semibold shadow-xs"
-                                    : "border-transparent hover:border-[#5D613C20] hover:bg-[#5D613C0a] text-[#161616]"
+                                    ? "border-[#722F3735] bg-[#722F3714] text-[#722F37] font-semibold shadow-xs"
+                                    : "border-transparent hover:border-[#722F3720] hover:bg-[#722F3708] text-[#161616]"
                                 }`}
                               >
                                 <div className="flex items-center gap-2">
-                                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#5D613C15] text-[var(--forever-primary,#5D613C)] transition-transform group-hover/item:scale-110">
+                                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#722F3712] text-[#722F37] transition-transform group-hover/item:scale-110">
                                     <Icon size={14} />
                                   </span>
-                                  <span className="text-xs font-medium text-[var(--forever-primary,#5D613C)]">
+                                  <span className="text-xs font-medium text-[#722F37]">
                                     {item.label}
                                   </span>
                                 </div>
-                                <p className="text-[11px] text-[#80654E] leading-snug pl-9">
+                                <p className="text-[11px] text-[#82656C] leading-snug pl-9">
                                   {item.description}
                                 </p>
                               </Link>
@@ -463,15 +463,15 @@ export function AdminPanel({
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Ver site"
-                  className="inline-flex size-10 items-center justify-center rounded-xl border border-[#5d613c20] bg-white/70 text-[var(--forever-primary,#5D613C)] transition-all duration-200 hover:border-[#5d613c40] hover:bg-[#5d613c12] hover:shadow-xs focus-visible:outline-2 focus-visible:outline-[var(--forever-primary,#5D613C)]"
+                  className="inline-flex size-10 items-center justify-center rounded-xl border border-[#722F3730] bg-[#722F370a] text-[#722F37] transition-all duration-200 hover:border-[#722F37] hover:bg-[#722F3718] hover:shadow-xs focus-visible:outline-2 focus-visible:outline-[#722F37]"
                 >
                   <ArrowUpRight size={17} aria-hidden="true" />
                 </Link>
                 <div
                   role="tooltip"
-                  className="pointer-events-none absolute top-full left-1/2 z-50 mt-2.5 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#5D613C] px-2.5 py-1 text-[11px] font-medium text-white shadow-md shadow-[#5D613C30] opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1"
+                  className="pointer-events-none absolute top-full left-1/2 z-50 mt-2.5 -translate-x-1/2 whitespace-nowrap rounded-lg bg-[#722F37] px-2.5 py-1 text-[11px] font-medium text-white shadow-md shadow-[#722F3730] opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1"
                 >
-                  <span className="absolute -top-1 left-1/2 -translate-x-1/2 size-2 rotate-45 bg-[#5D613C]" />
+                  <span className="absolute -top-1 left-1/2 -translate-x-1/2 size-2 rotate-45 bg-[#722F37]" />
                   <span className="relative z-10 flex items-center gap-1">
                     <span>Ver site</span>
                     <ArrowUpRight size={11} className="opacity-80" />
@@ -487,8 +487,8 @@ export function AdminPanel({
                     aria-label="Personalizar site"
                     className={`inline-flex size-10 items-center justify-center rounded-xl border transition-all duration-200 hover:shadow-xs focus-visible:outline-2 focus-visible:outline-[#722F37] ${
                       section === "site"
-                        ? "border-[#722F3740] bg-[#722F3715] text-[#722F37] font-semibold"
-                        : "border-[#722F3725] bg-white/70 text-[#722F37] hover:border-[#722F3750] hover:bg-[#722F3710]"
+                        ? "border-[#722F37] bg-[#722F3722] text-[#722F37] font-semibold"
+                        : "border-[#722F3730] bg-[#722F370a] text-[#722F37] hover:border-[#722F37] hover:bg-[#722F3718]"
                     }`}
                   >
                     <PencilSimpleIcon size={17} aria-hidden="true" />
@@ -505,11 +505,25 @@ export function AdminPanel({
             </div>
             <div className="hidden lg:block">
             <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild><button type="button" className="admin-profile-trigger" aria-label="Abrir menu da conta"><span className="admin-account-avatar" aria-hidden="true">{user.email?.slice(0,1).toUpperCase() || "G"}</span><span className="admin-profile-name">{user.displayName || user.email}</span><CaretDownIcon size={13} aria-hidden="true" /></button></DropdownMenu.Trigger>
-              <DropdownMenu.Portal><DropdownMenu.Content className="admin-profile-menu" align="end" sideOffset={10} collisionPadding={16}>
+              <DropdownMenu.Trigger asChild>
+                <button
+                  type="button"
+                  aria-label="Abrir menu da conta"
+                  title={user.displayName || user.email || "Minha conta"}
+                  className="group relative flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-[#722F37]/35 bg-[#FAF7F5] p-0.5 shadow-xs transition-all duration-200 hover:border-[#722F37] hover:ring-2 hover:ring-[#722F37]/20 hover:scale-105 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-[#722F37] focus-visible:outline-offset-2 data-[state=open]:border-[#722F37] data-[state=open]:ring-2 data-[state=open]:ring-[#722F37]/25"
+                >
+                  <span
+                    className="flex size-full items-center justify-center rounded-full bg-gradient-to-br from-[#85343E] to-[#60232A] text-white font-serif text-base font-semibold shadow-inner transition-transform duration-200 group-hover:scale-95"
+                    aria-hidden="true"
+                  >
+                    {user.email?.slice(0, 1).toUpperCase() || "G"}
+                  </span>
+                </button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal><DropdownMenu.Content className="admin-profile-menu border border-[#722F3720] shadow-xl" align="end" sideOffset={10} collisionPadding={16}>
                 <DropdownMenu.Label className="admin-profile-label">
-                  Espaço dos noivos
-                  <span>{user.email}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-[#722F37]">Espaço dos noivos</span>
+                  <span className="text-xs text-[#80654e] font-normal">{user.email}</span>
                 </DropdownMenu.Label>
                 {plan === "essencial" && (
                   <DropdownMenu.Item asChild>
@@ -531,10 +545,10 @@ export function AdminPanel({
                     </button>
                   </DropdownMenu.Item>
                 )}
-                <DropdownMenu.Separator className="admin-profile-separator" />
+                <DropdownMenu.Separator className="admin-profile-separator bg-[#722F3715]" />
 
-                {modules.rsvp&&<DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-[var(--wedding-radius)] px-2.5 py-3 text-xs text-[var(--forever-primary,#5D613C)] outline-none data-highlighted:bg-[#edf0e3] data-disabled:opacity-40" disabled={busy || !authorized || role !== "admin"} onSelect={() => openModal("settings")}><CalendarDays size={16} aria-hidden="true" />Configurações</DropdownMenu.Item>}
-                <DropdownMenu.Item className="admin-profile-item" disabled={busy} onSelect={() => void action(async () => {await signOut(clientAuth());})}><LogOut size={16} aria-hidden="true" /> Sair</DropdownMenu.Item>
+                {modules.rsvp&&<DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-[var(--wedding-radius)] px-2.5 py-3 text-xs text-[#722F37] outline-none hover:bg-[#722F370d] data-highlighted:bg-[#722F370d] data-disabled:opacity-40" disabled={busy || !authorized || role !== "admin"} onSelect={() => openModal("settings")}><CalendarDays size={16} aria-hidden="true" />Configurações</DropdownMenu.Item>}
+                <DropdownMenu.Item className="admin-profile-item text-[#722F37] hover:bg-[#722F370d] data-highlighted:bg-[#722F370d]" disabled={busy} onSelect={() => void action(async () => {await signOut(clientAuth());})}><LogOut size={16} aria-hidden="true" /> Sair</DropdownMenu.Item>
               </DropdownMenu.Content></DropdownMenu.Portal>
             </DropdownMenu.Root>
             </div>
