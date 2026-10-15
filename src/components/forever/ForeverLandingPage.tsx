@@ -995,11 +995,12 @@ export function ForeverLandingPage() {
   const receptionHref = userWedding?.slug ? `/${userWedding.slug}/recepcao` : "/login";
 
   async function handleCheckout(plan: "essencial" | "foreverPro", action: "new" | "upgrade" = "new") {
+    if(action === "new"){window.location.assign(`/contratar?plan=${plan}`);return;}
     try {
       setCheckoutLoading(plan);
       const res = await fetch("/api/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(user ? {Authorization:`Bearer ${await user.getIdToken()}`} : {}), ...(userWedding?.slug ? {"x-wedding-slug":userWedding.slug} : {}) },
         body: JSON.stringify({
           plan,
           action,
