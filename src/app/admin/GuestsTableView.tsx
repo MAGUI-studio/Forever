@@ -1,4 +1,5 @@
 "use client";
+import { useExpandedInvitations, useQueryState, kindParser, sortParser, orderParser, tableUrlOptions } from "./table-url-state";
 import { GuestNames, GuestMessage } from "@/components/ui/GuestNames";
 import { TooltipButton } from "@/components/ui/TooltipButton";
 import { AdminTable, AdminTableDetails, shouldToggleTableRow } from "@/components/ui/AdminTable";
@@ -46,8 +47,8 @@ interface GuestsTableViewProps {
 }
 
 type SortField = "label" | "guestsCount" | "status" | "sentAt";
-type SortDirection = "asc" | "desc";
-type TabFilter = "all" | "group" | "individual";
+
+
 
 export function GuestsTableView({
   invitations,
@@ -64,10 +65,10 @@ export function GuestsTableView({
   onAddInvite,
   plan,
 }: GuestsTableViewProps) {
-  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
-  const [tabFilter, setTabFilter] = useState<TabFilter>("all");
-  const [sortField, setSortField] = useState<SortField>("label");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [expandedRows, setExpandedRows] = useExpandedInvitations(invitations.map(invitation => invitation.id));
+  const [tabFilter, setTabFilter] = useQueryState("kind", kindParser.withOptions(tableUrlOptions));
+  const [sortField, setSortField] = useQueryState("orderBy", sortParser.withOptions(tableUrlOptions));
+  const [sortDirection, setSortDirection] = useQueryState("direction", orderParser.withOptions(tableUrlOptions));
 
   const tableMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -381,6 +382,7 @@ export function GuestsTableView({
                   return (
                     <RowFragment key={invite.id}>
                       <tr
+                        data-invitation-expanded={isExpanded}
                         onClick={(event) => {
                           if (!shouldToggleTableRow(event.target)) return;
                           toggleRow(invite.id);
@@ -389,7 +391,7 @@ export function GuestsTableView({
                           !invite.active
                             ? "opacity-50"
                             : isExpanded
-                            ? "bg-neutral-50/60"
+                            ? "bg-white"
                             : "hover:bg-neutral-50/40"
                         }`}
                       >
@@ -444,7 +446,7 @@ export function GuestsTableView({
                             const message = response?.message?.trim() || (invite.guests.length === 1 ? invite.message?.trim() : "");
                             const dietary = response?.dietaryRestrictions?.trim() || (invite.guests.length === 1 ? invite.dietaryRestrictions?.trim() : "");
                             return <>
-                              {modules.dietaryRestrictions && dietary && <TooltipButton type="button" title={dietary} aria-label={`Restrição alimentar de ${guest.name}`} className="inline-flex size-6 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100"><WarningCircleIcon size={14} weight="fill" aria-hidden="true" /></TooltipButton>}
+                              {modules.dietaryRestrictions && dietary && <TooltipButton type="button" title={dietary} aria-label={`Restrição alimentar de ${guest.name}`} className="inline-flex size-6 items-center justify-center rounded-md text-[#722F37] hover:bg-neutral-100"><WarningCircleIcon size={14} weight="fill" aria-hidden="true" /></TooltipButton>}
                               {modules.messages && message && <GuestMessage name={guest.name} message={message} />}
                             </>;
                           }} />
@@ -531,11 +533,8 @@ export function GuestsTableView({
 
                       {/* Sub-row when expanded - matches the airy card feel */}
                       <AdminTableDetails id={`invite-details-${invite.id}`} expanded={isExpanded} colSpan={5 + Number(!!modules.tables) + Number(!!modules.invitationTracking)}>
-                            <div className="space-y-4 rounded-xl border border-neutral-200/70 bg-white px-4 py-4 sm:px-5">
+                            <div className="invitation-people space-y-3 px-4 pb-4 pt-1 sm:px-5">
                               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-100 pb-3 text-xs text-neutral-500">
-                                <span className="font-sans text-sm font-medium text-[#161616]">
-                                  Convidados do convite
-                                </span>
                                 {modules.invitationTracking && (
                                   <span className="text-[11px] text-neutral-400">
                                     {invite.openedAt
@@ -546,7 +545,7 @@ export function GuestsTableView({
                               </div>
 
                               {/* Individual guest rows, styled with airy card elegance */}
-                              <div className="divide-y divide-neutral-100">
+                              <div className="overflow-x-auto"><table aria-label={`Pessoas do convite ${invite.label}`} className="w-full border-collapse text-left"><thead><tr className="border-b border-neutral-100 text-[10px] uppercase tracking-wider text-neutral-400"><th scope="col" className="py-3 pr-6 font-medium">Pessoa</th><th scope="col" className="px-3 py-3 font-medium">Situação</th>{modules.tables && <th scope="col" className="px-3 py-3 font-medium">Mesa e lugar</th>}<th scope="col" className="px-3 py-3 font-medium">Observações</th><th scope="col" className="py-3 pl-3 text-right font-medium">Ações</th></tr></thead><tbody className="divide-y divide-neutral-100">
                                 {invite.guests.map((g) => {
                                   const guestToken =
                                     invite.personalCodes?.[g.id] ??
@@ -562,12 +561,7 @@ export function GuestsTableView({
                                   const tableAssignment = g.tableId ? tableMap.get(g.tableId) : null;
 
                                   return (
-                                    <div
-                                      key={g.id}
-                                      className="grid grid-cols-1 items-center gap-x-6 gap-y-3 py-3.5 text-xs sm:grid-cols-[minmax(0,1fr)_auto]"
-                                    >
-                                      <div className="flex flex-wrap items-center gap-3">
-                                        <span className="font-sans text-sm font-medium uppercase text-neutral-800">
+<tr key={g.id} className="text-xs"><td className="whitespace-nowrap py-3.5 pr-6"><div className="flex items-center gap-2">                                        <span className="font-sans text-sm font-medium uppercase text-neutral-800">
                                           {g.name}
                                         </span>
                                         {g.child && (
@@ -575,8 +569,8 @@ export function GuestsTableView({
                                             (Criança)
                                           </span>
                                         )}
-                                        <span className="text-neutral-200">·</span>
-                                        <span
+
+                                        </div></td><td className="whitespace-nowrap px-3 py-3.5"><span
                                           className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
                                             g.status === "confirmado"
                                               ? "bg-emerald-50 text-emerald-800"
@@ -591,26 +585,14 @@ export function GuestsTableView({
                                             ? "Não comparecerá"
                                             : "Pendente"}
                                         </span>
-                                        {modules.tables && tableAssignment && (
-                                          <>
-                                            <span className="text-neutral-200">·</span>
-                                            <span className="text-neutral-700">
-                                              {tableAssignment}
-                                              {g.seat ? ` (Lugar ${g.seat})` : ""}
-                                            </span>
-                                          </>
-                                        )}
-                                      </div>
-
-                                      <div className="flex flex-wrap items-center justify-end gap-3">
-                                        {modules.dietaryRestrictions && guestDietary && (
+</td>{modules.tables && <td className="whitespace-nowrap px-3 py-3.5 text-neutral-600">{tableAssignment || "Sem mesa"}{g.seat ? ` (Lugar ${g.seat})` : ""}</td>}<td className="whitespace-nowrap px-3 py-3.5"><div className="flex items-center gap-2">                                        {modules.dietaryRestrictions && guestDietary && (
                                           <span className="flex items-center gap-1 text-neutral-700 bg-neutral-100 px-2.5 py-0.5 rounded-full text-[11px]">
                                             <WarningCircleIcon size={13} weight="fill" />
                                             <span>{guestDietary}</span>
                                           </span>
                                         )}
                                         {modules.messages && guestMessage && <GuestMessage name={g.name} message={guestMessage} />}
-                                        <div className="flex items-center gap-2">
+</div></td><td className="whitespace-nowrap py-3.5 pl-3"><div className="flex items-center justify-end gap-2">
                                           <button
                                             type="button"
                                             disabled={busy || !invite.active}
@@ -620,7 +602,7 @@ export function GuestsTableView({
                                             {copiedId === g.id ? <CheckIcon size={15} aria-hidden="true" /> : <CopyIcon size={15} aria-hidden="true" />}
                                             {copiedId === g.id ? "Copiado!" : "Copiar link pessoal"}
                                           </button>
-                                          <span className="text-neutral-200">·</span>
+
                                           <button
                                             type="button"
                                             disabled={busy || !invite.active || generatingPdf === g.id}
@@ -636,11 +618,10 @@ export function GuestsTableView({
                                             {generatingPdf === g.id ? "Gerando convite…" : "Baixar convite"}
                                           </button>
                                         </div>
-                                      </div>
-                                    </div>
+</td></tr>
                                   );
                                 })}
-                              </div>
+</tbody></table></div>
 
                               {/* Family Level Notes */}
                               {(invite.message || invite.dietaryRestrictions || invite.respondedAt) && (
