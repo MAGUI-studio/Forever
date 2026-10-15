@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test:guests": "node tests/guests.mjs",
+    "stripe:listen": "node scripts/stripe-listen.mjs",
     "migrate:legacy": "node scripts/migrate-legacy-wedding.mjs"
   },
   "dependencies": {
