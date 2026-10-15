@@ -61,6 +61,8 @@ const services = () => ({
     deleteUser: async uid => {for(const [email,user] of authAccounts)if(user.uid===uid)authAccounts.delete(email);},
     verifyIdToken: async (token) => {
       if (token === "managed") return {...authAccounts.get("newstaff@example.com"),email_verified:false};
+      if (token === "owner-verified") return {uid:"owner",email:"contato@guibus.dev",email_verified:true};
+      if (token === "owner-unverified") return {uid:"owner",email:"contato@guibus.dev",email_verified:false};
       if (token === "valid") return { uid: "bride" };
       if (token === "reception") return {uid:"reception-user",email:"staff@example.com",email_verified:true};
       if (token === "unverified") return {uid:"unverified",email:"staff@example.com",email_verified:false};
@@ -71,6 +73,8 @@ const services = () => ({
 });
 process.env.FIREBASE_ADMIN_UIDS = "bride,groom";
 const modules = new Map();
+const checkoutSessions = [];
+let upgradeStripePrice = {active:true,currency:"brl",type:"one_time",unit_amount:50000};
 function load(filename) {
   const full = path.resolve(filename);
   if (modules.has(full)) return modules.get(full).exports;
@@ -86,6 +90,7 @@ function load(filename) {
   const localRequire = (name) => {
     if (name.endsWith(".json")) return JSON.parse(fs.readFileSync(path.resolve(path.dirname(full),name),"utf8"));
     if (name === "server-only") return {};
+    if (name === "@/lib/stripe") return {getStripe:()=>({prices:{retrieve:async()=>upgradeStripePrice},checkout:{sessions:{create:async data=>{checkoutSessions.push(data);return {id:"test-session",url:"https://checkout.stripe.com/test"};}}}})};
     if (name === "@/lib/firebase/admin" || name === "./firebase/admin")
       return { services };
     if (name.startsWith("@/")) return load(`src/${name.slice(2)}.ts`);
@@ -125,6 +130,56 @@ async function check(title, work) {
   console.log(`OK ${title}`);
 }
 (async () => {
+  await check("webhook só ativa após pagamento concluído e não reaplica eventos duplicados", async () => {
+    const {handlePaymentSuccess}=load("src/lib/stripe-fulfillment.ts");
+    const original=clone(store.get("weddings/test-couple"));
+    const session={id:"cs_test_webhook",status:"complete",payment_status:"unpaid",metadata:{action:"upgrade",plan:"foreverPro",weddingSlug:"test-couple"},amount_total:50000,currency:"brl"};
+    try {
+      store.set("weddings/test-couple",{...original,plan:"essencial"});
+      assert.equal(await handlePaymentSuccess(session),false);
+      assert.equal(store.get("weddings/test-couple").plan,"essencial");
+      assert.equal(await handlePaymentSuccess({...session,payment_status:"paid"}),true);
+      assert.equal(store.get("weddings/test-couple").plan,"foreverPro");
+      assert.ok(store.get("orders/cs_test_webhook").fulfilledAt);
+      // A replay cannot undo a later manual plan change by the super admin.
+      store.set("weddings/test-couple",{...original,plan:"essencial"});
+      await handlePaymentSuccess({...session,payment_status:"paid"});
+      assert.equal(store.get("weddings/test-couple").plan,"essencial");
+      assert.equal([...store.keys()].filter(key=>key==="weddings/test-couple/audit/cs_test_webhook").length,1);
+      const webhook=load("src/app/api/webhooks/stripe/route.ts");
+      assert.equal((await webhook.POST(new Request("https://wedding.example/api/webhooks/stripe",{method:"POST",body:JSON.stringify({type:"checkout.session.completed",data:{object:session}})}))).status,400);
+    } finally {
+      store.set("weddings/test-couple",original);
+      store.delete("orders/cs_test_webhook");store.delete("weddings/test-couple/audit/cs_test_webhook");
+    }
+  });
+  const checkout = load("src/app/api/checkout/route.ts");
+  await check("upgrade cobra apenas a diferença e valida o preço do Stripe", async () => {
+    const originalWedding=clone(store.get("weddings/test-couple"));
+    const originalPrice=process.env.STRIPE_PRICE_UPGRADE;
+    const payload={plan:"foreverPro",action:"upgrade",weddingSlug:"test-couple"};
+    try {
+      store.set("weddings/test-couple",{...originalWedding,plan:"essencial"});
+      delete process.env.STRIPE_PRICE_UPGRADE;
+      assert.equal((await checkout.POST(request("POST",payload))).status,200);
+      assert.equal(checkoutSessions.at(-1).line_items[0].price_data.unit_amount,50000);
+      process.env.STRIPE_PRICE_UPGRADE="price_upgrade_test";
+      assert.equal((await checkout.POST(request("POST",payload))).status,200);
+      assert.equal(checkoutSessions.at(-1).line_items[0].price,"price_upgrade_test");
+      upgradeStripePrice={...upgradeStripePrice,unit_amount:99700};
+      const sessionCount=checkoutSessions.length;
+      assert.equal((await checkout.POST(request("POST",payload))).status,503);
+      assert.equal(checkoutSessions.length,sessionCount);
+      assert.equal((await checkout.POST(request("POST",payload,"invalid"))).status,401);
+      assert.equal((await checkout.POST(request("POST",{...payload,weddingSlug:"other-couple"}))).status,403);
+      store.set("weddings/test-couple",{...originalWedding,plan:"foreverPro"});
+      assert.equal((await checkout.POST(request("POST",payload))).status,409);
+    } finally {
+      store.set("weddings/test-couple",originalWedding);
+      upgradeStripePrice={...upgradeStripePrice,unit_amount:50000};
+      if(originalPrice===undefined)delete process.env.STRIPE_PRICE_UPGRADE;else process.env.STRIPE_PRICE_UPGRADE=originalPrice;
+    }
+  });
   await check("admin exige autenticação", async () =>
     assert.equal(
       (await admin.GET(request("GET", null, "invalid"))).status,
@@ -480,40 +535,15 @@ async function check(title, work) {
     const ref="weddings/other-couple/members/"+authAccounts.get("newstaff@example.com").uid;store.set(ref,{active:true,role:"admin"});
     assert.equal((await destination.GET(request("GET",null,"managed"))).status,409);store.delete(ref);
   });
-  await check("módulos têm dependências consistentes por casamento",async()=>{
-    const {resolveModules,toggleModule}=load("src/config/modules.ts");
-    const defaults=resolveModules();assert(defaults.dietaryRestrictions);const withoutDiet=toggleModule(defaults,"dietaryRestrictions",false);assert(!withoutDiet.buffet);assert(withoutDiet.messages);assert(resolveModules().dietaryRestrictions);
-    const noGuests=toggleModule(defaults,"guestList",false);assert(!noGuests.rsvp&&!noGuests.checkIn&&!noGuests.team&&!noGuests.tables);assert(noGuests.gifts);
-    assert(toggleModule(noGuests,"team",true).checkIn);assert(toggleModule(noGuests,"team",true).guestList);
-  });
-  await check("somente administrador principal altera módulos e a configuração é isolada",async()=>{
-    const modulesApi=load("src/app/api/platform/modules/route.ts"),{resolveModules}=load("src/config/modules.ts");
-    const payload={slug:"test-couple",modules:{...resolveModules(),dietaryRestrictions:false}};
-    assert.equal((await modulesApi.PUT(request("PUT",payload))).status,403);
-    store.set("platformAdmins/bride",{active:true});
-    assert.equal((await modulesApi.PUT(request("PUT",payload))).status,200);
-    assert.equal(store.get("weddings/test-couple").modules.buffet,false);assert.equal(store.get("weddings/other-couple").modules,undefined);
-    assert.equal((await modulesApi.PUT(request("PUT",{...payload,modules:{...payload.modules,unknown:true}}))).status,400);
-    store.delete("platformAdmins/bride");
-  });
-  await check("restrições desativadas desaparecem das respostas sem apagar dados",async()=>{
-    const before=clone(store.get("weddings/test-couple/invitations/"+eventInvite.id));
-    const result=await (await admin.GET(request("GET"))).json();assert(!JSON.stringify(result).includes("dietaryRestrictions"));assert(JSON.stringify(result).includes("message"));
-    const publicView=await (await lookup.POST(request("POST",{token:eventInvite.token}))).json();assert(!JSON.stringify(publicView).includes("dietaryRestrictions"));
-    const payload={token:eventInvite.token,revision:publicView.invitation.revision,responses:publicView.invitation.guests.map(g=>({id:g.id,status:"confirmado",dietaryRestrictions:"not allowed"}))};
-    assert.equal((await rsvp.POST(request("POST",payload))).status,403);
-    assert.deepEqual(store.get("weddings/test-couple/invitations/"+eventInvite.id).personalResponses,before.personalResponses);
-  });
-  await check("módulos desativados bloqueiam acesso direto às APIs",async()=>{
-    const original=clone(store.get("weddings/test-couple"));
-    store.set("weddings/test-couple",{...original,modules:{...original.modules,checkIn:false,organization:false}});
-    assert.equal((await reception.GET(request("GET"))).status,403);
-    assert.equal((await reception.PATCH(request("PATCH",{id:eventInvite.id,guestIds:[guests[0].id],checkedIn:true,expectedCheckedIn:false}))).status,403);
-    assert.equal((await ops.POST(request("POST",{action:"table",name:"Blocked table",capacity:5}))).status,403);
-    const operations=await (await ops.GET(request("GET"))).json();assert.deepEqual(operations.tables,[]);assert.deepEqual(operations.team,[]);assert.deepEqual(operations.history,[]);
-    store.set("weddings/test-couple",{...original,modules:{...original.modules,guestList:false}});
-    assert.equal((await admin.GET(request("GET"))).status,403);assert.equal((await lookup.POST(request("POST",{token:eventInvite.token}))).status,403);
-    store.set("weddings/test-couple",original);
+  await check("planos são a única origem dos recursos e flags antigas não interferem",async()=>{
+    const {resolveModules,moduleKeys}=load("src/config/modules.ts");
+    const oldFlags=Object.fromEntries(moduleKeys.map(key=>[key,false]));
+    assert(moduleKeys.every(key=>resolveModules(oldFlags,"foreverPro")[key]));
+    const essential=resolveModules(oldFlags,"essencial");
+    assert(essential.guestList&&essential.rsvp&&essential.siteEditor&&essential.gifts);
+    assert(!essential.tables&&!essential.team&&!essential.history&&!essential.checkIn&&!essential.buffet);
+    assert(moduleKeys.every(key=>!resolveModules(oldFlags,null)[key]));
+    assert(!fs.existsSync(path.resolve("src/app/api/platform/modules/route.ts")));
   });
   await check("editor salva rascunho isolado, publica e bloqueia revisões antigas",async()=>{
     const site=load("src/app/api/admin/site/route.ts"),{emptyWeddingConfig}=load("src/config/forever.ts"),{copyDefaults}=load("src/config/templates/registry.ts");
@@ -528,7 +558,8 @@ async function check(title, work) {
     assert.equal((await site.PUT(request("PUT",{...payload,action:"publish",expectedRevision:1}))).status,200);
     assert.equal(store.get("weddings/test-couple").config.copy["hero.text2"],"Texto personalizado");assert.equal(store.get("weddings/test-couple").siteDraft,null);
     assert.equal((await site.PUT(request("PUT",{...payload,expectedRevision:2,templateId:"unknown"}))).status,400);
-    store.set("weddings/test-couple",{...original,modules:{siteEditor:false}});assert.equal((await site.GET(request("GET"))).status,403);
+    store.set("weddings/test-couple",{...original,modules:{siteEditor:false}});assert.equal((await site.GET(request("GET"))).status,200);
+    store.set("weddings/test-couple",{...original,plan:null});assert.equal((await site.GET(request("GET"))).status,403);
     store.set("weddings/test-couple",original);
   });
   await check("templates têm seções próprias e a troca preserva conteúdo personalizado",async()=>{
@@ -699,6 +730,21 @@ async function check(title, work) {
       ...(data ? { body: JSON.stringify(data) } : {}),
     });
 
+    store.set("weddings/essencial-wedding/settings/tables", {tables:[{id:"legacy-table",name:"Mesa antiga",capacity:8}]});
+    store.set("weddings/essencial-wedding/receptionTeam/legacy", {email:"legacy@example.com",active:true});
+    store.set("weddings/essencial-wedding/auditLog/legacy", {action:"Alteração antiga",at:new Date().toISOString()});
+    const operationsRoute = load("src/app/api/admin/operations/route.ts");
+    const protectedData = await (await operationsRoute.GET(essencialReq("GET"))).json();
+    assert.deepEqual(protectedData.tables, []);
+    assert.deepEqual(protectedData.team, []);
+    assert.deepEqual(protectedData.history, []);
+    for (const data of [
+      {action:"table",name:"Mesa bloqueada",capacity:8},
+      {action:"create-team",email:"blocked@example.com",password:"password123"},
+    ]) assert.equal((await operationsRoute.POST(essencialReq("POST",data))).status,403);
+    const receptionRoute = load("src/app/api/admin/reception/route.ts");
+    assert.equal((await receptionRoute.GET(essencialReq("GET"))).status,403);
+
     const { resolveModules } = load("src/config/modules.ts");
     const modules = resolveModules({ checkIn: true, organization: true, guestList: true }, "essencial");
     assert.equal(modules.checkIn, false);
@@ -715,18 +761,18 @@ async function check(title, work) {
       checkedIn: false,
     }));
     const create40 = await admin.POST(essencialReq("POST", {
-      label: "Grupo dos 40",
+      label: "Grupo dos 45",
       active: true,
       kind: "group",
-      guests: guests50.slice(0, 40),
+      guests: guests50.slice(0, 45),
     }));
     assert.equal(create40.status, 201);
 
     const create10 = await admin.POST(essencialReq("POST", {
-      label: "Grupo dos 10",
+      label: "Grupo dos 5",
       active: true,
       kind: "group",
-      guests: guests50.slice(40, 50),
+      guests: guests50.slice(45, 50),
     }));
     assert.equal(create10.status, 201);
 
@@ -739,6 +785,35 @@ async function check(title, work) {
     assert.equal(create51.status, 403);
     const errBody = await create51.json();
     assert(errBody.error.includes("50"));
+  });
+  await check("Forever PRO aceita grupos com mais de 50 convidados sem limite de 40 por convite", async () => {
+    store.set("weddings/test-couple", {slug:"test-couple",status:"published",plan:"foreverPro",config:{couple:{partner1:"Test",partner2:"Couple"}}});
+    store.set("weddings/test-couple/members/bride", {role:"admin",active:true});
+    const response = await admin.POST(request("POST", {label:"Grupo PRO de 75 pessoas",active:true,kind:"group",guests:Array.from({length:75},(_,index)=>({id:randomUUID(),name:"Pessoa PRO "+index,child:false,status:"pendente",checkedIn:false}))}));
+    assert.equal(response.status,201);
+  });
+  await check("Studio altera e remove planos sem cobrança, preserva dados e bloqueia recursos por plano",async()=>{
+    const platform=load("src/app/api/platform/weddings/route.ts");
+    const {resolveModules}=load("src/config/modules.ts");
+    const {requestWedding}=load("src/lib/guest-server.ts");
+    store.set("weddings/plan-test",{slug:"plan-test",plan:"foreverPro",status:"published",config:{couple:{partner1:"Plan",partner2:"Test"}}});
+    store.set("weddings/plan-test/members/bride",{active:true,role:"admin"});
+    store.set("weddings/plan-test/invitations/existing",{active:true,token:"test-secret",guests:[{id:randomUUID(),name:"Preservado",status:"pendente",child:false,checkedIn:false}]});
+    const scoped=(method,data,token="valid")=>new Request("https://wedding.example/api",{method,headers:{origin:"https://wedding.example",authorization:"Bearer "+token,"Content-Type":"application/json","x-wedding-slug":"plan-test"},...(data?{body:JSON.stringify(data)}:{})});
+    assert.equal((await platform.PATCH(scoped("PATCH",{slug:"plan-test",plan:"essencial"}))).status,403);
+    assert.equal((await platform.PATCH(scoped("PATCH",{slug:"plan-test",plan:"essencial"},"owner-unverified"))).status,403);
+    assert.equal((await platform.PATCH(scoped("PATCH",{slug:"plan-test",plan:"essencial"},"owner-verified"))).status,200);
+    assert.equal(store.get("weddings/plan-test").plan,"essencial");
+    assert.equal((await platform.PATCH(scoped("PATCH",{slug:"plan-test",plan:null},"owner-verified"))).status,200);
+    assert.equal(store.get("weddings/plan-test").plan,null);
+    assert.equal(store.get("weddings/plan-test").status,"published");
+    assert.equal(store.get("weddings/plan-test/invitations/existing").guests[0].name,"Preservado");
+    assert.equal((await admin.GET(scoped("GET"))).status,403);
+    await assert.rejects(()=>requestWedding(scoped("GET"),true));
+    assert.equal((await platform.PATCH(scoped("PATCH",{slug:"plan-test",plan:"foreverPro"},"owner-verified"))).status,200);
+    assert.equal((await admin.GET(scoped("GET"))).status,200);
+    assert.equal((await requestWedding(scoped("GET"),true)).plan,"foreverPro");
+    assert.equal(store.get("weddings/plan-test/invitations/existing").guests[0].name,"Preservado");
   });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,
