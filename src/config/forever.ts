@@ -27,6 +27,7 @@ export const FOREVER_ORIGIN = (
 ).replace(/\/+$/, "");
 export const reservedSlugs = new Set([
   "painel",
+  "acesso-expirado",
   "convidados",
   "recepcao",
   "mesas",

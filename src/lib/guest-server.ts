@@ -1,3 +1,4 @@
+import { isPlanExpired } from "@/config/plan-access";
 import {isPlatformAdmin} from "./platform-access";
 import {resolveModules,type WeddingModule} from "@/config/modules";
 import "server-only";
@@ -9,6 +10,7 @@ export class HttpError extends Error {
   constructor(
     public status: number,
     message: string,
+    public redirect?: string,
   ) {
     super(message);
   }
@@ -21,7 +23,7 @@ export function reply(data: unknown, status = 200) {
 }
 export function failure(error: unknown) {
   if (error instanceof HttpError)
-    return reply({ error: error.message }, error.status);
+    return reply({ error: error.message, ...(error.redirect ? {redirect:error.redirect} : {}) }, error.status);
   if (error instanceof z.ZodError || error instanceof SyntaxError)
     return reply({ error: "Confira os dados informados." }, 400);
   return reply(
@@ -51,6 +53,7 @@ export async function requireAccess(request: Request) {
   const wedding=await requestWedding(request);
   const scope=scopedDatabase(db,wedding.slug);
   if(await isPlatformAdmin(identity.uid, identity))return {db:scope,uid:identity.uid,email:identity.email??"MAGUI.studio",role:"admin" as const,wedding};
+  if(isPlanExpired(wedding))throw new HttpError(403,"O prazo de acesso do seu plano terminou.",`/${wedding.slug}/acesso-expirado`);
   if(wedding.plan === null)throw new HttpError(403,"Este casamento está sem plano. Entre em contato com a administração.");
   if(wedding.status==="suspended"||wedding.status==="archived")throw new HttpError(403,"Este casamento está suspenso ou arquivado.");
   const member=await db.doc("weddings/"+wedding.slug+"/members/"+identity.uid).get();
@@ -290,7 +293,7 @@ export const settingsSchema = z
 export async function requestWedding(request:Request,publicOnly=false){
  const slug=request.headers.get("x-wedding-slug")??"";
  const wedding=await findWedding(slug);
- if(!wedding || (publicOnly && (wedding.status!=="published" || wedding.plan === null)))throw new HttpError(404,"Casamento indisponível.");
+ if(!wedding || (publicOnly && (wedding.status!=="published" || wedding.plan === null || isPlanExpired(wedding))))throw new HttpError(404,"Casamento indisponível.");
  return wedding;
 }
 export async function publicWeddingDatabase(request:Request){const wedding=await requestWedding(request,true);return scopedDatabase(services().db,wedding.slug);}

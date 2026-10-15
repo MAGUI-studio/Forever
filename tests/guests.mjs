@@ -130,6 +130,27 @@ async function check(title, work) {
   console.log(`OK ${title}`);
 }
 (async () => {
+  await check("validade inclui o dia final em São Paulo, bloqueia gestão e mantém login", async () => {
+    const {planAccessEndsAt,isPlanExpired}=load("src/config/plan-access.ts");
+    const wedding={plan:"essencial",config:{couple:{weddingDate:"2026-01-31"}}};
+    assert.equal(planAccessEndsAt(wedding).toISOString(),"2026-02-01T03:00:00.000Z");
+    assert.equal(isPlanExpired(wedding,new Date("2026-02-01T02:59:59Z")),false);
+    assert.equal(isPlanExpired(wedding,new Date("2026-02-01T03:00:00Z")),true);
+    assert.equal(planAccessEndsAt({...wedding,plan:"foreverPro"}).toISOString(),"2026-05-01T03:00:00.000Z");
+    assert.equal(isPlanExpired({plan:"essencial"}),false);
+    const original=clone(store.get("weddings/test-couple"));
+    try {
+      store.set("weddings/test-couple",{...original,...wedding});
+      const result=await admin.GET(request("GET"));
+      assert.equal(result.status,403);
+      assert.equal((await result.json()).redirect,"/test-couple/acesso-expirado");
+      const destination=load("src/app/api/auth/destination/route.ts");
+      const response=await destination.GET(request("GET"));
+      assert.equal(response.status,200);
+      assert.equal((await response.json()).destination,"/test-couple/acesso-expirado");
+      assert.equal((await lookup.POST(request("POST",{token:"ABC-DEF"}))).status,404);
+    } finally {store.set("weddings/test-couple",original);}
+  });
   await check("webhook só ativa após pagamento concluído e não reaplica eventos duplicados", async () => {
     const {handlePaymentSuccess}=load("src/lib/stripe-fulfillment.ts");
     const original=clone(store.get("weddings/test-couple"));
