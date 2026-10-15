@@ -31,7 +31,7 @@ export function MobileAdminMenu({role,section,email,busy,authorized,plan,onSetti
     {href:"/convidados",label:"Lista de convidados",key:"guests",icon:Users},
     {href:"/recepcao",label:"Controle de chegada",key:"check-in",icon:Check},
     ...[
-      {key:"site",href:"/site",label:"Personalizar site"},
+      {key:"site",href:"/editar-site",label:"Personalizar site"},
       {key:"tables",href:"/mesas",label:"Mesas e lugares"},
       {key:"buffet",href:"/buffet",label:"Alimentação e buffet"},
       {key:"history",href:"/historico",label:"Histórico de alterações"},

@@ -8,8 +8,8 @@ const ADMIN_TO_PT: Record<string, string> = {
   buffet: "buffet",
   history: "historico",
   team: "equipe",
-  site: "site",
-  "site-settings": "site",
+  site: "editar-site",
+  "site-settings": "editar-site",
   preview: "previa",
   "editor-preview": "previa-editor",
 };

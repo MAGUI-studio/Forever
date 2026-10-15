@@ -1,4 +1,5 @@
 "use client";
+import { notify } from "@/components/ui/ForeverToaster";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -161,9 +162,10 @@ export function DashboardOverview({
       const url = `${origin}/casamento/${slug}`;
       await navigator.clipboard.writeText(url);
       setCopiedLink(true);
+      notify.success("Link do site copiado!", "Pronto para compartilhar.");
       setTimeout(() => setCopiedLink(false), 2500);
     } catch {
-      // ignore
+      notify.error("Não foi possível copiar", "Tente copiar o link novamente.");
     }
   }
 
@@ -337,7 +339,7 @@ export function DashboardOverview({
             <div className="flex flex-wrap items-center gap-3 pt-2">
               {modules.siteEditor && (
                 <Link
-                  href={weddingPath("site")}
+                  href={weddingPath("editar-site")}
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#722F37] px-5 py-2.5 text-xs font-semibold text-white transition-all hover:bg-[#5B252C] shadow-xs"
                 >
                   <Pencil size={14} />

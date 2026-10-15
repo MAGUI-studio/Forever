@@ -1,13 +1,14 @@
 "use client";
+import { UpgradePlanDialog } from "./UpgradePlanDialog";
+import { InvitationEditorPage } from "./InvitationEditorPage";
+import { AdminPageHeading } from "./AdminPageHeading";
+import { notify, useFeedbackToasts } from "@/components/ui/ForeverToaster";
 import {resolveModules,sectionModule} from "@/config/modules";
 import {AdminLoading} from "./AdminLoading";
 import { VisualSiteEditor } from "./VisualSiteEditor";
 import { AdminContainer } from "./AdminContainer";
-import { SectionDivider } from "@/components/ui/SectionDivider";
-import { AttendanceBadge } from "@/components/ui/AttendanceBadge";
-import { ExpandingIconButton, ExpandingIconButtonGroup } from "@/components/ui/ExpandingIconButton";
 import { useEffect, useRef, useState } from "react";
-import { EnvelopeSimpleIcon, CopyIcon, CheckIcon, CaretDownIcon, PencilSimpleIcon, PaperPlaneTiltIcon, TrashIcon, UsersIcon, WarningCircleIcon, ChatTextIcon } from "@phosphor-icons/react";
+import { PencilSimpleIcon } from "@phosphor-icons/react";
 import { WeddingSelect } from "@/components/ui/WeddingSelect";
 import { readApiResponse } from "@/lib/api-response";
 import { AdminButton } from "./AdminButton";
@@ -24,12 +25,14 @@ import { useRouter } from "next/navigation";
 import { AdminModals, type InviteDraft } from "./modals";
 import { useAdminModal, type AdminModalName } from "./modal-state";
 import {useWedding} from "@/components/wedding/WeddingProvider";
+import { GuestsTableView } from "./GuestsTableView";
 import {
   ArrowUpRight,
   CalendarDays,
   Check,
   CheckCircle2,
   ChevronDown,
+  Clock,
   Flower2,
   Heart,
   History,
@@ -43,8 +46,10 @@ import {
   RefreshCw,
   Search,
   UserCheck,
+  UserX,
   Users,
   Utensils,
+  X,
 } from "lucide-react";
 import {
   WeddingOrnaments,
@@ -58,14 +63,16 @@ import {
   type User,
 } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase/client";
-import { PLAN_NAMES, type WeddingPlan } from "@/config/forever";
+import { PLAN_NAMES, getWeddingGuestLimit, type WeddingPlan } from "@/config/forever";
 import { ForeverLogo } from "@/components/forever/ForeverLogo";
 import type { Invitation, RSVPSettings } from "@/types/guests";
 export function AdminPanel({
   view,
   section = "overview",
+  invitationEditor,
 }: {
   view: "entry" | "login" | "dashboard";
+  invitationEditor?: "new" | { id: string };
   section?: "site" | "overview" | "guests" | "check-in" | "tables" | "buffet" | "history" | "team";
 }) {
   const {slug,config:weddingConfig,setConfig,setTheme,modules,setModules,setTemplateId,templateId,themeStyle,path:weddingPath}=useWedding();
@@ -85,6 +92,7 @@ export function AdminPanel({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  useFeedbackToasts(error);
   const [busy, setBusy] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
   const [invites, setInvites] = useState<Invitation[]>([]);
@@ -94,8 +102,9 @@ export function AdminPanel({
   });
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("todos");
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  const [upgradeSuccess, setUpgradeSuccess] = useState(false);
+  const [upgradePending, setUpgradePending] = useState(false);
+  const [upgradeDialogOpen,setUpgradeDialogOpen] = useState(false);
+  const [upgradeError,setUpgradeError] = useState("");
   const [upgradeLoading, setUpgradeLoading] = useState(false);
   const [orgOpen, setOrgOpen] = useState(false);
   const orgTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -111,24 +120,16 @@ export function AdminPanel({
     }, 160);
   }
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("upgrade") === "success") {
-        setUpgradeSuccess(true);
-        const cleanUrl = window.location.pathname;
-        window.history.replaceState({}, "", cleanUrl);
-      }
-    }
-  }, []);
-
-  async function handleUpgrade() {
+  function handleUpgrade() { setUpgradeError(""); setUpgradeDialogOpen(true); }
+  async function startUpgradeCheckout() {
     try {
+      if (!user) throw new Error("Entre na sua conta para continuar.");
       setUpgradeLoading(true);
+      setUpgradeError("");
       setError("");
       const res = await fetch("/api/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + await user.getIdToken(), "x-wedding-slug": slug },
         body: JSON.stringify({
           plan: "foreverPro",
           action: "upgrade",
@@ -144,6 +145,7 @@ export function AdminPanel({
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Erro ao iniciar upgrade.";
       setError(message);
+      setUpgradeError(message);
       setUpgradeLoading(false);
     }
   }
@@ -183,12 +185,25 @@ export function AdminPanel({
       ...(data ? { body: JSON.stringify(data) } : {}),
     });
     const result = await readApiResponse(response);
+    if (method !== "GET") {
+      const details = data as { sent?: boolean; checkedIn?: boolean; action?: string } | undefined;
+      const messages: Record<string, string> = {
+        table: "Mesa salva", "delete-table": "Mesa excluída", assign: "Lugares atualizados",
+        "create-team": "Conta da equipe criada", team: "Acesso da equipe atualizado", "remove-team": "Acesso da equipe removido",
+      };
+      const title = path.endsWith("/invites/sent") ? (details?.sent ? "Convite marcado como enviado" : "Marcação de envio removida")
+        : path.endsWith("/invites") ? (method === "POST" ? "Convite criado!" : method === "DELETE" ? "Convite excluído" : "Convite atualizado!")
+        : path.endsWith("/settings") ? "Configurações salvas"
+        : path.endsWith("/reception") ? (details?.checkedIn ? "Chegada registrada" : "Chegada desfeita")
+        : messages[details?.action ?? ""] ?? "Alterações salvas";
+      notify.success(title);
+    }
     return result;
   }
   async function load(account = user) {
     setLoadingMessage("Buscando os detalhes do seu casamento…");
     const session = await api("/api/admin/session", "GET", undefined, account);
-    setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(session.wedding.modules??{});setTemplateId(session.wedding.templateId??"botanical-classic");setPlan(session.wedding.plan === "essencial" ? "essencial" : "foreverPro");
+    setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(resolveModules(session.wedding.modules, session.wedding.plan));setTemplateId(session.wedding.templateId??"botanical-classic");setPlan(session.wedding.plan === "essencial" ? "essencial" : "foreverPro");
     const enabled=resolveModules(session.wedding.modules, session.wedding.plan);
     if(sectionModule[section]&&!enabled[sectionModule[section]!]){setLoading(false);router.replace(weddingPath("painel"));return;}
     const reception = session.role === "reception";
@@ -208,6 +223,33 @@ export function AdminPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, view]);
   useEffect(() => {
+    if (!user || !authorized || view !== "dashboard") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgrade") !== "success") return;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    setUpgradePending(true);
+    const checkPlan = async () => {
+      try {
+        const session = await api("/api/admin/session");
+        if (cancelled) return;
+        if (session.wedding.plan === "foreverPro") {
+          await load(user);
+          if (cancelled) return;
+          setUpgradePending(false);
+          params.delete("upgrade");params.delete("session_id");
+          window.history.replaceState({},"",window.location.pathname+(params.size?`?${params}`:""));
+          notify.success("Bem-vindo ao Forever PRO!", "Plano ativado. Convidados ilimitados e recursos de organização liberados.","forever-upgrade-success");
+          return;
+        }
+      } catch { /* Keep pending until the official webhook updates the plan. */ }
+      if (!cancelled) timer = setTimeout(checkPlan,3000);
+    };
+    void checkPlan();
+    return () => {cancelled=true;clearTimeout(timer);};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user,authorized,view]);
+  useEffect(() => {
     if(!authorized || section !== "check-in" || busy) return;
     let cancelled = false;
     const timer = setInterval(async () => {
@@ -222,19 +264,21 @@ export function AdminPanel({
     try {
       await navigator.clipboard.writeText(invitationUrl(token,slug));
       setCopiedId(key);
+      notify.success("Link copiado!", "O link do convite está pronto para compartilhar.");
       if (copyTimer.current) clearTimeout(copyTimer.current);
       copyTimer.current = setTimeout(() => setCopiedId(null), 3000);
     } catch {setError("Não foi possível copiar o link. Tente novamente.");}
   }
   async function action(work: () => Promise<void>, local = false) {
     if (!local) setBusy(true);
+    const feedbackId = notify.loading("Concluindo sua solicitação…");
     setError("");
-    if (!local)
     try {
       await work();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Não foi possível concluir.");
     } finally {
+      notify.dismiss(feedbackId);
       if (!local) setBusy(false);
     }
   }
@@ -244,15 +288,20 @@ export function AdminPanel({
     void setModalState({ modal, convite });
   }
   function open(invite?: Invitation) {
-    openModal(invite ? "edit-invitation" : "new-invitation", invite?.id ?? null);
+    if (!invite && invites.filter(item => item.active).reduce((count, item) => count + item.guests.length, 0) >= getWeddingGuestLimit(plan)) {
+      notify.info("Limite de convidados atingido", "O Forever Essencial permite 50 convidados no evento. O Forever PRO oferece convidados ilimitados.");
+      return;
+    }
+    router.push(weddingPath(invite ? `convidados/${invite.id}/editar` : "convidados/novo"));
   }
   function closeModal() {
     setError("");
+    if (invitationEditor) { router.push(weddingPath("convidados")); return; }
     void setModalState(null, { history: "replace" });
   }
   async function downloadPdf(invitation: {label: string; token: string}, key: string) {
     setGeneratingPdf(key); setError("");
-    try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf"); await downloadInvitationPdf(invitation,weddingConfig,slug,templateId);}
+    try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf"); await downloadInvitationPdf(invitation,weddingConfig,slug,templateId); notify.success("Convite gerado!", "O download do PDF foi iniciado.");}
     catch {setError("Não foi possível gerar o convite. Tente novamente.");}
     finally {setGeneratingPdf(null);}
   }
@@ -266,7 +315,7 @@ export function AdminPanel({
           : draft,
       );
       closeModal();
-      await load();
+      if (!invitationEditor) await load();
 
     });
   }
@@ -288,10 +337,6 @@ export function AdminPanel({
               g.status === filter,
             ))),
   );
-  const invitationSections = [
-    {id:"groups", title:"Famílias e grupos", invitations:visible.filter(i => i.kind === "group" || (!i.kind && i.guests.length > 1))},
-    {id:"individuals", title:"Convites individuais", invitations:visible.filter(i => i.kind === "individual" || (!i.kind && i.guests.length === 1))},
-  ];
   if (view === "dashboard" && (!ready || (!!user && loading && !authorized))) return <AdminLoading description={!ready ? "Verificando seu acesso…" : loadingMessage}/>;
   if(authorized&&section==="site"&&modules.siteEditor)return <VisualSiteEditor/>;
   return (
@@ -403,7 +448,7 @@ export function AdminPanel({
                   {orgOpen && (
                     <div
                       role="menu"
-                      className="absolute top-full left-1/2 -translate-x-1/2 z-50 mt-2 w-[460px] rounded-2xl border border-[#722F3725] bg-[#FFFDFB] p-3 shadow-xl shadow-[#722F3712] animate-in fade-in-0 zoom-in-95 duration-150"
+                      className="absolute top-full left-1/2 -translate-x-1/2 z-50 mt-2 w-[460px] rounded-2xl border border-[#722F3725] bg-white p-3 shadow-xl shadow-[#722F3712] animate-in fade-in-0 zoom-in-95 duration-150"
                     >
                       <div className="px-3 py-1.5 border-b border-[#722F3715] mb-2 flex items-center justify-between">
                         <span className="text-[10px] font-semibold uppercase tracking-wider text-[#722F37]">
@@ -484,7 +529,7 @@ export function AdminPanel({
               {role === "admin" && modules.siteEditor && (
                 <div className="group relative inline-flex items-center">
                   <Link
-                    href={weddingPath("site")}
+                    href={weddingPath("editar-site")}
                     aria-label="Personalizar site"
                     className={`inline-flex size-10 items-center justify-center rounded-xl border transition-all duration-200 hover:shadow-xs focus-visible:outline-2 focus-visible:outline-[#722F37] ${
                       section === "site"
@@ -511,7 +556,7 @@ export function AdminPanel({
                   type="button"
                   aria-label="Abrir menu da conta"
                   title={user.displayName || user.email || "Minha conta"}
-                  className="group relative flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-[#722F37]/35 bg-[#FAF7F5] p-0.5 shadow-xs transition-all duration-200 hover:border-[#722F37] hover:ring-2 hover:ring-[#722F37]/20 hover:scale-105 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-[#722F37] focus-visible:outline-offset-2 data-[state=open]:border-[#722F37] data-[state=open]:ring-2 data-[state=open]:ring-[#722F37]/25"
+                  className="group relative flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-[#722F37]/35 bg-white p-0.5 shadow-xs transition-all duration-200 hover:border-[#722F37] hover:ring-2 hover:ring-[#722F37]/20 hover:scale-105 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-[#722F37] focus-visible:outline-offset-2 data-[state=open]:border-[#722F37] data-[state=open]:ring-2 data-[state=open]:ring-[#722F37]/25"
                 >
                   <span
                     className="flex size-full items-center justify-center rounded-full bg-gradient-to-br from-[#85343E] to-[#60232A] text-white font-serif text-base font-semibold shadow-inner transition-transform duration-200 group-hover:scale-95"
@@ -556,30 +601,7 @@ export function AdminPanel({
             <MobileAdminMenu role={role} plan={plan} section={section} email={user.email} busy={busy} authorized={authorized} onSettings={() => openModal("settings")} onSignOut={() => void action(async () => {await signOut(clientAuth());})} onUpgrade={() => void handleUpgrade()} />
           </nav>
         )}
-        {authorized && upgradeSuccess && (
-          <section className="relative mb-6 overflow-hidden rounded-2xl border border-emerald-600/30 bg-emerald-50 p-5 shadow-xs">
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <CheckCircle2 size={24} className="shrink-0 text-emerald-700" />
-                <div>
-                  <p className="text-sm font-semibold text-emerald-950">
-                    Upgrade ativado! Seu casamento agora é Forever PRO.
-                  </p>
-                  <p className="mt-0.5 text-xs text-emerald-800">
-                    Convidados ilimitados, organização de mesas, check-in na portaria e todos os templates já estão liberados.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setUpgradeSuccess(false)}
-                className="rounded-full border border-emerald-700/20 bg-white px-3 py-1 text-xs font-medium text-emerald-900 hover:bg-emerald-100 cursor-pointer"
-              >
-                Dispensar
-              </button>
-            </div>
-          </section>
-        )}
+        {authorized && upgradePending && <section role="status" className="relative mt-6 mb-6 flex items-center gap-3 rounded-2xl border border-neutral-200 bg-white p-5 text-sm text-neutral-600"><Loader2 size={18} className="shrink-0 animate-spin text-[#722F37]" aria-hidden="true" /><div><p className="font-medium text-neutral-900">Aguardando confirmação do pagamento</p><p className="mt-1">Seu plano será atualizado assim que recebermos a confirmação oficial do Stripe.</p></div></section>}
         {user && view === "dashboard" && section === "overview" && role === "admin" && (
           <DashboardOverview
             guests={allGuests}
@@ -598,7 +620,7 @@ export function AdminPanel({
             loading={loading && !authorized}
           />
         )}
-        {error && !(authorized && modalState.modal) && (
+        {error && !invitationEditor && !(authorized && modalState.modal) && (
           <p role="alert" className="admin-alert admin-alert--error">
             {error}
           </p>
@@ -720,75 +742,184 @@ export function AdminPanel({
             {(authorized || loading) && (!sectionModule[section]||modules[sectionModule[section]!]) && section !== "overview" && (section === "site" ? <VisualSiteEditor/> : section === "tables" || section === "buffet" || section === "history" || section === "team" ? <EventOperations pageLoading={!authorized && loading} section={section} invitations={invites} tables={tables} api={api} onRefresh={load} /> : section === "check-in" ? <CheckInList tables={tables} loading={!authorized && loading} invitations={invites} busy={busy} onRefresh={() => void action(async () => {await load();})} onToggle={(invitation, guestIds, checkedIn) => void action(async () => {
               await api("/api/admin/reception", "PATCH", {id:invitation.id, guestIds, checkedIn, expectedCheckedIn:!checkedIn});
               await load();
-            })} /> :
-              <>
-                <AdminContainer variant="content" className="admin-list-heading">
-                  <div>
-                    <p className="admin-eyebrow">Pessoas que amamos</p>
-                    <h2>
-                      Lista de <em>convidados</em>
-                    </h2>
-                    <p>
-                      {loading && !authorized ? <span className="inline-block h-3 w-32 animate-pulse rounded bg-[#722f3715]" aria-label="Carregando quantidade" /> : <>{visible.length}{" "}
-                      {visible.length === 1
-                        ? "convite encontrado"
-                        : "convites encontrados"}{plan === "essencial" && <> · {allGuests.length} de 50 convidados</>}</> }
-                    </p>
-                  </div>
-                  <span className="admin-heading-branch" aria-hidden="true">
-                    <WeddingBranch />
-                  </span>
-                </AdminContainer>
+            })} /> : invitationEditor ? <InvitationEditorPage
+                editing={invitationEditor !== "new"}
+                creationBlocked={invitationEditor === "new" && allGuests.length >= getWeddingGuestLimit(plan)}
+                onUpgrade={() => void handleUpgrade()} upgradeLoading={upgradeLoading}
+                guestLimit={getWeddingGuestLimit(plan)}
+                otherGuestCount={invites.filter(invite => invite.active && (invitationEditor === "new" || invite.id !== invitationEditor.id)).reduce((count, invite) => count + invite.guests.length, 0)}
+                invitation={invitationEditor === "new" ? undefined : invites.find(invite => invite.id === invitationEditor.id)}
+                busy={busy} error={error} onBack={closeModal} onSave={saveInvitation}
+              /> :
+              <div className="pt-6 sm:pt-8 space-y-6 pb-16">
+                {/* Heading and guest summary */}
+                <div className="grid grid-cols-1 items-center gap-6 border-b border-neutral-200/80 pb-6 xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,3fr)]">
+                  <AdminPageHeading
+                    context="Pessoas que amamos"
+                    title="Lista de"
+                    accent="convidados"
+                    loading={loading && !authorized}
+                    description={<>{allGuests.length} convidados em {invites.length} convites cadastrados{plan === "essencial" && <> · Plano Essencial (limite de 50 vagas)</>}</>}
+                  />
+                  {/* 2. KPI Metrics Strip (4 Sleek Stat Cards - Pure White) */}
+                <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-4" aria-label="Resumo dos convidados">
+                  <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xs transition-all hover:border-[#722F3730]">
+                    <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-neutral-900 opacity-[0.04] rotate-[-12deg]">
+                      <Users size={80} />
+                    </span>
+                    <p className="relative text-xs font-medium text-neutral-500">Convidados ativos</p>
+                    <strong className="relative my-1 font-serif text-3xl sm:text-4xl font-normal text-neutral-900">
+                      {loading && !authorized ? "…" : allGuests.length}
+                    </strong>
+                    <span className="relative text-[11px] text-neutral-400">
+                      {plan === "essencial" ? `${allGuests.length} de ${getWeddingGuestLimit(plan)} convidados · ${Math.max(0, getWeddingGuestLimit(plan) - allGuests.length)} vagas` : "Forever PRO · convidados ilimitados"}
+                    </span>
+                  </article>
+
+                  <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xs transition-all hover:border-[#722F3730]">
+                    <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-neutral-900 opacity-[0.04] rotate-[-12deg]">
+                      <CheckCircle2 size={80} />
+                    </span>
+                    <p className="relative text-xs font-medium text-neutral-500">Confirmados</p>
+                    <strong className="relative my-1 font-serif text-3xl sm:text-4xl font-normal text-neutral-900">
+                      {loading && !authorized ? "…" : allGuests.filter(g => g.status === "confirmado").length}
+                    </strong>
+                    <span className="relative text-[11px] text-emerald-800 font-medium">
+                      {allGuests.length > 0 ? `${Math.round((allGuests.filter(g => g.status === "confirmado").length / allGuests.length) * 100)}% de presença confirmada` : "Aguardando respostas"}
+                    </span>
+                  </article>
+
+                  <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xs transition-all hover:border-[#722F3730]">
+                    <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-neutral-900 opacity-[0.04] rotate-[-12deg]">
+                      <Clock size={80} />
+                    </span>
+                    <p className="relative text-xs font-medium text-neutral-500">Pendentes</p>
+                    <strong className="relative my-1 font-serif text-3xl sm:text-4xl font-normal text-neutral-900">
+                      {loading && !authorized ? "…" : allGuests.filter(g => g.status === "pendente").length}
+                    </strong>
+                    <span className="relative text-[11px] text-neutral-500 font-medium">
+                      {allGuests.length > 0 ? `${Math.round((allGuests.filter(g => g.status === "pendente").length / allGuests.length) * 100)}% aguardando resposta` : "Nenhuma pendência"}
+                    </span>
+                  </article>
+
+                  <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xs transition-all hover:border-[#722F3730]">
+                    <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-neutral-900 opacity-[0.04] rotate-[-12deg]">
+                      <UserX size={80} />
+                    </span>
+                    <p className="relative text-xs font-medium text-neutral-500">Não comparecerão</p>
+                    <strong className="relative my-1 font-serif text-3xl sm:text-4xl font-normal text-neutral-900">
+                      {loading && !authorized ? "…" : allGuests.filter(g => g.status === "recusado").length}
+                    </strong>
+                    <span className="relative text-[11px] text-rose-800 font-medium">
+                      {allGuests.length > 0 ? `${Math.round((allGuests.filter(g => g.status === "recusado").length / allGuests.length) * 100)}% justificaram ausência` : "Nenhum recusado"}
+                    </span>
+                  </article>
+                </div>
+
+
+
+                </div>
+
+                {/* 3. Essential Plan Upgrade Notice */}
                 {plan === "essencial" && (
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#722F3725] bg-[#722F370a] p-4 text-xs text-[#161616]">
-                    <div className="flex items-center gap-2.5">
-                      <Heart size={16} className="shrink-0 fill-[#722F37] text-[#722F37]" />
-                      <span>
-                        Seu plano atual é o <strong>Forever Essencial</strong> ({allGuests.length} de 50 convidados).
-                        Para convidados ilimitados e gestão de mesas, faça o upgrade para o <strong>Forever PRO</strong>.
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-neutral-200/80 bg-white p-4 text-xs text-[#161616] shadow-xs">
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-[#722F3712] text-[#722F37]">
+                        <Heart size={16} className="fill-[#722F37]" />
                       </span>
+                      <div>
+                        <p className="font-medium text-[#161616]">
+                          <strong>Forever Essencial · {allGuests.length} de {getWeddingGuestLimit(plan)} convidados</strong>
+                        </p>
+                        <p className="text-[11px] text-neutral-500">
+                          {allGuests.length >= getWeddingGuestLimit(plan) ? "Limite atingido. A criação de novos convites está bloqueada. O Forever PRO oferece convidados ilimitados." : `${getWeddingGuestLimit(plan) - allGuests.length} vagas restantes no evento, somando todos os convites. O Forever PRO oferece convidados ilimitados.`}
+                        </p>
+                      </div>
                     </div>
-                    <a
-                      href="/#preco"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#722F37] px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#5b242b]"
-                    >
-                      <span>Conhecer Forever PRO</span>
-                      <ArrowUpRight size={13} />
-                    </a>
+                    <button type="button" onClick={() => void handleUpgrade()} disabled={upgradeLoading} className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#722F37] px-4 text-xs font-medium text-white transition-colors hover:bg-[#5B252C] disabled:opacity-50">
+                      <span>{upgradeLoading ? "Abrindo upgrade…" : allGuests.length >= getWeddingGuestLimit(plan) ? "Assinar PRO e liberar convidados ilimitados" : "Conhecer Forever PRO"}</span>
+                      <ArrowUpRight size={13} aria-hidden="true" />
+                    </button>
                   </div>
                 )}
-                <div className="flex flex-col gap-5 py-5 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="grid min-w-0 gap-3 sm:grid-cols-[340px_220px] sm:items-center sm:gap-6">
-                    <label className="flex min-h-12 min-w-0 items-center gap-3 rounded-[var(--wedding-radius)] border border-[#722f3730] bg-[#fffdfa] px-3 text-[var(--forever-primary,#722F37)] transition-[border-color,box-shadow] focus-within:border-[#722f3770] focus-within:ring-2 focus-within:ring-[#722f3720]">
-                      <Search size={19} className="shrink-0" aria-hidden="true" />
-                      <input aria-label="Buscar convidados" className="h-12 w-full min-w-0 rounded-lg bg-transparent text-sm text-[var(--forever-ink,#161616)] border-0! outline-none! ring-0! shadow-none! placeholder:text-[#8a887b] focus:outline-none! focus-visible:outline-none!" placeholder="Buscar nome, família ou grupo" value={query} onChange={event => setQuery(event.target.value)} />
-                    </label>
-                    <WeddingSelect label="Filtrar situação" className="h-12! min-h-12! border! border-[#722f3730]! bg-[#fffdfa]! px-3! text-sm! shadow-none! focus-visible:border-[var(--forever-hover-border,#722f3770)]!" value={filter} onValueChange={setFilter} options={[{value:"todos",label:"Todos os convites"},{value:"pendente",label:"Com pendentes"},{value:"confirmado",label:"Com confirmados"},{value:"recusado",label:"Com recusas"},{value:"abertos",label:"Convites abertos"},{value:"nao-respondidos",label:"Com respostas pendentes"},{value:"respondidos",label:"Totalmente respondidos"},{value:"enviados",label:"Convites enviados"},{value:"nao-enviados",label:"Ainda não enviados"},{value:"inativos",label:"Inativos"}].filter(option=>modules.invitationTracking||!["abertos","enviados","nao-enviados","nao-respondidos","respondidos"].includes(option.value))} />
+
+                {/* 4. Unified Toolbar */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-1 flex-wrap items-center gap-2.5">
+                    {/* Search */}
+                    <div className="relative flex-1 min-w-[240px] sm:max-w-[360px]">
+                      <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
+                      <input
+                        aria-label="Buscar convidados"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Buscar por nome, família ou grupo..."
+                        className="h-11 w-full rounded-xl border border-neutral-200 bg-white pl-9 pr-8 text-xs text-[#161616] placeholder:text-neutral-400 shadow-2xs outline-none transition-all focus:border-[#722F37] focus:ring-2 focus:ring-[#722F3715]"
+                      />
+                      {query && (
+                        <button
+                          type="button"
+                          onClick={() => setQuery("")}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 p-1 cursor-pointer"
+                          title="Limpar busca"
+                        >
+                          <X size={14} />
+                        </button>
+                      )}
+
+                </div>
+
+                    {/* RSVP Situation Filter */}
+                    <div className="w-full sm:w-[220px]">
+                      <WeddingSelect
+                        label="Filtrar situação"
+                        className="h-11! min-h-11! rounded-xl! border! border-neutral-200! bg-white! px-3! text-xs! shadow-2xs! text-[#161616]! focus-visible:border-[#722F37]!"
+                        value={filter}
+                        onValueChange={setFilter}
+                        options={[
+                          { value: "todos", label: "Todos os convites" },
+                          { value: "confirmado", label: "Com confirmados" },
+                          { value: "pendente", label: "Com pendentes" },
+                          { value: "recusado", label: "Com recusas" },
+                          { value: "abertos", label: "Convites abertos" },
+                          { value: "nao-respondidos", label: "Respostas pendentes" },
+                          { value: "respondidos", label: "Totalmente respondidos" },
+                          { value: "enviados", label: "Convites enviados" },
+                          { value: "nao-enviados", label: "Ainda não enviados" },
+                          { value: "inativos", label: "Inativos" },
+                        ].filter((option) => modules.invitationTracking || !["abertos", "enviados", "nao-enviados", "nao-respondidos", "respondidos"].includes(option.value))}
+                      />
+                    </div>
                   </div>
-                  <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
-                    <button type="button" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#722F37)] transition-colors hover:bg-[var(--forever-hover-tint,#722f370d)] disabled:opacity-50" disabled={busy} onClick={() => void action(async () => {await load();})}>
-                      <RefreshCw size={16} aria-hidden="true" className={busy ? "animate-spin" : ""} />Atualizar
+
+                      {/* Guest list actions */}
+                  <div className="flex w-full shrink-0 items-center gap-2.5 sm:w-auto">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void action(async () => { await load(); })}
+                      className="inline-flex h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap sm:flex-none rounded-xl border border-neutral-200 bg-white px-3.5 text-xs font-medium text-neutral-700 shadow-2xs hover:bg-neutral-50 hover:border-neutral-300 hover:text-[#722F37] transition-all cursor-pointer disabled:opacity-50"
+                      title="Atualizar lista"
+                    >
+                      <RefreshCw size={14} className={busy ? "animate-spin text-[#722F37]" : "text-neutral-400"} />
+                      <span>Atualizar</span>
                     </button>
-                    {plan === "essencial" && (
-                      <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs ${allGuests.length >= 50 ? "border-[#b4434640] bg-[#b4434612] font-medium text-[#b44346]" : "border-[#722f3730] bg-[#fffdfa] text-[var(--forever-primary,#722F37)]"}`}>
-                        <Users size={13} aria-hidden="true" />
-                        <span>{allGuests.length} / 50 convidados {allGuests.length >= 50 ? "· Limite atingido" : ""}</span>
-                      </span>
-                    )}
-                    <AdminButton disabled={busy || (plan === "essencial" && allGuests.length >= 50)} onClick={() => open()} title={plan === "essencial" && allGuests.length >= 50 ? "Limite de 50 convidados atingido no plano Forever Essencial" : undefined}><Plus size={17} aria-hidden="true" />Adicionar convite</AdminButton>
+
+                    <button
+                      type="button"
+                      disabled={busy || (plan === "essencial" && allGuests.length >= 50)}
+                      onClick={() => open()}
+                      className="inline-flex h-11 flex-1 items-center justify-center gap-2 whitespace-nowrap sm:flex-none rounded-xl bg-[#722F37] px-4 text-xs font-medium text-white shadow-xs hover:bg-[#5b242b] transition-all cursor-pointer disabled:opacity-50"
+                      title={plan === "essencial" && allGuests.length >= 50 ? "Limite de 50 convidados atingido no plano Forever Essencial" : undefined}
+                    >
+                      <Plus size={15} />
+                      <span>{allGuests.length >= getWeddingGuestLimit(plan) ? "Limite atingido" : "Adicionar convite"}</span>
+                    </button>
                   </div>
                 </div>
-                {(modules.dietaryRestrictions||modules.messages)&&<aside className="admin-guest-legend" aria-label="Legenda dos alertas de convidados confirmados">
-                  <strong>Legenda</strong>
-                  <div className="admin-guest-legend-items">
-                    {modules.dietaryRestrictions&&<span><WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" aria-hidden="true" />Restrição alimentar</span>}
-                    {modules.messages&&<span><ChatTextIcon size={19} weight="fill" className="admin-message-alert" aria-hidden="true" />Recado aos noivos</span>}
-                  </div>
-                </aside>}
-                <div className="mt-8 space-y-5">
-                  {!authorized && loading ? <DashboardSkeleton /> : visible.length === 0 && (
+
+                <div className="space-y-5">
+                  {!authorized && loading ? <DashboardSkeleton /> : visible.length === 0 ? (
                     <div className="admin-empty">
                       <span className="admin-empty-icon">
                         <WeddingLoadingIcon />
@@ -803,6 +934,11 @@ export function AdminPanel({
                           ? "Experimente outro nome ou ajuste o filtro para encontrar quem procura."
                           : "Adicione a primeira família e comece a preparar a lista do nosso grande dia."}
                       </p>
+                      {(query || filter !== "todos") && (
+                        <button type="button" className="guest-secondary" onClick={() => { setQuery(""); setFilter("todos"); }}>
+                          <X size={14} aria-hidden="true" /> Limpar busca e filtros
+                        </button>
+                      )}
                       {!query && filter === "todos" && (
                         <button
                           className="guest-secondary"
@@ -814,97 +950,39 @@ export function AdminPanel({
                         </button>
                       )}
                     </div>
+                  ) : (
+                    <GuestsTableView
+                      invitations={visible}
+                      allGuests={allGuests}
+                      tables={tables}
+                      modules={modules}
+                      busy={busy}
+                      generatingPdf={generatingPdf}
+                      copiedId={copiedId}
+                      plan={plan}
+                      onEdit={(invite) => open(invite)}
+                      onDelete={(inviteId) => openModal("delete-invitation", inviteId)}
+                      onCopyLink={async (token, key) => {
+                        await copyInvitationLink(token, key);
+                      }}
+                      onDownloadPdf={async (invitation, key) => {
+                        await downloadPdf(invitation, key);
+                      }}
+                      onToggleSent={async (invite) => {
+                        await action(async () => {
+                          const result = await api("/api/admin/invites/sent", "POST", { id: invite.id, sent: !invite.sentAt });
+                          setInvites((current) =>
+                            current.map((item) =>
+                              item.id === invite.id ? { ...item, sentAt: result.sentAt } : item
+                            )
+                          );
+                        });
+                      }}
+                      onAddInvite={() => open()}
+                    />
                   )}
-                  {invitationSections.filter(section => section.invitations.length > 0).map(section => (
-                    <section key={section.id} className="space-y-5">
-                      <SectionDivider title={section.title} count={section.invitations.length} actions={
-                        <button type="button" className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--wedding-radius)] px-2 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#722f3710)] focus-visible:outline-2 focus-visible:outline-[var(--forever-primary,#722F37)]" onClick={() => setCollapsed(current => {
-                          const allExpanded = section.invitations.every(invite => !current[invite.id]);
-                          return {...current, ...Object.fromEntries(section.invitations.map(invite => [invite.id, allExpanded]))};
-                        })}>
-                          <CaretDownIcon size={14} className={section.invitations.every(invite => !collapsed[invite.id]) ? "rotate-180 transition-transform" : "transition-transform"} aria-hidden="true" />
-                          {section.invitations.every(invite => !collapsed[invite.id]) ? "Recolher todos" : "Expandir todos"}
-                        </button>
-                      } />
-                      {section.invitations.map((i) => (
-                    <article
-                      key={i.id}
-                      className={
-                        "admin-invite " +
-                        (!i.active ? "admin-invite--inactive" : "")
-                      }
-                    >
-                      <div className="admin-invite-header">
-                        <div><h2 className="font-serif text-3xl"><button type="button" className="admin-invite-toggle" aria-expanded={!collapsed[i.id]} aria-controls={"invite-body-" + i.id} aria-label={(collapsed[i.id] ? "Expandir convite " : "Recolher convite ") + i.label} onClick={() => setCollapsed(current => ({...current,[i.id]:!current[i.id]}))}>{i.label}<CaretDownIcon size={20} className={collapsed[i.id] ? "" : "is-expanded"} aria-hidden="true" /></button>{!i.active && <span className="ml-3 font-sans text-sm">Inativo</span>}</h2>
-                        <p className="admin-invite-meta"><UsersIcon size={15} aria-hidden="true" /> {i.guests.length} {i.guests.length === 1 ? "pessoa" : "pessoas"}{modules.invitationTracking&&<><span>·</span>{i.sentAt ? "Enviado em " + new Date(i.sentAt).toLocaleDateString("pt-BR") : "Envio ainda não registrado"}</>}</p></div>
-                        <ExpandingIconButtonGroup className="admin-invite-actions">
-
-                          <ExpandingIconButton disabled={busy} onClick={() => open(i)} icon={<PencilSimpleIcon size={17} aria-hidden="true" />} label={"Editar"} />
-                          <ExpandingIconButton disabled={busy || !i.active} onClick={() => void action(async () => {
-                            await navigator.clipboard.writeText(invitationUrl(i.code ?? i.token,slug));
-                            setCopiedId(i.id); if (copyTimer.current) clearTimeout(copyTimer.current);
-                            copyTimer.current = setTimeout(() => setCopiedId(null), 3000);
-                          })} icon={copiedId === i.id ? <CheckIcon size={17} weight="bold" aria-hidden="true" /> : <CopyIcon size={17} aria-hidden="true" />} label={copiedId === i.id ? "Copiado" : (i.guests.length > 1 ? "Copiar link do grupo" : "Copiar link")} />
-                          {modules.invitationTracking&&<ExpandingIconButton aria-pressed={!!i.sentAt} disabled={busy} onClick={() => void action(async () => {
-                            const result = await api("/api/admin/invites/sent", "POST", {id:i.id,sent:!i.sentAt});
-                            setInvites(current => current.map(item => item.id === i.id ? {...item,sentAt:result.sentAt} : item));
-
-                          })} icon={<PaperPlaneTiltIcon size={17} weight={i.sentAt ? "fill" : "regular"} aria-hidden="true" />} label={i.sentAt ? "Enviado" : "Marcar enviado"} />}
-                          <ExpandingIconButton disabled={busy || !!generatingPdf || !i.active} onClick={async () => {setGeneratingPdf(i.id);setError("");try {const {downloadInvitationPdf} = await import("@/lib/invitation-pdf");await downloadInvitationPdf({...i, token: i.code ?? i.token},weddingConfig,slug,templateId);}catch {setError("Não foi possível gerar o convite. Tente novamente.");}finally {setGeneratingPdf(null);}}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={generatingPdf === i.id ? "Gerando convite…" : (i.guests.length > 1 ? "Convite do grupo" : "Baixar convite")} />
-                          <ExpandingIconButton disabled={busy} onClick={() => openModal("delete-invitation",i.id)} icon={<TrashIcon size={17} aria-hidden="true" />} label={"Excluir"} />
-                        </ExpandingIconButtonGroup>
-                      </div>
-                      <div id={"invite-body-" + i.id} className="admin-invite-collapse" data-open={!collapsed[i.id]} aria-hidden={!!collapsed[i.id]} inert={!!collapsed[i.id]}><div className="admin-invite-collapse-inner">
-                      {modules.invitationTracking&&<div className="my-3 flex flex-wrap gap-x-5 gap-y-2 text-[11px] text-[var(--forever-accent,#77736c)]"><span>{i.sentAt ? "Enviado em "+new Date(i.sentAt).toLocaleDateString("pt-BR") : "Envio não registrado"}</span><span>{i.openedAt ? "Primeiro acesso em "+new Date(i.openedAt).toLocaleString("pt-BR") : "Sem acesso registrado"}</span><span>{i.guests.filter(g=>g.status!=="pendente").length}/{i.guests.length} respostas</span></div>}<div className={i.respondedAt || i.dietaryRestrictions || i.message ? "mt-5 mb-5" : "mt-5"}>
-                        {i.guests.map((g) => (
-                          <details key={g.id} className="rsvp-guest-accordion admin-guest-accordion last:border-b-0! [&:last-child>summary]:pb-0! [&:last-child[open]>summary]:pb-[18px]!">
-                            <summary>
-                              <span className="admin-guest-name-alerts">{g.name}{g.child ? " · Criança" : ""}
-                                {modules.dietaryRestrictions&&g.status === "confirmado" && i.personalResponses?.[g.id]?.dietaryRestrictions?.trim() && <WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" role="img" aria-label="Restrição alimentar informada" />}
-                                {modules.messages&&g.status === "confirmado" && i.personalResponses?.[g.id]?.message?.trim() && <ChatTextIcon size={19} weight="fill" className="admin-message-alert" role="img" aria-label="Recado aos noivos" />}
-                              </span>
-                              <span className="rsvp-guest-summary-status">
-                                <ExpandingIconButtonGroup as="span" className="admin-guest-quick-actions">
-                                  <ExpandingIconButton type="button" aria-label={"Baixar convite de " + g.name} disabled={busy || generatingPdf === g.id || !i.active} onClick={event => {event.preventDefault(); event.stopPropagation(); void downloadPdf({label:g.name, token:i.personalCodes?.[g.id] ?? i.code ?? i.personalTokens?.[g.id] ?? i.token},g.id);}} icon={<EnvelopeSimpleIcon size={17} aria-hidden="true" />} label={"Convite pessoal"} />
-                                  <ExpandingIconButton type="button" aria-label={copiedId === g.id ? "Link copiado" : "Copiar link de " + g.name} disabled={busy || !i.active} onClick={event => {event.preventDefault(); event.stopPropagation(); void copyInvitationLink(i.personalCodes?.[g.id] ?? i.code ?? i.personalTokens?.[g.id] ?? i.token, g.id);}} icon={copiedId === g.id ? <CheckIcon size={17} weight="bold" aria-hidden="true" /> : <CopyIcon size={17} aria-hidden="true" />} label={copiedId === g.id ? "Copiado" : "Copiar link"} />
-                                </ExpandingIconButtonGroup>
-                                <AttendanceBadge status={g.status} className="max-[600px]:col-start-2 max-[600px]:row-start-1 max-[600px]:w-[140px] max-[600px]:text-[11px] max-[380px]:w-[125px] max-[380px]:text-[10px]" />
-                                <CaretDownIcon className="rsvp-accordion-caret" size={18} aria-hidden="true" />
-                              </span>
-                            </summary>
-                            <div className="rsvp-guest-accordion-fields">
-                              <div className="admin-guest-notes">
-                                {modules.invitationTracking&&i.personalOpenedAt?.[g.id] && <p className="text-xs text-[var(--forever-accent,#77736c)]">Link pessoal aberto em {new Date(i.personalOpenedAt[g.id]).toLocaleString("pt-BR")}</p>}
-                                {modules.dietaryRestrictions&&<div><p><WarningCircleIcon size={19} weight="fill" className="admin-dietary-alert" aria-hidden="true" />Restrições alimentares</p><span>{i.personalResponses?.[g.id]?.dietaryRestrictions || "Nenhuma restrição informada."}</span></div>}
-                                {modules.messages&&<div><p><ChatTextIcon size={19} weight="fill" className="admin-message-alert" aria-hidden="true" />Recado aos noivos</p><span>{i.personalResponses?.[g.id]?.message || "Nenhum recado enviado."}</span></div>}
-                              </div>
-                            </div>
-                          </details>
-                        ))}
-                      </div>
-                      {i.respondedAt && (
-                        <p className="text-sm text-[var(--forever-accent,#77736c)]">
-                          Última resposta do convite:{" "}
-                          {new Date(i.respondedAt).toLocaleString("pt-BR")}
-                        </p>
-                      )}
-                      {modules.dietaryRestrictions&&i.dietaryRestrictions && (
-                        <p className="mt-2 whitespace-pre-wrap text-sm">
-                          Restrições: {i.dietaryRestrictions}
-                        </p>
-                      )}
-                      {modules.messages&&i.message && (
-                        <p className="mt-2 whitespace-pre-wrap text-sm">
-                          Recado: {i.message}
-                        </p>
-                      )}
-                      </div></div>
-                    </article>
-                      ))}
-                    </section>
-                  ))}
                 </div>
-              </>
+              </div>
             )}
           </>
         )}
@@ -945,6 +1023,7 @@ export function AdminPanel({
           }}
         />
       )}
+      <UpgradePlanDialog open={upgradeDialogOpen} busy={upgradeLoading} error={upgradeError} onClose={()=>setUpgradeDialogOpen(false)} onContinue={()=>void startUpgradeCheckout()} />
     </main>
   );
 }

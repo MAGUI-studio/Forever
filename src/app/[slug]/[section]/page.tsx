@@ -15,7 +15,8 @@ const REDIRECT_MAP: Record<string, string> = {
   team: "equipe",
   preview: "previa",
   "editor-preview": "previa-editor",
-  "site-settings": "site",
+  "site-settings": "editar-site",
+  site: "editar-site",
 };
 
 const TITLES: Record<string, string> = {
@@ -26,7 +27,7 @@ const TITLES: Record<string, string> = {
   buffet: "Alimentação e buffet",
   historico: "Histórico de alterações",
   equipe: "Equipe da recepção",
-  site: "Editor do site",
+  "editar-site": "Editar site",
   previa: "Prévia do site",
   "previa-editor": "Prévia do editor",
 };
@@ -49,13 +50,23 @@ export async function generateMetadata({
 
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string; section: string }>;
+  searchParams: Promise<{ action?: string | string[]; invitation?: string | string[] }>;
 }) {
   const { slug, section: name } = await params;
 
   if (REDIRECT_MAP[name]) {
     redirect(`/${slug}/${REDIRECT_MAP[name]}`);
+  }
+
+  if (name === "convidados") {
+    const query = await searchParams;
+    if (query.action === "new-invitation") redirect(`/${slug}/convidados/novo`);
+    if (query.action === "edit-invitation" && typeof query.invitation === "string" && /^[a-f0-9]{64}$/.test(query.invitation)) {
+      redirect(`/${slug}/convidados/${query.invitation}/editar`);
+    }
   }
 
   if (name === "login") redirect("/login");
@@ -68,7 +79,7 @@ export default async function Page({
   if (name === "buffet") return <AdminPanel view="dashboard" section="buffet" />;
   if (name === "historico") return <AdminPanel view="dashboard" section="history" />;
   if (name === "equipe") return <AdminPanel view="dashboard" section="team" />;
-  if (name === "site") return <AdminPanel view="dashboard" section="site" />;
+  if (name === "editar-site") return <AdminPanel view="dashboard" section="site" />;
 
   notFound();
 }
