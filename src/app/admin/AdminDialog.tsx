@@ -12,6 +12,9 @@ export function AdminDialog({
   title,
   description,
   busy = false,
+  eyebrow,
+  ornaments = true,
+  wide = false,
   children,
 }: {
   open: boolean;
@@ -19,6 +22,9 @@ export function AdminDialog({
   title: string;
   description: string;
   busy?: boolean;
+  eyebrow?: string;
+  ornaments?: boolean;
+  wide?: boolean;
   children: ReactNode;
 }) {
   const wedding = useOptionalWedding();
@@ -33,20 +39,21 @@ export function AdminDialog({
         <Dialog.Overlay className="fixed inset-0 z-[300] bg-black/45 backdrop-blur-sm" />
         <Dialog.Content
           style={foreverTheme}
+          data-wide={wide || undefined}
           onEscapeKeyDown={(e) => {
             if (busy) e.preventDefault();
           }}
           onPointerDownOutside={(e) => {
             if (busy) e.preventDefault();
           }}
-          className="admin-wedding fixed! top-1/2 left-1/2 z-[310] min-h-0! max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[var(--wedding-radius)] border border-neutral-200 bg-white! p-6 shadow-xl sm:p-8"
+          className="admin-wedding fixed! top-1/2 left-1/2 z-[310] min-h-0! max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg data-[wide]:max-w-3xl -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[var(--wedding-radius)] border border-neutral-200 bg-white! p-6 shadow-xl sm:p-8"
         >
-          <div
+          {ornaments && <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 overflow-hidden opacity-20"
           >
             {wedding?<WeddingOrnaments variant="floral" tone="paper" />:<ForeverBackground/>}
-          </div>
+          </div>}
           <div className="relative">
             <Dialog.Close
               disabled={busy}
@@ -55,7 +62,7 @@ export function AdminDialog({
             >
               <X size={20} />
             </Dialog.Close>
-            <p className="admin-eyebrow pr-10">{wedding?"Cada detalhe, com carinho":"Forever Studio"}</p>
+            <p className="admin-eyebrow pr-10">{eyebrow ?? (wedding?"Cada detalhe, com carinho":"Forever Studio")}</p>
             <Dialog.Title className="mt-3 pr-10 font-serif text-4xl text-[var(--forever-ink,#161616)]">
               {title}
             </Dialog.Title>
