@@ -130,14 +130,18 @@ function ErrorMessage({ error }: { error: string }) {
     </p>
   ) : null;
 }
-function InviteForm({
+export function InvitationForm({
   initial,
+  guestLimit = Infinity,
+  otherGuestCount = 0,
   busy,
   error,
   onClose,
   onSave,
 }: {
   initial?: Invitation;
+  guestLimit?: number;
+  otherGuestCount?: number;
   busy: boolean;
   error: string;
   onClose: () => void;
@@ -167,22 +171,29 @@ function InviteForm({
       ),
     );
   }
+  const totalGuests = otherGuestCount + guests.length;
+  const limitApplies = !original || active;
+  const limitReached = limitApplies && totalGuests >= guestLimit;
+  const overLimit = limitApplies && totalGuests > guestLimit;
   return (
     <form
       className="admin-modal-form"
       onSubmit={(event) => {
         event.preventDefault();
+        if (overLimit) return;
         onSave({ kind, label: kind === "individual" ? guests[0].name : label, active, guests }, original);
       }}
     >
       <div className="admin-modal-body">
         <fieldset disabled={busy} className="admin-modal-fields">
           <ErrorMessage error={error} />
+          {overLimit && <p role="alert" className="text-sm text-rose-700">O Forever Essencial permite até {guestLimit} convidados no evento, somando todos os convites ativos.</p>}
           <p className="text-xs text-[var(--forever-accent,#77736c)]">Todos os campos marcados com <RequiredMark /> são obrigatórios.</p>
           <section className="admin-form-section">
             <p className="admin-form-kicker">01 · O convite</p>
+<div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2">
 <label className="admin-modal-field"><span>Tipo de convite <RequiredMark /></span><WeddingSelect label="Tipo de convite" value={kind} onValueChange={value => setKind(value as "individual" | "group")} options={[{value:"individual",label:"Individual — uma pessoa"},{value:"group",label:"Família ou grupo"}]} /></label>
-<p className="admin-form-help">Individual: informe apenas o nome da pessoa. Família ou grupo: organize familiares, amigos ou colegas de trabalho. {kind === "individual" && guests.length > 1 ? "Selecione Família ou grupo e remova as outras pessoas antes de mudar para individual." : ""}</p>
+
             {kind === "group" && <label className="admin-modal-field">
               <span>
                 Nome da família ou grupo <RequiredMark />
@@ -199,6 +210,8 @@ function InviteForm({
                 placeholder="Ex.: Família Oliveira ou Amigos do trabalho"
               />
             </label>}
+</div>
+{kind === "individual" && guests.length > 1 && <p className="admin-form-help">Selecione Família ou grupo e remova as outras pessoas antes de mudar para individual.</p>}
             <label className="admin-invitation-toggle">
               <span>
                 <strong>Convite ativo</strong>
@@ -208,6 +221,8 @@ function InviteForm({
               </span>
               <input
                 type="checkbox"
+                role="switch"
+                className="sr-only!"
                 checked={active}
                 onChange={(event) => setActive(event.target.checked)}
               />
@@ -276,26 +291,26 @@ function InviteForm({
                     </label>
                   </div>
                   <div className="admin-guest-options">
-                    <label className="relative flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[var(--wedding-radius)] border border-[#722f3720] bg-[#fffdfa]/70 px-4 py-3 text-[var(--forever-primary,#722F37)] transition-colors hover:bg-[#fffdfa] has-[:checked]:border-[#722f3755] has-[:checked]:bg-[#722F370d] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--forever-primary,#722F37)]">
-                      <Baby size={22} strokeWidth={1.5} className="shrink-0" aria-hidden="true" />
+                    <label className="relative flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-[var(--wedding-radius)] border border-neutral-200 bg-white px-4 py-3 text-[#161616] transition-colors hover:bg-neutral-50 has-[:checked]:border-[#722F37] has-[:checked]:bg-[#722F370d] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--forever-primary,#722F37)]">
+                      <Baby size={22} strokeWidth={1.5} className="shrink-0 text-neutral-500" aria-hidden="true" />
                       <span className="flex-1 text-xs font-medium">Este convidado é uma criança</span>
                       <input type="checkbox" role="switch" className="peer sr-only!" checked={guest.child} onChange={event => change(guest.id, {child:event.target.checked})} />
-                      <span aria-hidden="true" className="relative h-6 w-10 shrink-0 rounded-full bg-[#bcb7ab] transition-colors duration-200 after:absolute after:top-1 after:left-1 after:size-4 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-200 peer-checked:bg-[var(--forever-primary,#722F37)] peer-checked:after:translate-x-4" />
+                      <span aria-hidden="true" className="relative h-6 w-10 shrink-0 rounded-full bg-neutral-300 transition-colors duration-200 after:absolute after:top-1 after:left-1 after:size-4 after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-200 peer-checked:bg-[var(--forever-primary,#722F37)] peer-checked:after:translate-x-4" />
                     </label>
 
                   </div>
                 </div>
               ))}
-            </div>
             {kind === "group" && <button
               type="button"
               className="admin-add-person"
-              disabled={guests.length >= 40}
+              disabled={limitReached}
               onClick={() => setGuests((current) => [...current, emptyGuest()])}
             >
               <Plus size={17} aria-hidden="true" />
-              Adicionar pessoa ao convite<span>{guests.length}/40</span>
+              Adicionar pessoa ao convite<span>{Number.isFinite(guestLimit) ? `${totalGuests}/${guestLimit} no evento` : `${guests.length} ${guests.length === 1 ? "pessoa" : "pessoas"}`}</span>
             </button>}
+            </div>
           </section>
         </fieldset>
       </div>
@@ -312,7 +327,7 @@ function InviteForm({
         >
           Cancelar
         </button>
-        <button className="guest-button" disabled={busy}>
+        <button className="guest-button" disabled={busy || overLimit}>
           {busy ? (
             <LoaderCircle
               size={15}
@@ -521,7 +536,7 @@ export function AdminModals({
           </footer>
         </>
       ) : (
-        <InviteForm
+        <InvitationForm
           initial={selected}
           busy={busy}
           error={error}
