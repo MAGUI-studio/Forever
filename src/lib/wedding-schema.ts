@@ -25,6 +25,7 @@ const location = z
     image: url.optional(),
     tips: text.optional(),
     postalCode: z.string().regex(/^(\d{8})?$/).optional(),
+    addressDetails: z.object({street:text,number:z.string().trim().max(20),complement:text,neighborhood:text,city:text,state:z.string().regex(/^([A-Z]{2})?$/)}).strict().optional(),
     coordinates: z.object({latitude:z.number().finite().min(-90).max(90),longitude:z.number().finite().min(-180).max(180)}).strict().nullable().optional(),
   })
   .strict();
@@ -80,6 +81,7 @@ export const weddingConfigSchema = z
           .strict(),
       )
       .max(MAX_GALLERY_PHOTOS,`A galeria permite no máximo ${MAX_GALLERY_PHOTOS} fotos.`),
+    sameVenue: z.boolean().optional(),
     ceremony: location,
     party: location,
     dressCode: z
@@ -165,6 +167,7 @@ export const weddingUpdateSchema = z
   })
   .strict()
   .superRefine((value, ctx) => {
+    if(value.status==="published"&&value.config.sameVenue===false&&!value.config.party.placeName.trim())ctx.addIssue({code:"custom",path:["config","party","placeName"],message:"Informe o local da festa antes de publicar."});
     if(value.config.gifts.some(gift=>!gift.title.trim()||!gift.price||gift.price<=0))ctx.addIssue({code:"custom",path:["config","gifts"],message:"Preencha o nome e um valor sugerido maior que zero para cada presente."});
     if(value.config.gifts.length>0&&!/^https:\/\/[^\s]+$/i.test(value.config.giftPaymentLink??""))ctx.addIssue({code:"custom",path:["config","giftPaymentLink"],message:"Adicione o link único de pagamento para salvar a lista de presentes."});
     if (

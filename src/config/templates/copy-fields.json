@@ -2,7 +2,7 @@
   {
     "key": "hero.text2",
     "section": "hero",
-    "label": "Texto",
+    "label": "Frase de apresentação acima dos nomes",
     "defaultValue": "Uma história de amor "
   },
   {
@@ -40,7 +40,7 @@
   {
     "key": "hero.text8",
     "section": "hero",
-    "label": "Texto",
+    "label": "Legenda do convite para rolar a página",
     "defaultValue": "O próximo capítulo"
   },
   {
@@ -64,7 +64,7 @@
   {
     "key": "story.text2",
     "section": "story",
-    "label": "Texto",
+    "label": "Apresentação acima da história",
     "defaultValue": "Nossa história "
   },
   {
@@ -76,7 +76,7 @@
   {
     "key": "story.text4",
     "section": "story",
-    "label": "Texto",
+    "label": "Frase de encerramento da história",
     "defaultValue": "Uma vida. Muitos capítulos. O mesmo amor."
   },
   {
@@ -88,31 +88,31 @@
   {
     "key": "transition.text2",
     "section": "transition",
-    "label": "Texto",
+    "label": "Frase acima do título de transição",
     "defaultValue": "O capítulo mais bonito está por vir"
   },
   {
     "key": "transition.text3",
     "section": "transition",
-    "label": "Título",
+    "label": "Título da transição para a celebração",
     "defaultValue": "O nosso para sempre."
   },
   {
     "key": "transition.text4",
     "section": "transition",
-    "label": "Texto",
+    "label": "Mensagem de convite abaixo do título",
     "defaultValue": "E queremos viver esse momento com você."
   },
   {
     "key": "events.text1",
     "section": "events",
-    "label": "Texto",
+    "label": "Apresentação acima do título da celebração",
     "defaultValue": "O nosso grande dia"
   },
   {
     "key": "events.text2",
     "section": "events",
-    "label": "Título",
+    "label": "Título da celebração · primeira parte",
     "defaultValue": "Cerimônia "
   },
   {
@@ -124,49 +124,49 @@
   {
     "key": "events.text4",
     "section": "events",
-    "label": "Título",
+    "label": "Título da celebração · segunda parte",
     "defaultValue": "Festa"
   },
   {
     "key": "events.text5",
     "section": "events",
-    "label": "Texto",
+    "label": "Introdução da celebração (local único)",
     "defaultValue": "Um só lugar. Todos os momentos que queremos viver com você."
   },
   {
     "key": "events.text6",
     "section": "events",
-    "label": "Texto",
+    "label": "Apresentação do espaço (local único)",
     "defaultValue": "Cerimônia e recepção no mesmo local"
   },
   {
     "key": "events.text7",
     "section": "events",
-    "label": "Texto",
+    "label": "Descrição da celebração (local único)",
     "defaultValue": "Aqui diremos o nosso sim e, logo depois, continuaremos a celebração com as pessoas que amamos."
   },
   {
     "key": "events.text8",
     "section": "events",
-    "label": "Rótulo",
+    "label": "Legenda acima da data",
     "defaultValue": "Reserve a data"
   },
   {
     "key": "events.text9",
     "section": "events",
-    "label": "Rótulo",
+    "label": "Legenda acima do horário",
     "defaultValue": "O nosso sim"
   },
   {
     "key": "events.text10",
     "section": "events",
-    "label": "Texto",
+    "label": "Observação abaixo do horário (local único)",
     "defaultValue": "Recepção após a cerimônia"
   },
   {
     "key": "events.text11",
     "section": "events",
-    "label": "Texto",
+    "label": "Título acima do endereço",
     "defaultValue": "Onde nos encontrar"
   },
   {
@@ -190,7 +190,7 @@
   {
     "key": "dressCode.text1",
     "section": "dressCode",
-    "label": "Texto",
+    "label": "Apresentação acima do título dos trajes",
     "defaultValue": "Para viver esse dia com leveza"
   },
   {
@@ -208,37 +208,37 @@
   {
     "key": "dressCode.text4",
     "section": "dressCode",
-    "label": "Texto",
+    "label": "Orientação principal sobre o traje",
     "defaultValue": "Traje obrigatório para celebração - esporte fino"
   },
   {
     "key": "dressCode.text5",
     "section": "dressCode",
-    "label": "Texto",
+    "label": "Apresentação do traje escolhido",
     "defaultValue": "O traje da celebração"
   },
   {
     "key": "dressCode.text6",
     "section": "dressCode",
-    "label": "Título",
+    "label": "Nome do traje escolhido",
     "defaultValue": "Esporte fino"
   },
   {
     "key": "dressCode.text7",
     "section": "dressCode",
-    "label": "Texto",
+    "label": "Orientação sobre as cores reservadas",
     "defaultValue": "Pedimos que não sejam utilizados trajes nas cores branca e marrom."
   },
   {
     "key": "dressCode.text8",
     "section": "dressCode",
-    "label": "Texto",
+    "label": "Título das cores não permitidas",
     "defaultValue": "Não usar"
   },
   {
     "key": "dressCode.text9",
     "section": "dressCode",
-    "label": "Texto",
+    "label": "Mensagem sobre as cores permitidas",
     "defaultValue": "As demais cores estão liberadas. Escolha a sua e celebre com a gente!"
   },
   {
@@ -251,7 +251,7 @@
   {
     "key": "gifts.text2",
     "section": "gifts",
-    "label": "Texto",
+    "label": "Apresentação acima do título dos presentes",
     "defaultValue": "Um gesto de carinho",
     "module": "gifts"
   },
@@ -272,14 +272,14 @@
   {
     "key": "gifts.text5",
     "section": "gifts",
-    "label": "Texto",
+    "label": "Frase de destaque sobre os presentes",
     "defaultValue": "Sua presença é o nosso maior presente.",
     "module": "gifts"
   },
   {
     "key": "gifts.text6",
     "section": "gifts",
-    "label": "Texto",
+    "label": "Mensagem de introdução à lista de presentes",
     "defaultValue": "Para quem desejar nos presentear, preparamos esta lista com carinho.",
     "module": "gifts"
   },
@@ -356,7 +356,7 @@
   {
     "key": "rsvp.text1",
     "section": "rsvp",
-    "label": "Texto",
+    "label": "Mensagem acima do título de confirmação",
     "defaultValue": "Um lugar especial para você",
     "module": "rsvp"
   },
@@ -377,7 +377,7 @@
   {
     "key": "rsvp.text4",
     "section": "rsvp",
-    "label": "Texto",
+    "label": "Convite para confirmar presença",
     "defaultValue": "Que alegria ter você fazendo parte da nossa história! Estamos preparando esse dia com muito carinho e esperamos celebrar ao seu lado.",
     "module": "rsvp"
   },
@@ -621,7 +621,7 @@
   {
     "key": "footer.text2",
     "section": "footer",
-    "label": "Texto",
+    "label": "Mensagem de agradecimento no rodapé",
     "defaultValue": "Agradecemos por caminhar conosco e fazer parte da celebração mais importante de nossas vidas. Nos vemos no altar!"
   },
   {
@@ -663,31 +663,31 @@
   {
     "key": "story.text6",
     "section": "story",
-    "label": "Texto da interface",
+    "label": "Título do primeiro capítulo",
     "defaultValue": "O encontro"
   },
   {
     "key": "story.text7",
     "section": "story",
-    "label": "Texto da interface",
+    "label": "Título do segundo capítulo",
     "defaultValue": "Uma vida construída juntos"
   },
   {
     "key": "story.text8",
     "section": "story",
-    "label": "Texto da interface",
+    "label": "Título do terceiro capítulo",
     "defaultValue": "O nosso grande sim"
   },
   {
     "key": "story.text9",
     "section": "story",
-    "label": "Texto da interface",
+    "label": "Prefixo antes do ano do primeiro encontro",
     "defaultValue": "Desde "
   },
   {
     "key": "story.text10",
     "section": "story",
-    "label": "Texto da interface",
+    "label": "Apresentação quando não há ano informado",
     "defaultValue": "Nossa jornada"
   },
   {
@@ -859,13 +859,13 @@
   {
     "key": "dressCode.heading",
     "section": "dressCode",
-    "label": "Título",
+    "label": "Título da seção de trajes",
     "defaultValue": "Dress Code & Estilo"
   },
   {
     "key": "gifts.heading",
     "section": "gifts",
-    "label": "Título",
+    "label": "Título da lista de presentes",
     "defaultValue": "Lista de presentes"
   }
 ]

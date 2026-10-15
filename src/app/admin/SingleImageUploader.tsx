@@ -8,6 +8,7 @@ import { isUploadThingUrl } from "@/config/gallery";
 import { isCustomImageUrl } from "@/lib/template-images";
 import { useUploadThing } from "@/lib/uploadthing";
 import {
+  Info,
   UploadCloud,
   Camera,
   RefreshCw,
@@ -251,7 +252,7 @@ export function SingleImageUploader({
   const isBusy = isUploading || isAutoSaving || isCleaning;
 
   return (
-    <div className="space-y-3 rounded-2xl border border-[var(--forever-hover-border,#722f3720)] bg-[var(--forever-sand-card,#fffdfa)] p-4 shadow-2xs">
+    <div className="space-y-4">
       {/* Label and Reset Action */}
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -282,9 +283,9 @@ export function SingleImageUploader({
       </div>
 
       {/* Subtle Auto-save Reassurance */}
-      <div className="flex items-center gap-2 rounded-xl border border-[var(--forever-hover-border,#722f3715)] bg-[var(--forever-hover-tint,#722f3705)] px-3 py-2 text-[11px] text-[var(--forever-primary,#722F37)]">
-        <Sparkles size={13} className="shrink-0 text-[var(--forever-primary,#722F37)]" />
-        <p className="leading-tight">
+      <div className="relative isolate overflow-hidden rounded-2xl border border-[#CFDCE5] bg-[#F0F5F8] px-4 py-3 text-xs text-[#405E74]">
+        <Info aria-hidden="true" size={76} strokeWidth={1.25} className="pointer-events-none absolute -right-2 top-1/2 -z-10 -translate-y-1/2 -rotate-12 text-[#54758F]/10" />
+        <p className="relative leading-relaxed">
           <span className="font-semibold">Salvamento automático:</span> ao enviar uma nova foto, ela é salva automaticamente no site.
         </p>
       </div>

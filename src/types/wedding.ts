@@ -37,6 +37,7 @@ export interface EventLocation {
   image?: string;
   tips?: string;
   postalCode?: string;
+    addressDetails?: {street:string;number:string;complement:string;neighborhood:string;city:string;state:string};
   coordinates?: { latitude: number; longitude: number } | null;
 }
 
@@ -101,6 +102,7 @@ export interface WeddingConfig {
   galleryStyle?: GalleryStyle;
   couple: CoupleInfo;
   gallery: GalleryPhoto[];
+  sameVenue?: boolean;
   ceremony: EventLocation;
   party: EventLocation;
   dressCode: DressCodeInfo;

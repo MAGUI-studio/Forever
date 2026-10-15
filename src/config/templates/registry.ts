@@ -53,7 +53,7 @@ export const fixedCopyKeys = new Set(allCopyFields.filter(field=>
   field.label === "Unidade do contador" || field.key === "countdown.text1" ||
   fixedActionKeys.has(field.key) || unusedGiftKeys.has(field.key)
 ).map(field=>field.key));
-export const copyFields=allCopyFields.filter(field=>!fixedCopyKeys.has(field.key)&&field.key!=="hero.text5"&&!["dressCode.text2","dressCode.text3","gifts.text3","gifts.text4"].includes(field.key));
+export const copyFields=allCopyFields.filter(field=>!fixedCopyKeys.has(field.key)&&field.key!=="hero.text5"&&!["dressCode.text2","dressCode.text3","gifts.text3","gifts.text4","story.text6","story.text7","story.text8"].includes(field.key));
 export function siteCopy(copy:Record<string,string>|undefined,key:string,templateId:TemplateId=defaultTemplateId){const defaults=templateCopyDefaults(templateId);if(key==="gifts.heading"&&copy?.[key]===undefined)return (copy?.["gifts.text3"]??copyDefaults["gifts.text3"])+(copy?.["gifts.text4"]??copyDefaults["gifts.text4"]);if(key==="dressCode.heading"&&copy?.[key]===undefined)return (copy?.["dressCode.text2"]??copyDefaults["dressCode.text2"])+(copy?.["dressCode.text3"]??copyDefaults["dressCode.text3"]);return fixedCopyKeys.has(key)?copyDefaults[key]:(copy?.[key]??defaults[key]??"");}
 
 export const templateSections:Record<TemplateId,CopySection[]>={

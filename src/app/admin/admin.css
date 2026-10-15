@@ -1709,6 +1709,47 @@
 /* Editor controls use the administration palette; iframe templates keep their own theme. */
 .forever-site-editor .guest-input { background: #fff; border-color: #e5e5e5; color: #161616; }
 .forever-site-editor .guest-input::placeholder { color: #a3a3a3; }
+.forever-site-editor[data-editor-mode="preview"] { padding: 0; }
+html:has(.forever-site-editor[data-editor-mode="preview"]) { scrollbar-gutter: auto; }
+.forever-site-editor[data-editor-mode="preview"] > .sticky { display: none; }
+.forever-site-editor[data-editor-mode="preview"] #editor-panel-preview { position: fixed; inset: 0; width: 100%; border: 0; border-radius: 0; }
+.forever-site-editor[data-editor-mode="preview"] #editor-panel-preview > div:first-child { display: none; }
+
+.site-editor-form { container-type: inline-size; }
+.site-editor-field-grid,
+.site-editor-section,
+.site-editor-address-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; align-items: start; }
+.site-editor-field-grid > *,
+.site-editor-section > *,
+.site-editor-address-grid > * { min-width: 0; }
+.site-editor-wide,
+.site-editor-field-grid > section,
+.site-editor-field-grid > p,
+.site-editor-section,
+.site-editor-section > :not(label) { grid-column: 1 / -1; }
+.site-editor-section > button { justify-self: start; }
+.site-editor-section > .site-editor-compact { grid-column: auto; }
+@container (min-width: 680px) {
+  .site-editor-field-grid,
+  .site-editor-section,
+  .site-editor-gift-pair { display: flex; flex-wrap: wrap; }
+  .site-editor-field-grid > *,
+  .site-editor-section > *,
+  .site-editor-gift-pair > * { flex: 1 1 calc((100% - var(--editor-column-gap, 24px)) / 2); min-width: 0; }
+  .site-editor-gift-pair { --editor-column-gap: 16px; }
+  .site-editor-field-grid > .site-editor-wide,
+  .site-editor-field-grid > section,
+  .site-editor-field-grid > p,
+  .site-editor-field-grid > .site-editor-section,
+  .site-editor-section > :not(label):not(.site-editor-compact),
+  .site-editor-section > .site-editor-wide { flex-basis: 100%; }
+  .site-editor-address-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px; }
+  .site-editor-address-grid > label { grid-column: span 2; }
+  .site-editor-address-grid > [data-address-field="street"],
+  .site-editor-address-grid > [data-address-field="complement"] { grid-column: span 4; }
+  .site-editor-address-grid > [data-address-field="neighborhood"] { grid-column: span 3; }
+  .site-editor-address-grid > [data-address-field="state"] { grid-column: span 1; }
+}
 
 /* Full-page invitation forms: responsive grid for the people in each invitation. */
 .admin-invitation-page .admin-guest-cards {

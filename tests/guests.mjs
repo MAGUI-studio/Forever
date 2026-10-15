@@ -938,13 +938,61 @@ async function check(title, work) {
     assert.equal((await requestWedding(scoped("GET"),true)).plan,"foreverPro");
     assert.equal(store.get("weddings/plan-test/invitations/existing").guests[0].name,"Preservado");
   });
+  await check("configurações derivam horário e cidade e usam o endereço no OpenStreetMap",async()=>{
+    const {emptyWeddingConfig}=load("src/config/forever.ts");
+    const {synchronizeWeddingSettings,weddingDateTimeInput,venueMapUrl}=load("src/lib/wedding-settings.ts");
+    const config=clone(emptyWeddingConfig);
+    config.couple.weddingDate="2027-05-29T14:30:00Z";
+    config.ceremony.time="18h00";
+    config.ceremony.addressDetails={street:"Praça da Sé",number:"1",complement:"",neighborhood:"Sé",city:"São Paulo",state:"SP"};
+    const synced=synchronizeWeddingSettings(config);
+    assert.equal(synced.ceremony.time,"11h30");
+    assert.equal(synced.couple.locationSummary,"São Paulo — SP");
+    assert.equal(config.ceremony.time,"18h00");
+    assert.equal(weddingDateTimeInput(config.couple.weddingDate),"2027-05-29T11:30");
+    assert.equal(weddingDateTimeInput(""),"");
+    config.ceremony.coordinates={latitude:-23.5505,longitude:-46.6333};
+    const point=new URL(venueMapUrl(config.ceremony));
+    assert.equal(point.hostname,"www.openstreetmap.org");
+    assert.equal(point.searchParams.get("mlat"),"-23.5505");
+    assert.equal(point.searchParams.get("mlon"),"-46.6333");
+    config.ceremony.coordinates=null;config.ceremony.address="Praça da Sé, 1";config.ceremony.cityState="São Paulo — SP";
+    assert.equal(new URL(venueMapUrl(config.ceremony)).searchParams.get("query"),"Praça da Sé, 1, São Paulo — SP");
+  });
+  await check("locais separados preservam endereço, mapa e horário próprios sem alterar casamentos existentes",async()=>{
+    const {emptyWeddingConfig}=load("src/config/forever.ts");
+    const {weddingConfigSchema,weddingUpdateSchema}=load("src/lib/wedding-schema.ts");
+    const {synchronizeWeddingSettings,venueMapUrl}=load("src/lib/wedding-settings.ts");
+    const config=clone(emptyWeddingConfig);
+    assert.notEqual(weddingConfigSchema.parse(config).sameVenue,false);
+    config.sameVenue=false;
+    config.couple.weddingDate="2027-05-29T14:30:00Z";
+    config.ceremony.placeName="Igreja";
+    config.ceremony.coordinates={latitude:-23.55,longitude:-46.63};
+    config.party={...config.party,placeName:"Salão",address:"Rua da Festa, 200",cityState:"Campinas — SP",time:"14:00",coordinates:{latitude:-22.9,longitude:-47.06}};
+    const parsed=weddingConfigSchema.parse(config);
+    const synced=synchronizeWeddingSettings(parsed);
+    assert.equal(synced.sameVenue,false);
+    assert.equal(synced.ceremony.time,"11h30");
+    assert.deepEqual(synced.party,config.party);
+    assert.notEqual(venueMapUrl(synced.party),venueMapUrl(synced.ceremony));
+    const joined=weddingConfigSchema.parse({...synced,sameVenue:true});
+    assert.deepEqual(joined.party,config.party);
+    assert.deepEqual(weddingConfigSchema.parse({...joined,sameVenue:false}).party,config.party);
+    const incomplete={...parsed,party:{...parsed.party,placeName:""}};
+    assert(weddingUpdateSchema.safeParse({config:incomplete,theme:"botanical",status:"draft"}).success);
+    assert(!weddingUpdateSchema.safeParse({config:incomplete,theme:"botanical",status:"published"}).success);
+  });
   await check("mapas validam coordenadas e preservam configurações sem localização",async()=>{
     const {emptyWeddingConfig}=load("src/config/forever.ts"),{weddingConfigSchema}=load("src/lib/wedding-schema.ts");
     const config=clone(emptyWeddingConfig);
     assert(weddingConfigSchema.safeParse(config).success);
     config.ceremony.postalCode="01001000";
     config.ceremony.coordinates={latitude:-23.5505,longitude:-46.6333};
+    config.ceremony.addressDetails={street:"Praça da Sé",number:"1",complement:"Entrada lateral",neighborhood:"Sé",city:"São Paulo",state:"SP"};
     assert(weddingConfigSchema.safeParse(config).success);
+    assert.deepEqual(weddingConfigSchema.parse(config).ceremony.addressDetails,config.ceremony.addressDetails);
+    assert(!weddingConfigSchema.safeParse({...config,ceremony:{...config.ceremony,addressDetails:{...config.ceremony.addressDetails,state:"São Paulo"}}}).success);
     assert(!weddingConfigSchema.safeParse({...config,ceremony:{...config.ceremony,coordinates:{latitude:91,longitude:0}}}).success);
     assert(!weddingConfigSchema.safeParse({...config,ceremony:{...config.ceremony,postalCode:"123"}}).success);
     config.ceremony.coordinates=null;assert(weddingConfigSchema.safeParse(config).success);
@@ -952,13 +1000,13 @@ async function check(title, work) {
   await check("geocodificação exige autorização e filtra resultados inválidos ou de fora do Brasil",async()=>{
     const route=load("src/app/api/admin/geocode/route.ts"),originalFetch=globalThis.fetch;
     store.set("weddings/test-couple",{slug:"test-couple",status:"published",plan:"essencial",config:{couple:{partner1:"Test",partner2:"Couple"}}});
-    const payload={address:"Praça da Sé, 1",cityState:"São Paulo — SP",postalCode:"01001000"};
+    const payload={address:"Praça da Sé, 1, Entrada lateral, Sé",cityState:"São Paulo — SP",postalCode:"01001000",addressDetails:{street:"Praça da Sé",number:"1",complement:"Entrada lateral",neighborhood:"Sé",city:"São Paulo",state:"SP"}};
     assert.equal((await route.POST(request("POST",payload,"outsider"))).status,403);
     assert.equal((await route.POST(request("POST",{...payload,postalCode:"123"}))).status,400);
     try{
-      globalThis.fetch=async url=>{assert(new URL(url).searchParams.get("q").includes("Praça da Sé"));return Response.json({features:[{properties:{countrycode:"BR",name:"Sé"},geometry:{coordinates:[-46.6333,-23.5505]}},{properties:{countrycode:"US"},geometry:{coordinates:[1,2]}},{properties:{countrycode:"BR"},geometry:{coordinates:[0,100]}}]});};
+      globalThis.fetch=async url=>{assert.equal(new URL(url).searchParams.get("q"),"Praça da Sé, 1, São Paulo, SP, 01001000, Brasil");return Response.json({features:[{properties:{countrycode:"BR",name:"Sé",street:"Praça da Sé",city:"São Paulo"},geometry:{coordinates:[-46.6333,-23.5505]}},{properties:{countrycode:"US"},geometry:{coordinates:[1,2]}},{properties:{countrycode:"BR"},geometry:{coordinates:[0,100]}},{properties:{countrycode:"BR",street:"Outra rua",housenumber:"1",city:"São Paulo"},geometry:{coordinates:[-46.6,-23.5]}},{properties:{countrycode:"BR",street:"Praça da Sé",city:"Outra cidade"},geometry:{coordinates:[-46.6,-23.5]}}]});};
       const result=await route.POST(request("POST",payload));assert.equal(result.status,200);
-      assert.deepEqual((await result.json()).candidates,[{latitude:-23.5505,longitude:-46.6333,label:"Sé"}]);
+      assert.deepEqual((await result.json()).candidates,[{latitude:-23.5505,longitude:-46.6333,label:"Sé, Praça da Sé, São Paulo"}]);
       assert.equal((await route.POST(request("POST",payload))).status,429);
       store.set("weddings/test-couple",{...store.get("weddings/test-couple"),plan:null});
       assert.equal((await route.POST(request("POST",payload))).status,403);

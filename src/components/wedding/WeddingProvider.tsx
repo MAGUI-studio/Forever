@@ -1,4 +1,5 @@
 "use client";
+import {synchronizeWeddingSettings} from "@/lib/wedding-settings";
 import {templatePalettes,weddingThemeStyle} from "@/config/templates/theme";
 import {defaultTemplateId,type TemplateId} from "@/config/templates/registry";
 import {resolveModules,type WeddingModules} from "@/config/modules";
@@ -6,6 +7,7 @@ import {
   createContext,
   useContext,
   useState,
+  useMemo,
   useCallback,
   type ReactNode,
   type CSSProperties,
@@ -66,6 +68,7 @@ export function WeddingProvider({
   const [current, setConfig] = useState(config);
   const [currentTheme, setTheme] = useState(theme);
   const path=useCallback((path="")=>weddingPath(slug,path),[slug]);
+  const effectiveConfig=useMemo(()=>synchronizeWeddingSettings(preview?config:current),[preview,config,current]);
   const activeTemplate=preview?templateId:selectedTemplate;
   const colors=activeTemplate==="contemporary-romance"?templatePalettes[activeTemplate]:{...themes[currentTheme],hover:currentTheme==="botanical"?"#4b4f30":`color-mix(in srgb, ${themes[currentTheme].primary} 80%, black)`};
   const themeStyle=weddingThemeStyle(colors);
@@ -74,7 +77,7 @@ export function WeddingProvider({
       value={{
         slug,
         modules:enabledModules,setModules,
-        config: preview?config:current,
+        config: effectiveConfig,
         templateId:preview?templateId:selectedTemplate,setTemplateId,preview,
         setConfig,
         setTheme,

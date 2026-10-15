@@ -15,6 +15,7 @@ import {
 } from "@/config/gallery";
 import { useUploadThing } from "@/lib/uploadthing";
 import {
+  Info,
   UploadCloud,
   Image as ImageIcon,
   X,
@@ -312,8 +313,8 @@ export function GalleryUploader({
       </div>
 
       {/* Auto-Save Reassurance Card */}
-      <div className="flex items-start gap-3 rounded-2xl border border-[var(--forever-hover-border,#722f3725)] bg-[var(--forever-hover-tint,#722f3708)] p-3.5 text-xs text-[var(--forever-primary,#722F37)]">
-        <Sparkles size={17} className="mt-0.5 shrink-0 text-[var(--forever-primary,#722F37)]" />
+      <div className="relative isolate overflow-hidden rounded-2xl border border-[#CFDCE5] bg-[#F0F5F8] px-4 py-3 text-xs text-[#405E74]">
+        <Info aria-hidden="true" size={76} strokeWidth={1.25} className="pointer-events-none absolute -right-2 top-1/2 -z-10 -translate-y-1/2 -rotate-12 text-[#54758F]/10" />
         <div className="leading-relaxed">
           <span className="font-semibold">Salvamento automático:</span> assim que você enviar as fotos, suas alterações serão salvas automaticamente no site.
         </div>
@@ -412,7 +413,7 @@ export function GalleryUploader({
 
       {/* Staged Files Preview (Before Upload) */}
       {staged.length > 0 && (
-        <div className="rounded-2xl border border-[var(--forever-hover-border,#722f3730)] bg-[var(--forever-sand-card,#fffdfa)] p-4 shadow-sm">
+        <div className="space-y-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-[var(--forever-primary,#722F37)]" />
