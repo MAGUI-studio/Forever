@@ -1,4 +1,6 @@
 "use client";
+import { useTableSearch, useQueryState, guestFilterParser, tableUrlOptions } from "./table-url-state";
+
 import { UpgradePlanDialog } from "./UpgradePlanDialog";
 import { InvitationEditorPage } from "./InvitationEditorPage";
 import { AdminPageHeading } from "./AdminPageHeading";
@@ -100,8 +102,8 @@ export function AdminPanel({
     enabled: true,
     deadline: "",
   });
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("todos");
+  const [query, setQuery] = useTableSearch();
+  const [filter, setFilter] = useQueryState("filter", guestFilterParser.withOptions(tableUrlOptions));
   const [upgradePending, setUpgradePending] = useState(false);
   const [upgradeDialogOpen,setUpgradeDialogOpen] = useState(false);
   const [upgradeError,setUpgradeError] = useState("");
@@ -373,8 +375,8 @@ export function AdminPanel({
                   aria-current={section === "guests" ? "page" : undefined}
                   className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
                     section === "guests"
-                      ? "border-[#722F3735] bg-[#722F3714] font-semibold text-[#722F37] shadow-xs"
-                      : "border-transparent bg-white/40 text-[#6B6760] hover:border-[#722F3725] hover:bg-[#722F370a] hover:text-[#722F37]"
+                      ? "border-[#722F3735] bg-white font-semibold text-[#722F37] shadow-xs"
+                      : "border-transparent bg-white text-[#6B6760] hover:border-[#722F3725] hover:bg-white hover:text-[#722F37]"
                   }`}
                 >
                   <span
@@ -396,8 +398,8 @@ export function AdminPanel({
                   aria-current={section === "check-in" ? "page" : undefined}
                   className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
                     section === "check-in"
-                      ? "border-[#722F3735] bg-[#722F3714] font-semibold text-[#722F37] shadow-xs"
-                      : "border-transparent bg-white/40 text-[#6B6760] hover:border-[#722F3725] hover:bg-[#722F370a] hover:text-[#722F37]"
+                      ? "border-[#722F3735] bg-white font-semibold text-[#722F37] shadow-xs"
+                      : "border-transparent bg-white text-[#6B6760] hover:border-[#722F3725] hover:bg-white hover:text-[#722F37]"
                   }`}
                 >
                   <span
@@ -425,8 +427,8 @@ export function AdminPanel({
                     onClick={() => setOrgOpen(prev => !prev)}
                     className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
                       orgOpen || ["tables", "buffet", "history", "team"].includes(section)
-                        ? "border-[#722F3735] bg-[#722F3714] font-semibold text-[#722F37] shadow-xs"
-                        : "border-transparent bg-white/40 text-[#6B6760] hover:border-[#722F3725] hover:bg-[#722F370a] hover:text-[#722F37]"
+                        ? "border-[#722F3735] bg-white font-semibold text-[#722F37] shadow-xs"
+                        : "border-transparent bg-white text-[#6B6760] hover:border-[#722F3725] hover:bg-white hover:text-[#722F37]"
                     }`}
                   >
                     <span
@@ -475,7 +477,7 @@ export function AdminPanel({
                                 onClick={() => setOrgOpen(false)}
                                 className={`group/item relative flex flex-col gap-1 rounded-xl p-3 text-left transition-all duration-200 border ${
                                   isActive
-                                    ? "border-[#722F3735] bg-[#722F3714] text-[#722F37] font-semibold shadow-xs"
+                                    ? "border-[#722F3735] bg-white text-[#722F37] font-semibold shadow-xs"
                                     : "border-transparent hover:border-[#722F3720] hover:bg-[#722F3708] text-[#161616]"
                                 }`}
                               >
@@ -509,7 +511,7 @@ export function AdminPanel({
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Ver site"
-                  className="inline-flex size-10 items-center justify-center rounded-xl border border-[#722F3730] bg-[#722F370a] text-[#722F37] transition-all duration-200 hover:border-[#722F37] hover:bg-[#722F3718] hover:shadow-xs focus-visible:outline-2 focus-visible:outline-[#722F37]"
+                  className="inline-flex size-10 items-center justify-center rounded-xl border border-[#722F3730] bg-white text-[#722F37] transition-all duration-200 hover:border-[#722F37] hover:bg-white hover:shadow-xs focus-visible:outline-2 focus-visible:outline-[#722F37]"
                 >
                   <ArrowUpRight size={17} aria-hidden="true" />
                 </Link>
@@ -533,8 +535,8 @@ export function AdminPanel({
                     aria-label="Personalizar site"
                     className={`inline-flex size-10 items-center justify-center rounded-xl border transition-all duration-200 hover:shadow-xs focus-visible:outline-2 focus-visible:outline-[#722F37] ${
                       section === "site"
-                        ? "border-[#722F37] bg-[#722F3722] text-[#722F37] font-semibold"
-                        : "border-[#722F3730] bg-[#722F370a] text-[#722F37] hover:border-[#722F37] hover:bg-[#722F3718]"
+                        ? "border-[#722F37] bg-white text-[#722F37] font-semibold"
+                        : "border-[#722F3730] bg-white text-[#722F37] hover:border-[#722F37] hover:bg-white"
                     }`}
                   >
                     <PencilSimpleIcon size={17} aria-hidden="true" />
@@ -559,7 +561,7 @@ export function AdminPanel({
                   className="group relative flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full border-2 border-[#722F37]/35 bg-white p-0.5 shadow-xs transition-all duration-200 hover:border-[#722F37] hover:ring-2 hover:ring-[#722F37]/20 hover:scale-105 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-[#722F37] focus-visible:outline-offset-2 data-[state=open]:border-[#722F37] data-[state=open]:ring-2 data-[state=open]:ring-[#722F37]/25"
                 >
                   <span
-                    className="flex size-full items-center justify-center rounded-full bg-gradient-to-br from-[#85343E] to-[#60232A] text-white font-serif text-base font-semibold shadow-inner transition-transform duration-200 group-hover:scale-95"
+                    className="flex size-full items-center justify-center rounded-full bg-white text-[#722F37] font-serif text-base font-semibold transition-transform duration-200 group-hover:scale-95"
                     aria-hidden="true"
                   >
                     {user.email?.slice(0, 1).toUpperCase() || "G"}
@@ -577,7 +579,7 @@ export function AdminPanel({
                       type="button"
                       disabled={upgradeLoading}
                       onClick={() => void handleUpgrade()}
-                      className="flex w-full cursor-pointer items-center justify-between rounded-lg bg-[#722F3710] px-2.5 py-2 text-xs font-medium text-[#722F37] transition-colors hover:bg-[#722F3718] outline-none disabled:opacity-60"
+                      className="flex w-full cursor-pointer items-center justify-between rounded-lg bg-[#722F3710] px-2.5 py-2 text-xs font-medium text-[#722F37] transition-colors hover:bg-white outline-none disabled:opacity-60"
                     >
                       <span className="flex items-center gap-1.5">
                         {upgradeLoading ? (
@@ -784,7 +786,7 @@ export function AdminPanel({
                     <strong className="relative my-1 font-serif text-3xl sm:text-4xl font-normal text-neutral-900">
                       {loading && !authorized ? "…" : allGuests.filter(g => g.status === "confirmado").length}
                     </strong>
-                    <span className="relative text-[11px] text-emerald-800 font-medium">
+                    <span className="relative text-[11px] text-neutral-500 font-medium">
                       {allGuests.length > 0 ? `${Math.round((allGuests.filter(g => g.status === "confirmado").length / allGuests.length) * 100)}% de presença confirmada` : "Aguardando respostas"}
                     </span>
                   </article>
@@ -810,7 +812,7 @@ export function AdminPanel({
                     <strong className="relative my-1 font-serif text-3xl sm:text-4xl font-normal text-neutral-900">
                       {loading && !authorized ? "…" : allGuests.filter(g => g.status === "recusado").length}
                     </strong>
-                    <span className="relative text-[11px] text-rose-800 font-medium">
+                    <span className="relative text-[11px] text-neutral-500 font-medium">
                       {allGuests.length > 0 ? `${Math.round((allGuests.filter(g => g.status === "recusado").length / allGuests.length) * 100)}% justificaram ausência` : "Nenhum recusado"}
                     </span>
                   </article>
@@ -875,7 +877,7 @@ export function AdminPanel({
                         label="Filtrar situação"
                         className="h-11! min-h-11! rounded-xl! border! border-neutral-200! bg-white! px-3! text-xs! shadow-2xs! text-[#161616]! focus-visible:border-[#722F37]!"
                         value={filter}
-                        onValueChange={setFilter}
+                        onValueChange={value => setFilter(guestFilterParser.parse(value))}
                         options={[
                           { value: "todos", label: "Todos os convites" },
                           { value: "confirmado", label: "Com confirmados" },

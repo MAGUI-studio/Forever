@@ -39,7 +39,7 @@ export function MobileAdminMenu({role,section,email,busy,authorized,plan,onSetti
     ].map(item=>({...item,icon:LayoutDashboard})),
   ];
   return <Dialog.Root open={open} onOpenChange={setOpen}>
-    <Dialog.Trigger asChild><button type="button" aria-label="Abrir menu" className="ml-auto inline-flex size-11 shrink-0 items-center justify-center rounded-[var(--wedding-radius)] text-[#722F37] transition-colors hover:bg-[#722F370d] focus-visible:outline-2 focus-visible:outline-[#722F37] lg:hidden"><Menu size={24} /></button></Dialog.Trigger>
+    <Dialog.Trigger asChild><button type="button" aria-label="Abrir menu" className="ml-auto inline-flex size-11 bg-white shrink-0 items-center justify-center rounded-[var(--wedding-radius)] text-[#722F37] transition-colors hover:bg-white focus-visible:outline-2 focus-visible:outline-[#722F37] lg:hidden"><Menu size={24} /></button></Dialog.Trigger>
     <AnimatePresence>
       {open && <Dialog.Portal forceMount>
         <Dialog.Overlay asChild forceMount><motion.div className="fixed inset-0 z-[300] bg-black/30 backdrop-blur-sm" initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} transition={{duration:reducedMotion ? 0 : .25}} /></Dialog.Overlay>
