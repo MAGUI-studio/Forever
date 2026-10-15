@@ -40,7 +40,7 @@ export const UPGRADE_PRICING = {
   id: "upgrade-essencial-pro",
   targetPlan: "foreverPro" as WeddingPlan,
   name: "Upgrade para Forever PRO",
-  priceInCents: 50000,
+  priceInCents: PLAN_PRICING.foreverPro.priceInCents - PLAN_PRICING.essencial.priceInCents,
   formattedPrice: "R$ 500,00",
   headline: "Diferença única de R$ 500",
   description:

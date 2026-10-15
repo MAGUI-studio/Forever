@@ -1,3 +1,4 @@
+import { handlePaymentSuccess } from "@/lib/stripe-fulfillment";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
@@ -12,19 +13,8 @@ export async function POST(request: Request) {
   let event: Stripe.Event;
 
   try {
-    if (webhookSecret && signature) {
-      event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
-    } else {
-      // In development environments without a webhook secret configured yet,
-      // parse event body for test simulation with a security note.
-      if (process.env.NODE_ENV === "production") {
-        return NextResponse.json(
-          { error: "Webhook secret não configurado em produção." },
-          { status: 400 },
-        );
-      }
-      event = JSON.parse(rawBody) as Stripe.Event;
-    }
+    if (!webhookSecret || !signature) return NextResponse.json({error:"Assinatura do webhook ausente."},{status:400});
+    event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Assinatura inválida";
     console.error(`[Stripe Webhook Signature Error]: ${message}`);
@@ -66,62 +56,6 @@ export async function POST(request: Request) {
     console.error("[Stripe Webhook Processing Error]", err);
     return NextResponse.json({ error: message }, { status: 500 });
   }
-}
-
-async function handlePaymentSuccess(session: Stripe.Checkout.Session) {
-  const metadata = session.metadata || {};
-  const action = metadata.action || "new";
-  const plan = metadata.plan || "foreverPro";
-  const weddingSlug = metadata.weddingSlug;
-  const now = new Date().toISOString();
-
-  const { db } = services();
-
-  // 1. If it's an upgrade for an existing wedding
-  if (action === "upgrade" && weddingSlug) {
-    const weddingRef = db.doc(`weddings/${weddingSlug}`);
-    const weddingSnap = await weddingRef.get();
-
-    if (weddingSnap.exists) {
-      await weddingRef.update({
-        plan: "foreverPro",
-        updatedAt: now,
-      });
-
-      // Register audit event
-      await weddingRef.collection("audit").add({
-        action: "plan_upgraded",
-        from: "essencial",
-        to: "foreverPro",
-        stripeSessionId: session.id,
-        amountTotal: session.amount_total,
-        currency: session.currency,
-        createdAt: now,
-      });
-
-      console.log(`[Stripe Webhook] Casamento ${weddingSlug} atualizado com sucesso para Forever PRO.`);
-    } else {
-      console.warn(`[Stripe Webhook] Casamento ${weddingSlug} não encontrado para upgrade.`);
-    }
-  }
-
-  // 2. Persist order record in orders collection
-  await db.doc(`orders/${session.id}`).set(
-    {
-      sessionId: session.id,
-      plan,
-      action,
-      weddingSlug: weddingSlug || null,
-      amountTotal: session.amount_total,
-      currency: session.currency,
-      customerEmail: session.customer_details?.email || metadata.customerEmail || null,
-      customerName: session.customer_details?.name || null,
-      paymentStatus: session.payment_status,
-      createdAt: now,
-      updatedAt: now,
-    },
-    { merge: true },
-  );
 }
 
 async function handlePaymentFailure(session: Stripe.Checkout.Session) {

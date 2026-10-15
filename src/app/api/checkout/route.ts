@@ -1,3 +1,4 @@
+import { requireAccess, failure, HttpError } from "@/lib/guest-server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import crypto from "crypto";
@@ -24,8 +25,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const { plan, action, weddingSlug, customerEmail } = parseResult.data;
+    const { plan, action, weddingSlug } = parseResult.data;
+    let { customerEmail } = parseResult.data;
     const isUpgrade = action === "upgrade";
+    if (isUpgrade) {
+      const access = await requireAccess(request);
+      if (access.role !== "admin") throw new HttpError(403, "Somente o responsável pode fazer o upgrade.");
+      if (access.wedding.plan !== "essencial" || plan !== "foreverPro") throw new HttpError(409, "O upgrade está disponível apenas do Essencial para o Forever PRO.");
+      if (!weddingSlug || weddingSlug !== access.wedding.slug) throw new HttpError(403, "Casamento inválido para este upgrade.");
+      customerEmail = access.email.includes("@") ? access.email : undefined;
+    }
 
     // Resolve base origin URL
     const requestOrigin =
@@ -45,6 +54,10 @@ export async function POST(request: Request) {
     if (isUpgrade) {
       const upgradePriceId = process.env.STRIPE_PRICE_UPGRADE;
       if (upgradePriceId) {
+        const price = await stripe.prices.retrieve(upgradePriceId);
+        if (!price.active || price.currency !== "brl" || price.type !== "one_time" || price.unit_amount !== UPGRADE_PRICING.priceInCents) {
+          throw new HttpError(503, "O preço do upgrade precisa ser revisado. Entre em contato com o suporte.");
+        }
         lineItem = { price: upgradePriceId, quantity: 1 };
       } else {
         lineItem = {
@@ -111,6 +124,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: session.url, sessionId: session.id });
   } catch (err: unknown) {
+    if (err instanceof HttpError) return failure(err);
     const message =
       err instanceof Error ? err.message : "Erro interno ao criar checkout.";
     console.error("[Stripe Checkout Error]", err);
