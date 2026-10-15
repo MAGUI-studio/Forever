@@ -73,19 +73,23 @@ html {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar delicada */
+/* Scrollbar delicada na cor Forever */
+* {
+  scrollbar-color: #722F37 transparent;
+}
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--forever-paper,#F1F1F1);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--forever-sand,#C7B79D);
+  background: #722F37;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--forever-accent,#80654E);
+  background: #5B252C;
 }
 
 :focus-visible { outline: 2px solid var(--forever-primary,#5D613C); outline-offset: 4px; }
