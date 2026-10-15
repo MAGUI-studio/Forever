@@ -1,3 +1,4 @@
+import { templateExampleConfig } from "@/config/template-examples";
 import { resolveModules } from "@/config/modules";
 import { audit } from "@/lib/event-audit";
 import { scopedDatabase } from "@/lib/wedding-server";
@@ -101,14 +102,14 @@ export async function POST(request: Request) {
         theme: "botanical",
         templateId: foreverTemplateId,
         plan: data.plan ?? "foreverPro",
-        config: {
+        config: templateExampleConfig({
           ...emptyWeddingConfig,
           couple: {
             ...emptyWeddingConfig.couple,
             partner1: data.partner1,
             partner2: data.partner2,
           },
-        },
+        }, foreverTemplateId),
         createdAt: now,
         updatedAt: now,
       });
