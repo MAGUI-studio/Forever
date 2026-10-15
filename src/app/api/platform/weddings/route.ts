@@ -1,3 +1,6 @@
+import { resolveModules } from "@/config/modules";
+import { audit } from "@/lib/event-audit";
+import { scopedDatabase } from "@/lib/wedding-server";
 import {bindWeddingUser} from "@/lib/wedding-membership";
 import { services } from "@/lib/firebase/admin";
 import { platformIdentity } from "@/lib/platform-server";
@@ -36,13 +39,15 @@ export async function GET(request: Request) {
           (identity.email_verified || reception.uid === identity.uid))
       ) {
         const data = document.data();
+        if (!superadmin && data.plan === null) continue;
+        if (!superadmin && !member && !resolveModules(data.modules, data.plan).team) continue;
         weddings.push({
           slug: document.id,
-          plan: data.plan === "essencial" ? "essencial" : "foreverPro",
+          plan: data.plan === null ? null : data.plan === "essencial" ? "essencial" : "foreverPro",
           status: data.status,
           config: data.config,
           theme: data.theme,
-          modules:data.modules??{},
+          modules:resolveModules(data.modules,data.plan),
         });
       }
     }
@@ -124,27 +129,30 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const { superadmin } = await platformIdentity(request);
+    const { superadmin, identity } = await platformIdentity(request);
     if (!superadmin)
       throw new HttpError(403, "Acesso exclusivo da MAGUI.studio.");
     const data = z
       .object({
         slug: slugSchema,
         status: z.enum(["draft", "suspended", "archived"]).optional(),
-        plan: z.enum(["essencial", "foreverPro"]).optional(),
+        plan: z.enum(["essencial", "foreverPro"]).nullable().optional(),
       })
       .strict()
       .refine(v => v.status !== undefined || v.plan !== undefined, "Nenhum campo para atualizar.")
       .parse(await body(request));
     const ref = services().db.doc("weddings/" + data.slug);
-    if (!(await ref.get()).exists)
-      throw new HttpError(404, "Casamento não encontrado.");
-    const updates: Record<string, unknown> = {
-      updatedAt: new Date().toISOString(),
-    };
-    if (data.status) updates.status = data.status;
-    if (data.plan) updates.plan = data.plan;
-    await ref.update(updates);
+    await services().db.runTransaction(async transaction => {
+      const current = await transaction.get(ref);
+      if (!current.exists) throw new HttpError(404, "Casamento não encontrado.");
+      const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() };
+      if (data.status) updates.status = data.status;
+      if (data.plan !== undefined) updates.plan = data.plan;
+      transaction.update(ref, updates);
+      if (data.plan !== undefined) {
+        audit(transaction, scopedDatabase(services().db, data.slug), identity.email ?? "MAGUI.studio", "Plano alterado manualmente", data.slug, `${current.data()?.plan ?? "Sem plano"} → ${data.plan ?? "Sem plano"}`);
+      }
+    });
     return reply({ success: true });
   } catch (e) {
     return failure(e);
