@@ -1,4 +1,5 @@
 "use client";
+import { useFeedbackToasts } from "@/components/ui/ForeverToaster";
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
@@ -48,6 +49,7 @@ export function SingleImageUploader({
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  useFeedbackToasts(error, success);
   const [progress, setProgress] = useState(0);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [isCleaning, setIsCleaning] = useState(false);

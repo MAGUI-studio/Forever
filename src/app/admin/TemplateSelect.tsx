@@ -18,7 +18,7 @@ export function TemplateSelect({ value, onValueChange }: { value: TemplateId; on
   const selectedPalette = templatePalettes[value] ?? templatePalettes["botanical-classic"];
   return (
     <Select.Root value={value} onValueChange={next => onValueChange(next as TemplateId)}>
-      <Select.Trigger aria-label="Template do site" className="group relative flex h-20 w-full items-stretch overflow-hidden rounded-[var(--wedding-radius)] border border-[#722f3720] bg-[#fffdfa] text-left transition-colors hover:border-[#722F37] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0">
+      <Select.Trigger aria-label="Template do site" className="group relative flex h-20 w-full items-stretch overflow-hidden rounded-[var(--wedding-radius)] border border-neutral-200/80 bg-white text-left transition-colors hover:border-[#722F37] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0">
         <span aria-hidden="true" className="w-1.5 shrink-0 transition-colors" style={{ backgroundColor: selectedPalette.primary }} />
         <span aria-hidden="true" className="pointer-events-none absolute -bottom-3 right-9 rotate-[-12deg] opacity-[0.09]" style={{ color: selectedPalette.primary }}><TemplateIcon id={value} /></span>
         <span className="relative flex min-w-0 flex-1 flex-col justify-center gap-1 px-3">
@@ -28,8 +28,8 @@ export function TemplateSelect({ value, onValueChange }: { value: TemplateId; on
         <Select.Icon className="relative flex w-9 shrink-0 items-center justify-center text-[var(--forever-primary,#722F37)]"><ChevronDown size={18} className="transition-transform group-data-[state=open]:rotate-180" /></Select.Icon>
       </Select.Trigger>
       <Select.Portal>
-        <Select.Content position="popper" sideOffset={8} collisionPadding={12} style={{ ...foreverTheme, position: "relative", zIndex: 10000, pointerEvents: "auto", backgroundColor: "#fffdfa" }} className="isolate max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-y-auto rounded-[var(--wedding-radius)] border border-[#722f3720] bg-[#fffdfa] shadow-[0_16px_48px_rgba(22,22,22,0.1)]">
-          <Select.Viewport style={{ backgroundColor: "#fffdfa" }}>
+        <Select.Content position="popper" sideOffset={8} collisionPadding={12} style={{ ...foreverTheme, position: "relative", zIndex: 10000, pointerEvents: "auto", backgroundColor: "#ffffff" }} className="isolate max-h-[var(--radix-select-content-available-height)] w-[var(--radix-select-trigger-width)] overflow-y-auto rounded-[var(--wedding-radius)] border border-neutral-200/80 bg-white shadow-[0_16px_48px_rgba(22,22,22,0.1)]">
+          <Select.Viewport style={{ backgroundColor: "#ffffff" }}>
             {templateCatalog.map(template => {
               const isComingSoon = "isComingSoon" in template && Boolean(template.isComingSoon);
               const palette = templatePalettes[template.id] ?? templatePalettes["botanical-classic"];
