@@ -1,4 +1,5 @@
 "use client";
+import { PRO_SUPPORT_URL } from "@/config/plan-access";
 import { useTableSearch, useQueryState, guestFilterParser, tableUrlOptions } from "./table-url-state";
 
 import { UpgradePlanDialog } from "./UpgradePlanDialog";
@@ -593,6 +594,7 @@ export function AdminPanel({
                     </button>
                   </DropdownMenu.Item>
                 )}
+                {plan === "foreverPro" && <DropdownMenu.Item asChild><a href={PRO_SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="admin-profile-item"><ArrowUpRight size={16} aria-hidden="true" />Suporte PRO pelo WhatsApp</a></DropdownMenu.Item>}
                 <DropdownMenu.Separator className="admin-profile-separator bg-[#722F3715]" />
 
                 {modules.rsvp&&<DropdownMenu.Item className="flex cursor-pointer items-center gap-2 rounded-[var(--wedding-radius)] px-2.5 py-3 text-xs text-[#722F37] outline-none hover:bg-[#722F370d] data-highlighted:bg-[#722F370d] data-disabled:opacity-40" disabled={busy || !authorized || role !== "admin"} onSelect={() => openModal("settings")}><CalendarDays size={16} aria-hidden="true" />Configurações</DropdownMenu.Item>}

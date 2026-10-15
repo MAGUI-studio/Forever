@@ -1,4 +1,5 @@
 "use client";
+import { PRO_SUPPORT_URL } from "@/config/plan-access";
 import { notify } from "@/components/ui/ForeverToaster";
 
 import { useState } from "react";
@@ -347,6 +348,7 @@ export function DashboardOverview({
                 <ArrowUpRight size={17} className="shrink-0 text-neutral-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>}
             </div>
+            {plan === "foreverPro" && <a href={PRO_SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white px-4 py-3 text-sm text-[#722F37] transition-colors hover:border-[#722F37]"><span>Suporte prioritário pelo WhatsApp</span><ArrowUpRight size={17} aria-hidden="true" /></a>}
             <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-neutral-100 pt-4">
               <span className="mr-auto min-w-0 break-all text-xs text-neutral-500">Site público <span className="ml-1 text-neutral-800">{weddingPath()}</span></span>
               <button type="button" onClick={handleCopySiteLink} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs text-neutral-600 transition-colors hover:bg-neutral-100">{copiedLink ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}{copiedLink ? "Copiado" : "Copiar link"}</button>

@@ -1,4 +1,5 @@
 "use client";
+import { PRO_SUPPORT_URL } from "@/config/plan-access";
 import {sectionModule} from "@/config/modules";
 import {useWedding} from "@/components/wedding/WeddingProvider";
 import {useState} from "react";
@@ -104,6 +105,7 @@ export function MobileAdminMenu({role,section,email,busy,authorized,plan,onSetti
               )}
             </div>
           )}
+          {plan === "foreverPro" && <a href={PRO_SUPPORT_URL} target="_blank" rel="noopener noreferrer" className="mt-4 flex min-h-12 items-center gap-2 rounded-xl bg-white px-4 text-sm text-[#722F37]" onClick={()=>setOpen(false)}>Suporte PRO pelo WhatsApp<ArrowUpRight size={16} aria-hidden="true" /></a>}
           <div className="mt-auto pt-8"><p className="break-all px-4 text-xs text-[var(--forever-accent,#77736c)]">{email}</p><button type="button" disabled={busy} onClick={()=>{setOpen(false);onSignOut();}} className="mt-3 flex min-h-12 w-full items-center gap-3 rounded-[var(--wedding-radius)] px-4 text-sm text-[#722F37] hover:bg-[#722F370d] disabled:opacity-40"><LogOut size={18} />Sair da conta</button></div>
         </motion.div></Dialog.Content>
       </Dialog.Portal>}
