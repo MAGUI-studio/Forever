@@ -813,8 +813,8 @@ const pricingComparison: PricingCategory[] = [
       {
         name: "Convites digitais em PDF com QR Code",
         description: "Arquivo elegante em alta resolução pronto para WhatsApp ou impressão",
-        essencial: "Até 50 convites em PDF",
-        foreverPro: "Convites em PDF ilimitados",
+        essencial: "Até 50 convidados",
+        foreverPro: "Convidados ilimitados",
       },
       {
         name: "Confirmação de presença (RSVP) individual",
