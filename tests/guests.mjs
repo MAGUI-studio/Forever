@@ -134,6 +134,34 @@ async function check(title, work) {
   console.log(`OK ${title}`);
 }
 (async () => {
+  await check("templates recebem exemplos completos sem alterar nomes, data ou sites personalizados",async()=>{
+    const {templateExampleConfig,EXAMPLE_PAYMENT_LINK}=load("src/config/template-examples.ts");
+    const {emptyWeddingConfig}=load("src/config/forever.ts");
+    const {weddingConfigSchema}=load("src/lib/wedding-schema.ts");
+    const {templateCopyFields}=load("src/config/templates/registry.ts");
+    const base={...clone(emptyWeddingConfig),couple:{...clone(emptyWeddingConfig.couple),partner1:"Marina",partner2:"Lucas",weddingDate:"2099-07-20T12:00:00-03:00"}};
+    for(const template of ["botanical-classic","contemporary-romance"]){
+      const example=templateExampleConfig(base,template);
+      assert(weddingConfigSchema.safeParse(example).success);
+      assert.equal(example.couple.partner1,"Marina");assert.equal(example.couple.weddingDate,base.couple.weddingDate);
+      assert(example.couple.story.enabled && example.couple.story.text.length);
+      assert(example.ceremony.placeName && example.party.placeName && example.gallery.length && example.gifts.length && example.dressCode.dos.length);
+      assert(templateCopyFields(template).every(field=>example.copy[field.key]?.trim()));
+      for(const image of [...example.gallery.map(photo=>photo.url),...example.gifts.map(gift=>gift.image),...example.dressCode.gallery.map(item=>item.image)])assert(fs.existsSync(path.join("public",image)));
+    }
+    assert.equal(base.gallery.length,0);
+    const original=clone(store.get("weddings/test-couple"));
+    const site=load("src/app/api/admin/site/route.ts");
+    try {
+      store.set("weddings/test-couple",{...original,status:"draft",siteRevision:0,config:base});
+      const data=await (await site.GET(request("GET"))).json();assert(data.examplesApplied);assert(data.config.gifts.length);
+      assert.equal(store.get("weddings/test-couple").config.gifts.length,0);
+      const publish=await site.PUT(request("PUT",{action:"publish",config:data.config,templateId:"botanical-classic",expectedRevision:0}));assert.equal(publish.status,400);assert((await publish.json()).error.includes("exemplo"));
+      assert.equal(data.config.giftPaymentLink,EXAMPLE_PAYMENT_LINK);
+      store.set("weddings/test-couple",{...original,status:"draft",siteRevision:1,config:base});
+      const customized=await (await site.GET(request("GET"))).json();assert.equal(customized.config.gifts.length,0);
+    }finally{store.set("weddings/test-couple",original);}
+  });
   await check("endereço automático usa primeiros nomes e permite alternativa após colisão",async()=>{
     const onboarding=load("src/app/api/contratacao/route.ts"),availability=load("src/app/api/contratacao/endereco/route.ts");
     const {weddingAddress}=load("src/lib/wedding-address.ts");
