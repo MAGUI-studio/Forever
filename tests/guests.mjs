@@ -64,6 +64,8 @@ const services = () => ({
       if (token === "owner-verified") return {uid:"owner",email:"contato@guibus.dev",email_verified:true};
       if (token === "owner-unverified") return {uid:"owner",email:"contato@guibus.dev",email_verified:false};
       if (token === "valid") return { uid: "bride" };
+      if (token === "buyer") return {uid:"buyer",email:"buyer@example.com"};
+      if (token === "buyer2") return {uid:"buyer2",email:"buyer2@example.com"};
       if (token === "reception") return {uid:"reception-user",email:"staff@example.com",email_verified:true};
       if (token === "unverified") return {uid:"unverified",email:"staff@example.com",email_verified:false};
       if (token === "outsider") return { uid: "stranger" };
@@ -74,6 +76,8 @@ const services = () => ({
 process.env.FIREBASE_ADMIN_UIDS = "bride,groom";
 const modules = new Map();
 const checkoutSessions = [];
+const stripeSessions = new Map();
+const stripeIdempotency = new Map();
 let upgradeStripePrice = {active:true,currency:"brl",type:"one_time",unit_amount:50000};
 function load(filename) {
   const full = path.resolve(filename);
@@ -90,7 +94,7 @@ function load(filename) {
   const localRequire = (name) => {
     if (name.endsWith(".json")) return JSON.parse(fs.readFileSync(path.resolve(path.dirname(full),name),"utf8"));
     if (name === "server-only") return {};
-    if (name === "@/lib/stripe") return {getStripe:()=>({prices:{retrieve:async()=>upgradeStripePrice},checkout:{sessions:{create:async data=>{checkoutSessions.push(data);return {id:"test-session",url:"https://checkout.stripe.com/test"};}}}})};
+    if (name === "@/lib/stripe") return {getStripe:()=>({prices:{retrieve:async()=>upgradeStripePrice},checkout:{sessions:{retrieve:async id=>{assert(stripeSessions.has(id));return stripeSessions.get(id);},expire:async id=>{stripeSessions.get(id).status="expired";return stripeSessions.get(id);},create:async(data,options)=>{if(options?.idempotencyKey && stripeIdempotency.has(options.idempotencyKey))return stripeIdempotency.get(options.idempotencyKey);checkoutSessions.push(data);const session={id:"cs_test_"+checkoutSessions.length,url:"https://checkout.stripe.com/test",status:"open",payment_status:"unpaid",metadata:data.metadata,amount_total:50000,currency:"brl"};stripeSessions.set(session.id,session);if(options?.idempotencyKey)stripeIdempotency.set(options.idempotencyKey,session);return session;}}}})};
     if (name === "@/lib/firebase/admin" || name === "./firebase/admin")
       return { services };
     if (name.startsWith("@/")) return load(`src/${name.slice(2)}.ts`);
@@ -130,6 +134,76 @@ async function check(title, work) {
   console.log(`OK ${title}`);
 }
 (async () => {
+  await check("endereço automático usa primeiros nomes e permite alternativa após colisão",async()=>{
+    const onboarding=load("src/app/api/contratacao/route.ts"),availability=load("src/app/api/contratacao/endereco/route.ts");
+    const {weddingAddress}=load("src/lib/wedding-address.ts");
+    assert.equal(weddingAddress(" Marína Santos ","Lúcas Silva"),"marina-e-lucas");
+    const checkAddress=(slug,token="buyer")=>availability.GET(new Request(`https://wedding.example/api/contratacao/endereco?slug=${slug}`,{headers:{authorization:`Bearer ${token}`}}));
+    assert.equal((await checkAddress("marina-e-lucas","invalid")).status,401);
+    assert.equal((await (await checkAddress("marina-e-lucas")).json()).available,true);
+    const data={partner1:"Marina Santos",partner2:"Lucas Silva",weddingDate:"2099-07-20"};
+    const result=await onboarding.POST(request("POST",data,"buyer"));assert.equal(result.status,201);assert.equal((await result.json()).slug,"marina-e-lucas");
+    assert.equal((await (await checkAddress("marina-e-lucas")).json()).available,false);
+    const conflict=await onboarding.POST(request("POST",data,"buyer2"));assert.equal(conflict.status,409);assert.equal((await conflict.json()).code,"ADDRESS_TAKEN");
+    assert.equal((await (await checkAddress("studio")).json()).reason,"invalid");
+    assert.equal((await (await checkAddress("mari-e-lucas")).json()).available,true);
+    const alternative=await onboarding.POST(request("POST",{...data,slug:"mari-e-lucas"},"buyer2"));assert.equal(alternative.status,201);assert.equal((await alternative.json()).slug,"mari-e-lucas");
+    for(const key of [...store.keys()])if(key.startsWith("weddings/marina-e-lucas") || key.startsWith("weddings/mari-e-lucas") || key === "userWeddingLinks/buyer" || key === "userWeddingLinks/buyer2")store.delete(key);
+  });
+  await check("contratação cria rascunho, vincula conta e só ativa após webhook pago",async()=>{
+    const onboarding=load("src/app/api/contratacao/route.ts"),checkout=load("src/app/api/checkout/route.ts"),payment=load("src/app/api/contratacao/pagamento/route.ts");
+    const {handlePaymentSuccess}=load("src/lib/stripe-fulfillment.ts");
+    const data={partner1:"Ana",partner2:"Pedro",weddingDate:"2099-05-29",slug:"purchase-couple"};
+    assert.equal((await onboarding.POST(request("POST",data,"invalid"))).status,401);
+    assert.equal((await checkout.POST(request("POST",{plan:"foreverPro"}))).status,403);
+    assert.equal((await onboarding.GET(request("GET",null,"buyer"))).status,200);
+    assert.equal((await onboarding.POST(request("POST",data,"buyer"))).status,201);
+    assert.equal(store.get("weddings/purchase-couple").plan,null);
+    assert.equal(store.get("weddings/purchase-couple/members/buyer").role,"admin");
+    const retry=await onboarding.POST(request("POST",{...data,slug:"another-purchase"},"buyer"));assert.equal((await retry.json()).slug,"purchase-couple");assert(!store.has("weddings/another-purchase"));
+    assert.equal((await onboarding.POST(request("POST",data,"buyer2"))).status,409);
+    const payload={plan:"foreverPro",weddingSlug:data.slug};
+    assert.equal((await checkout.POST(request("POST",payload,"buyer2"))).status,403);
+    const response=await checkout.POST(request("POST",payload,"buyer"));assert.equal(response.status,200);const first=await response.json();
+    const repeated=await checkout.POST(request("POST",payload,"buyer"));assert.equal((await repeated.json()).sessionId,first.sessionId);
+    const session=stripeSessions.get(first.sessionId);assert.equal(session.metadata.ownerUid,"buyer");
+    assert.equal(session.metadata.weddingSlug,data.slug);
+    const statusRequest=token=>new Request(`https://wedding.example/api/contratacao/pagamento?session_id=${first.sessionId}`,{headers:{authorization:`Bearer ${token}`}});
+    assert.equal((await payment.GET(statusRequest("buyer2"))).status,403);
+    assert.equal((await (await payment.GET(statusRequest("buyer"))).json()).confirmed,false);
+    assert.equal(await handlePaymentSuccess(session),false);
+    session.status="complete";session.payment_status="paid";
+    await handlePaymentSuccess(session);
+    assert.equal(store.get("weddings/purchase-couple").plan,"foreverPro");
+    assert.equal(store.get("weddings/purchase-couple").status,"draft");
+    assert.equal((await (await payment.GET(statusRequest("buyer"))).json()).confirmed,true);
+    assert.equal((await checkout.POST(request("POST",payload,"buyer"))).status,409);
+    // Repeated webhook delivery never overwrites a later admin removal.
+    store.get("weddings/purchase-couple").plan=null;
+    store.set("weddings/purchase-couple/invitations/preserved",{label:"Família",guests:[]});
+    await handlePaymentSuccess(session);assert.equal(store.get("weddings/purchase-couple").plan,null);
+    // A new purchase reuses the wedding and preserves all existing data.
+    const renew=await checkout.POST(request("POST",{plan:"essencial",weddingSlug:data.slug},"buyer"));assert.equal(renew.status,200);
+    const newSession=stripeSessions.get((await renew.json()).sessionId);newSession.status="complete";newSession.payment_status="paid";
+    await handlePaymentSuccess(newSession);
+    assert.equal(store.get("weddings/purchase-couple").plan,"essencial");assert(store.has("weddings/purchase-couple/invitations/preserved"));
+    for(const key of [...store.keys()])if(key.startsWith("weddings/purchase-couple") || key === "userWeddingLinks/buyer" || key === `orders/${first.sessionId}` || key === `orders/${newSession.id}`)store.delete(key);
+  });
+  await check("troca de plano encerra sessão aberta e não cobra de novo enquanto aguarda webhook",async()=>{
+    const onboarding=load("src/app/api/contratacao/route.ts"),checkout=load("src/app/api/checkout/route.ts");
+    const data={partner1:"Maria",partner2:"João",weddingDate:"2099-06-10",slug:"switch-purchase"};
+    assert.equal((await onboarding.POST(request("POST",data,"buyer2"))).status,201);
+    const buy=plan=>checkout.POST(request("POST",{plan,weddingSlug:data.slug},"buyer2"));
+    const first=await (await buy("essencial")).json();
+    const second=await (await buy("foreverPro")).json();
+    assert.notEqual(first.sessionId,second.sessionId);assert.equal(stripeSessions.get(first.sessionId).status,"expired");
+    const resume=await (await onboarding.GET(request("GET",null,"buyer2"))).json();assert.equal(resume.pendingPlan,"foreverPro");
+    stripeSessions.get(second.sessionId).status="complete";stripeSessions.get(second.sessionId).payment_status="paid";
+    const count=checkoutSessions.length;
+    const pending=await (await buy("essencial")).json();assert(pending.url.includes("checkout/sucesso"));assert.equal(pending.sessionId,second.sessionId);assert.equal(checkoutSessions.length,count);
+    assert.equal(store.get("weddings/switch-purchase").plan,null);
+    for(const key of [...store.keys()])if(key.startsWith("weddings/switch-purchase") || key === "userWeddingLinks/buyer2")store.delete(key);
+  });
   await check("validade inclui o dia final em São Paulo, bloqueia gestão e mantém login", async () => {
     const {planAccessEndsAt,isPlanExpired}=load("src/config/plan-access.ts");
     const wedding={plan:"essencial",config:{couple:{weddingDate:"2026-01-31"}}};
@@ -552,7 +626,7 @@ async function check(title, work) {
     const result=await destination.GET(request("GET",null,"managed"));assert.equal(result.status,200);assert.equal((await result.json()).destination,"/new-couple/painel");
     const members=load("src/app/api/admin/members/route.ts");
     assert.equal((await members.POST(request("POST",{action:"add",email:"newstaff@example.com"}))).status,409);
-    assert.equal((await destination.GET(request("GET",null,"outsider"))).status,403);
+    const newcomer=await destination.GET(request("GET",null,"outsider"));assert.equal(newcomer.status,200);assert.equal((await newcomer.json()).destination,"/contratar");
     const ref="weddings/other-couple/members/"+authAccounts.get("newstaff@example.com").uid;store.set(ref,{active:true,role:"admin"});
     assert.equal((await destination.GET(request("GET",null,"managed"))).status,409);store.delete(ref);
   });
