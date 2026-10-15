@@ -170,9 +170,9 @@ export function DashboardOverview({
   }
 
   return (
-    <div className="pt-8 sm:pt-12 space-y-8 pb-12">
+    <div className="flex flex-col gap-8 pt-8 pb-12 sm:pt-12 lg:block lg:space-y-8">
       {/* 1. TOP ROW: Title on Left, Mural de Recados in Middle, 4 Neutral Stat Cards on Right */}
-      <section className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-6 items-stretch">
+      <section className="contents lg:grid lg:grid-cols-12 lg:gap-6 lg:items-stretch">
         {/* Left (4 cols): Editorial Title & Story */}
         <div className="lg:col-span-4 flex flex-col justify-center space-y-4">
           <p className="admin-eyebrow text-xs sm:text-sm font-semibold uppercase tracking-wider text-[#77736c]">
@@ -197,7 +197,7 @@ export function DashboardOverview({
         </div>
 
         {/* Middle (4 cols): Mural de Recados using ScrollArea (Where the red box was) */}
-        <article className="lg:col-span-4 flex flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 sm:p-5 shadow-xs h-full min-h-[280px]">
+        <article className="order-last lg:order-none lg:col-span-4 flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200 bg-white p-4 sm:p-5 shadow-xs h-full min-h-[280px]">
           <div className="flex items-center justify-between pb-3 border-b border-[#1616160a]">
             <div className="flex items-center gap-2">
               <span className="flex size-7 items-center justify-center rounded-lg bg-[#722F3712] text-[#722F37]">
@@ -216,7 +216,7 @@ export function DashboardOverview({
                 {guestMessages.map((item, idx) => (
                   <div
                     key={idx}
-                    className="rounded-xl border border-[#1616160a] bg-[#FAF7F5] p-3 text-xs space-y-1 transition-colors hover:border-[#722F3725]"
+                    className="rounded-xl border border-[#1616160a] bg-white p-3 text-xs space-y-1 transition-colors hover:border-[#722F3725]"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-semibold text-[#161616] text-[11px] truncate">{item.name}</span>
@@ -245,7 +245,7 @@ export function DashboardOverview({
         {/* Right (4 cols): 4 Stat Cards in 2x2 Grid - All Identical Styling (Confirmados is NOT red) */}
         <div className="lg:col-span-4 grid grid-cols-2 gap-3" aria-label="Resumo de convidados">
           {/* Card 1: Convidados ativos */}
-          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 shadow-xs transition-all hover:border-[#722F3730]">
+          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200 bg-white p-4 shadow-xs transition-all hover:border-[#722F3730]">
             <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#161616] opacity-[0.05] rotate-[-12deg]">
               <Users size={80} />
             </span>
@@ -259,7 +259,7 @@ export function DashboardOverview({
           </article>
 
           {/* Card 2: Confirmados (Identical neutral style like the others, NOT red) */}
-          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 shadow-xs transition-all hover:border-[#722F3730]">
+          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200 bg-white p-4 shadow-xs transition-all hover:border-[#722F3730]">
             <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#161616] opacity-[0.05] rotate-[-12deg]">
               <CheckCircle2 size={80} />
             </span>
@@ -273,7 +273,7 @@ export function DashboardOverview({
           </article>
 
           {/* Card 3: Pendentes */}
-          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 shadow-xs transition-all hover:border-[#722F3730]">
+          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200 bg-white p-4 shadow-xs transition-all hover:border-[#722F3730]">
             <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#161616] opacity-[0.05] rotate-[-12deg]">
               <Clock size={80} />
             </span>
@@ -287,7 +287,7 @@ export function DashboardOverview({
           </article>
 
           {/* Card 4: Não comparecerão */}
-          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-[#E5E0D8] bg-[#FFFDFB] p-4 shadow-xs transition-all hover:border-[#722F3730]">
+          <article className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200 bg-white p-4 shadow-xs transition-all hover:border-[#722F3730]">
             <span aria-hidden="true" className="pointer-events-none absolute -right-3 -bottom-3 text-[#161616] opacity-[0.05] rotate-[-12deg]">
               <UserX size={80} />
             </span>
@@ -303,7 +303,29 @@ export function DashboardOverview({
       </section>
 
       {/* 2. UNIFIED PANEL: Seu Site & Andamento do Casamento */}
-      <section className="overflow-hidden rounded-2xl border border-[#722F3725] bg-[#FFFDFB] shadow-xs">
+      {plan === "essencial" && (
+        <section aria-labelledby="pro-upgrade-title" className="relative isolate overflow-hidden rounded-2xl border border-[#722F37] bg-[#722F37] p-6 text-white shadow-sm sm:p-7">
+          <Heart size={220} className="pointer-events-none absolute -right-8 -bottom-16 -z-10 -rotate-12 text-white opacity-[0.06]" aria-hidden="true" />
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="max-w-2xl space-y-2.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-white/75">O próximo passo da sua celebração · Forever PRO</p>
+              <h2 id="pro-upgrade-title" className="font-serif text-2xl font-normal leading-tight text-white sm:text-3xl">Na sua história, cabe todo mundo.</h2>
+              <p className="text-sm leading-relaxed text-white/85">Troque o limite de 50 por convidados ilimitados. Organize mesas, equipe e chegadas em um só lugar, com a tranquilidade de ter cada detalhe sob controle.</p>
+              <p className="text-xs font-medium text-white/90">Os R$ 497 do seu Essencial já contam: complete seu plano com mais R$ 500, em pagamento único.</p>
+            </div>
+            <div className="flex w-full shrink-0 flex-col gap-2 lg:w-auto lg:items-end">
+              <button type="button" disabled={upgradeLoading} onClick={onUpgrade} className="group inline-flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-[#722F37] shadow-sm transition-colors hover:bg-neutral-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white disabled:opacity-60 lg:w-auto">
+                {upgradeLoading ? <Loader2 size={16} className="animate-spin" aria-hidden="true" /> : <Heart size={16} aria-hidden="true" />}
+                {upgradeLoading ? "Abrindo…" : "Quero conhecer o Forever PRO"}
+                {!upgradeLoading && <ArrowUpRight size={16} className="transition-transform duration-300 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-focus-visible:-translate-y-0.5 group-focus-visible:translate-x-0.5 motion-reduce:transition-none motion-reduce:transform-none" aria-hidden="true" />}
+              </button>
+              <span className="text-center text-[11px] text-white/75 lg:text-right">Seus convites e confirmações continuam com vocês.</span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xs">
         <div className="grid grid-cols-1 divide-y divide-[#722F3715] lg:grid-cols-2 lg:divide-y-0 lg:divide-x">
           {/* Left Side: Seu Site */}
           <div className="p-6 sm:p-8 flex flex-col justify-between space-y-6">
@@ -320,7 +342,7 @@ export function DashboardOverview({
               </p>
 
               {/* URL Pill */}
-              <div className="mt-4 flex items-center justify-between rounded-xl border border-[#16161610] bg-[#FAF7F5] px-3.5 py-2.5 text-xs">
+              <div className="mt-4 flex items-center justify-between rounded-xl border border-[#16161610] bg-white px-3.5 py-2.5 text-xs">
                 <span className="font-mono text-xs text-[#161616] truncate font-medium">
                   /casamento/{slug}
                 </span>
@@ -360,7 +382,7 @@ export function DashboardOverview({
           </div>
 
           {/* Right Side: Andamento do RSVP & Entregas */}
-          <div className="p-6 sm:p-8 flex flex-col justify-between space-y-6 bg-gradient-to-br from-transparent to-[#722F3705]">
+          <div className="p-6 sm:p-8 flex flex-col justify-between space-y-6 bg-white">
             <div>
               <div className="flex items-center justify-between">
                 <p className="text-[11px] font-semibold uppercase tracking-wider text-[#77736c]">
@@ -471,48 +493,7 @@ export function DashboardOverview({
         </div>
       </section>
 
-      {/* 3. PRO UPGRADE BANNER (Only if plan is essencial) */}
-      {plan === "essencial" && (
-        <section className="relative overflow-hidden rounded-2xl border border-[#722F3730] bg-gradient-to-br from-[#FFFDFB] via-[#FFFDFB] to-[#722F370c] p-6 sm:p-7 shadow-xs">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="max-w-2xl space-y-1.5">
-              <div className="inline-flex items-center gap-1.5 rounded-full border border-[#722F3730] bg-[#722F3712] px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#722F37]">
-                <Heart size={12} className="fill-[#722F37]" />
-                Upgrade disponível · Forever PRO
-              </div>
-              <h3 className="font-serif text-2xl font-normal text-[#161616]">
-                Desbloqueie convidados <em className="italic text-[#722F37]">ilimitados</em>
-              </h3>
-              <p className="text-xs text-[#6B6760] leading-relaxed">
-                Seu plano Essencial tem limite de até 50 convidados. Com o PRO, vocês têm convidados sem limites, mesas, check-in na portaria e templates exclusivos.
-              </p>
-            </div>
 
-            <div className="flex shrink-0 flex-col items-start gap-1.5 lg:items-end">
-              <button
-                type="button"
-                disabled={upgradeLoading}
-                onClick={onUpgrade}
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[#722F37] px-6 py-2.5 text-xs font-semibold text-white shadow-xs transition-all hover:bg-[#5B252C] disabled:opacity-60 cursor-pointer"
-              >
-                {upgradeLoading ? (
-                  <>
-                    <Loader2 size={13} className="animate-spin" />
-                    <span>Iniciando…</span>
-                  </>
-                ) : (
-                  <>
-                    <Heart size={13} className="fill-white" />
-                    <span>Fazer upgrade para Forever PRO</span>
-                    <ArrowUpRight size={13} />
-                  </>
-                )}
-              </button>
-              <span className="text-[11px] text-[#8C877F]">Pagamento único · Diferença de R$&nbsp;500</span>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
