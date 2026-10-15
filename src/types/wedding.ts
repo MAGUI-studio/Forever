@@ -36,6 +36,8 @@ export interface EventLocation {
   uberUrl?: string;
   image?: string;
   tips?: string;
+  postalCode?: string;
+  coordinates?: { latitude: number; longitude: number } | null;
 }
 
 export interface DressCodePaletteColor {

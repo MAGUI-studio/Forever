@@ -1,4 +1,5 @@
 "use client";
+import {LocationMap} from "@/components/ui/LocationMap";
 
 import {useEffect,useRef} from "react";
 import {MotionConfig,motion,useReducedMotion} from "framer-motion";
@@ -93,6 +94,7 @@ export function ContemporaryRomanceTemplate(){
       <p className={`${eyebrow} mb-6 text-[var(--forever-accent)]`}>A celebração</p><h3 className="font-serif text-4xl font-light leading-tight text-[var(--forever-primary)] sm:text-5xl">{ceremony.placeName}</h3><p className="mt-5 text-sm leading-7 text-[var(--forever-accent)]">{copy("romance.events.details")}</p>
       <dl className="my-8 grid grid-cols-2 gap-5 border-y border-[var(--forever-primary)]/20 py-6"><div><dt className={`${eyebrow} text-[var(--forever-accent)]`}>Data</dt><dd className="mt-3 font-serif text-xl">{dateLabel}</dd></div><div><dt className={`${eyebrow} text-[var(--forever-accent)]`}>Horário</dt><dd className="mt-3 font-serif text-2xl">{ceremony.time}</dd></div></dl>
       <address className="text-sm not-italic leading-7">{ceremony.address}<br/>{ceremony.cityState}</address><p className="mt-4 font-serif text-lg italic text-[var(--forever-accent)]">{copy("romance.events.note")}</p>
+      {ceremony.coordinates&&<div className="mt-6"><LocationMap point={ceremony.coordinates}/></div>}
       <div className="mt-7 flex flex-wrap gap-3">{ceremony.googleMapsUrl&&<a target="_blank" rel="noopener noreferrer" href={ceremony.googleMapsUrl} className={`${button} bg-[var(--forever-primary)] text-white hover:bg-[#5B252C]`}><Navigation size={14}/>Como chegar</a>}{ceremony.wazeUrl&&<a target="_blank" rel="noopener noreferrer" href={ceremony.wazeUrl} className={`${button} border border-[var(--forever-primary)]/30 hover:bg-[var(--forever-primary)]/5`}>Abrir no Waze</a>}{ceremony.websiteUrl&&<a target="_blank" rel="noopener noreferrer" href={ceremony.websiteUrl} className="inline-flex min-h-11 items-center gap-2 text-xs text-[var(--forever-primary)] underline underline-offset-4">Conheça o espaço<ArrowUpRight size={14}/></a>}</div>
      </RomanceReveal>
     </div>

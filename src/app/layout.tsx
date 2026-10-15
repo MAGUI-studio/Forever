@@ -2,6 +2,7 @@ import { ForeverToaster } from "@/components/ui/ForeverToaster";
 import {rootMetadata} from "@/lib/seo";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import "leaflet/dist/leaflet.css";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],

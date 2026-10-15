@@ -8,7 +8,7 @@ import { ArrowUp } from "lucide-react";
 
 export function Footer() {
   const copy=useSiteCopy();
-  const {config:weddingConfig,path}=useWedding();
+  const {config:weddingConfig}=useWedding();
   const { couple } = weddingConfig;
 
   const scrollToTop = () => {
@@ -23,10 +23,10 @@ export function Footer() {
           <span className="text-[11px] font-mono tracking-[0.35em] uppercase text-[#8C6D46] block">
             {couple.hashtag}
           </span>
-          <h2 className="font-serif text-5xl sm:text-7xl lg:text-9xl font-light tracking-tight leading-none text-[#1A1715]">
-            <span>{couple.partner1}</span>
-            <span className="font-serif italic font-light text-[#8C6D46] px-4">{copy("footer.text1")}</span>
-            <span>{couple.partner2}</span>
+          <h2 className="mx-auto flex max-w-6xl flex-wrap items-baseline justify-center gap-x-3 gap-y-2 font-serif text-5xl sm:gap-x-5 sm:text-7xl lg:text-9xl font-light tracking-tight leading-[1.1] text-[#1A1715]">
+            <span className="min-w-0 break-words [overflow-wrap:anywhere]">{couple.partner1}</span>
+            <span className="font-serif italic font-light text-[#8C6D46]">{copy("footer.text1")}</span>
+            <span className="min-w-0 break-words [overflow-wrap:anywhere]">{couple.partner2}</span>
           </h2>
         </div>
 

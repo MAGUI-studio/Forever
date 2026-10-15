@@ -938,6 +938,32 @@ async function check(title, work) {
     assert.equal((await requestWedding(scoped("GET"),true)).plan,"foreverPro");
     assert.equal(store.get("weddings/plan-test/invitations/existing").guests[0].name,"Preservado");
   });
+  await check("mapas validam coordenadas e preservam configurações sem localização",async()=>{
+    const {emptyWeddingConfig}=load("src/config/forever.ts"),{weddingConfigSchema}=load("src/lib/wedding-schema.ts");
+    const config=clone(emptyWeddingConfig);
+    assert(weddingConfigSchema.safeParse(config).success);
+    config.ceremony.postalCode="01001000";
+    config.ceremony.coordinates={latitude:-23.5505,longitude:-46.6333};
+    assert(weddingConfigSchema.safeParse(config).success);
+    assert(!weddingConfigSchema.safeParse({...config,ceremony:{...config.ceremony,coordinates:{latitude:91,longitude:0}}}).success);
+    assert(!weddingConfigSchema.safeParse({...config,ceremony:{...config.ceremony,postalCode:"123"}}).success);
+    config.ceremony.coordinates=null;assert(weddingConfigSchema.safeParse(config).success);
+  });
+  await check("geocodificação exige autorização e filtra resultados inválidos ou de fora do Brasil",async()=>{
+    const route=load("src/app/api/admin/geocode/route.ts"),originalFetch=globalThis.fetch;
+    store.set("weddings/test-couple",{slug:"test-couple",status:"published",plan:"essencial",config:{couple:{partner1:"Test",partner2:"Couple"}}});
+    const payload={address:"Praça da Sé, 1",cityState:"São Paulo — SP",postalCode:"01001000"};
+    assert.equal((await route.POST(request("POST",payload,"outsider"))).status,403);
+    assert.equal((await route.POST(request("POST",{...payload,postalCode:"123"}))).status,400);
+    try{
+      globalThis.fetch=async url=>{assert(new URL(url).searchParams.get("q").includes("Praça da Sé"));return Response.json({features:[{properties:{countrycode:"BR",name:"Sé"},geometry:{coordinates:[-46.6333,-23.5505]}},{properties:{countrycode:"US"},geometry:{coordinates:[1,2]}},{properties:{countrycode:"BR"},geometry:{coordinates:[0,100]}}]});};
+      const result=await route.POST(request("POST",payload));assert.equal(result.status,200);
+      assert.deepEqual((await result.json()).candidates,[{latitude:-23.5505,longitude:-46.6333,label:"Sé"}]);
+      assert.equal((await route.POST(request("POST",payload))).status,429);
+      store.set("weddings/test-couple",{...store.get("weddings/test-couple"),plan:null});
+      assert.equal((await route.POST(request("POST",payload))).status,403);
+    }finally{globalThis.fetch=originalFetch;}
+  });
   console.log(
     `\n${count} verificações passaram. Banco e autenticação simulados.`,
   );

@@ -20,7 +20,7 @@ export function CinematicExperience({ children }: { children: ReactNode }) {
             scrollTrigger: { trigger: heading, start: "top 88%", end: "bottom 48%", scrub: 0.8 },
           });
         });
-        gsap.utils.toArray<HTMLElement>("section:not(#inicio) h2:not([data-cinema-words]), section:not(#inicio) h3, footer h2").forEach(heading => {
+        gsap.utils.toArray<HTMLElement>("section:not(#inicio) h2:not([data-cinema-words]), section:not(#inicio) h3").forEach(heading => {
           gsap.fromTo(heading, { y: 55, opacity: 0, filter: "blur(5px)" }, {
             y: 0, opacity: 1, filter: "blur(0px)", duration: 1.3, ease: "power3.out",
             scrollTrigger: { trigger: heading, start: "top 93%", once: true },
