@@ -223,7 +223,7 @@ input[type=checkbox]{appearance:none;width:19px;height:19px;flex-shrink:0;border
 .wedding-tooltip[data-side="top"]::before { bottom: -4px; }
 
 /* Shared Forever action feedback, rendered outside page and modal stacking contexts. */
-.forever-toast { position: relative; isolation: isolate; display: flex; align-items: flex-start; gap: 11px; width: var(--width, 356px); max-width: calc(100vw - 32px); overflow: hidden; padding: 16px 34px 16px 16px; border: 1px solid #16161612; border-radius: 12px; background: #fffdfa; color: #161616; box-shadow: 0 12px 40px #39181c14, 0 2px 8px #39181c08; font-family: var(--font-sans), sans-serif; }
+.forever-toast { position: relative; isolation: isolate; display: flex; align-items: flex-start; gap: 11px; width: var(--width, 356px); max-width: calc(100vw - 32px); overflow: hidden; padding: 16px 34px 16px 16px; border: 1px solid #16161612; border-radius: 12px; background: #fff; background-image: none; color: #161616; box-shadow: 0 12px 40px #0000000d, 0 2px 8px #00000008; font-family: var(--font-sans), sans-serif; }
 .forever-toast-watermark { position: absolute; z-index: -1; right: -13px; bottom: -23px; width: 116px; height: 116px; transform: rotate(-16deg); color: #722f37; opacity: .055; pointer-events: none; }
 .forever-toast-copy { min-width: 0; }
 .forever-toast-title { margin: 0; font-family: var(--font-sans), sans-serif; font-size: 14px; font-weight: 600; line-height: 1.5; }
