@@ -62,7 +62,10 @@ async function handlePaymentFailure(session: Stripe.Checkout.Session) {
   const { db } = services();
   const now = new Date().toISOString();
 
-  await db.doc(`orders/${session.id}`).set(
+  const ref=db.doc(`orders/${session.id}`);
+  await db.runTransaction(async transaction=>{
+  if((await transaction.get(ref)).data()?.fulfilledAt)return;
+  transaction.set(ref,
     {
       sessionId: session.id,
       paymentStatus: "failed",
@@ -70,4 +73,5 @@ async function handlePaymentFailure(session: Stripe.Checkout.Session) {
     },
     { merge: true },
   );
+  });
 }

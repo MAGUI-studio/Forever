@@ -5,6 +5,10 @@ import crypto from "crypto";
 import { getStripe } from "@/lib/stripe";
 import { FOREVER_ORIGIN } from "@/config/forever";
 import { PLAN_PRICING, UPGRADE_PRICING } from "@/config/pricing";
+import { platformIdentity } from "@/lib/platform-server";
+import { purchaseWedding } from "@/lib/purchase-account";
+import { services } from "@/lib/firebase/admin";
+import { isPlanExpired } from "@/config/plan-access";
 
 const checkoutSchema = z.object({
   plan: z.enum(["essencial", "foreverPro"]),
@@ -28,12 +32,52 @@ export async function POST(request: Request) {
     const { plan, action, weddingSlug } = parseResult.data;
     let { customerEmail } = parseResult.data;
     const isUpgrade = action === "upgrade";
+    let ownerUid = "";
+    let purchaseAttempt = "";
     if (isUpgrade) {
       const access = await requireAccess(request);
       if (access.role !== "admin") throw new HttpError(403, "Somente o responsável pode fazer o upgrade.");
       if (access.wedding.plan !== "essencial" || plan !== "foreverPro") throw new HttpError(409, "O upgrade está disponível apenas do Essencial para o Forever PRO.");
       if (!weddingSlug || weddingSlug !== access.wedding.slug) throw new HttpError(403, "Casamento inválido para este upgrade.");
       customerEmail = access.email.includes("@") ? access.email : undefined;
+    } else {
+      const {identity}=await platformIdentity(request);
+      const wedding=await purchaseWedding(identity.uid,identity.email ?? "");
+      if(!wedding || wedding.slug !== weddingSlug)throw new HttpError(403,"Prepare seu casamento antes de continuar para pagamento.");
+      if(wedding.status === "suspended" || wedding.status === "archived")throw new HttpError(403,"Este casamento está suspenso ou arquivado.");
+      if(wedding.plan !== null)throw new HttpError(409,"Seu casamento já possui um plano. Acesse o painel para gerenciá-lo.");
+      if(isPlanExpired({...wedding,plan}))throw new HttpError(409,"A data deste casamento já ultrapassou a validade do plano. Não é possível iniciar uma nova cobrança.");
+      if(plan === "essencial") {
+        const list=await services().db.collection(`weddings/${wedding.slug}/invitations`).get();
+        const count=list.docs.filter(doc=>doc.data().active !== false).reduce((sum,doc)=>sum+(doc.data().guests?.length ?? 0),0);
+        if(count>50)throw new HttpError(409,"Seu casamento possui mais de 50 convidados ativos. Escolha o PRO ou ajuste a lista pelo Studio antes de contratar o Essencial.");
+      }
+      ownerUid=identity.uid;
+      customerEmail=identity.email;
+      const purchaseRef=services().db.doc(`weddings/${wedding.slug}`);
+      const previous=(await purchaseRef.get()).data()?.purchaseAttempt;
+      let replaceAttempt=false;
+      if(previous?.sessionId) {
+        const checkout=await getStripe().checkout.sessions.retrieve(previous.sessionId);
+        if(checkout.status === "complete") {
+          const order=await services().db.doc(`orders/${checkout.id}`).get();
+          if(!order.data()?.fulfilledAt && order.data()?.paymentStatus !== "failed")return NextResponse.json({url:`${new URL(request.url).origin}/checkout/sucesso?session_id=${encodeURIComponent(checkout.id)}`,sessionId:checkout.id});
+          replaceAttempt=true;
+        }
+        if(checkout.status === "expired")replaceAttempt=true;
+        else if(checkout.status === "open" && previous.plan !== plan){await getStripe().checkout.sessions.expire(checkout.id);replaceAttempt=true;}
+      }
+      purchaseAttempt=await services().db.runTransaction(async transaction=>{
+        const ref=services().db.doc(`weddings/${wedding.slug}`);
+        const current=(await transaction.get(ref)).data();
+        if(current?.plan !== null)throw new HttpError(409,"O plano já foi alterado. Atualize a página.");
+        if(current.purchaseAttempt && current.purchaseAttempt.id !== previous?.id)throw new HttpError(409,"Outra contratação está sendo preparada. Atualize a página para continuar.");
+        if(!replaceAttempt && current.purchaseAttempt?.plan === plan && current.purchaseAttempt?.uid === ownerUid && Date.now()-Date.parse(current.purchaseAttempt.createdAt)<23*60*60*1000)return current.purchaseAttempt.id as string;
+        if(!replaceAttempt && current.purchaseAttempt && Date.now()-Date.parse(current.purchaseAttempt.createdAt)<60000)throw new HttpError(409,"Aguarde a preparação do pagamento antes de trocar o plano.");
+        const id=crypto.randomUUID();
+        transaction.update(ref,{purchaseAttempt:{id,uid:ownerUid,plan,createdAt:new Date().toISOString()}});
+        return id;
+      });
     }
 
     // Resolve base origin URL
@@ -46,7 +90,7 @@ export async function POST(request: Request) {
     const stripe = getStripe();
 
     // 8 random characters suffix for tracking as recommended by Stripe best practices
-    const randomSuffix = crypto.randomBytes(4).toString("hex");
+    const randomSuffix = purchaseAttempt ? purchaseAttempt.replaceAll("-","").slice(0,8) : crypto.randomBytes(4).toString("hex");
     const integrationIdentifier = `forever_checkout_${randomSuffix}`;
 
     // Configure line items based on purchase type (upgrade or new plan)
@@ -102,7 +146,7 @@ export async function POST(request: Request) {
 
     const cancelUrl = isUpgrade && weddingSlug
       ? `${origin}/${weddingSlug}/painel`
-      : `${origin}/#preco`;
+      : `${origin}/contratar?plan=${plan}&cancelled=1`;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -113,6 +157,8 @@ export async function POST(request: Request) {
         action,
         weddingSlug: weddingSlug || "",
         customerEmail: customerEmail || "",
+        ownerUid,
+        purchaseAttempt,
       },
       customer_email: customerEmail || undefined,
       success_url: successUrl,
@@ -120,6 +166,12 @@ export async function POST(request: Request) {
       billing_address_collection: "auto",
       allow_promotion_codes: true,
       // Dynamic payment methods enabled by intentionally omitting payment_method_types
+    }, purchaseAttempt ? {idempotencyKey:`purchase_${purchaseAttempt}`} : undefined);
+
+    if(purchaseAttempt && weddingSlug)await services().db.runTransaction(async transaction=>{
+      const ref=services().db.doc(`weddings/${weddingSlug}`);
+      const current=(await transaction.get(ref)).data();
+      if(current?.purchaseAttempt?.id === purchaseAttempt)transaction.update(ref,{purchaseAttempt:{...current.purchaseAttempt,sessionId:session.id}});
     });
 
     return NextResponse.json({ url: session.url, sessionId: session.id });
