@@ -1,9 +1,12 @@
 "use client";
 
-import { useState, Fragment, type ReactNode } from "react";
+import { useEffect, useState, Fragment, type ReactNode } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, ArrowUp, ArrowUpRight, Check, Heart, Loader2, Plus } from "lucide-react";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import { clientAuth } from "@/lib/firebase/client";
+import { readApiResponse } from "@/lib/api-response";
 import { ForeverLogo } from "./ForeverLogo";
 import { BotanicalClassicBranch, BotanicalClassicOrnaments } from "@/components/wedding/templates/BotanicalClassicOrnaments";
 import { moduleCatalog, moduleKeys } from "@/config/modules";
@@ -932,18 +935,77 @@ const faqs = [
 
 /* ---------- page ---------- */
 
+interface UserWedding {
+  destination: string;
+  slug: string;
+  role: string;
+  plan: "essencial" | "foreverPro";
+}
+
 export function ForeverLandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [checkoutLoading, setCheckoutLoading] = useState<"essencial" | "foreverPro" | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [userWedding, setUserWedding] = useState<UserWedding | null>(null);
   const modules = moduleKeys.filter(key => key !== "organization");
 
-  async function handleCheckout(plan: "essencial" | "foreverPro") {
+  useEffect(() => {
+    let active = true;
+    try {
+      const auth = clientAuth();
+      const unsubscribe = onAuthStateChanged(auth, async (account) => {
+        if (!active) return;
+        setUser(account);
+        if (!account) {
+          setUserWedding(null);
+          return;
+        }
+
+        try {
+          const token = await account.getIdToken();
+          const res = await fetch("/api/auth/destination", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (res.ok) {
+            const data = await readApiResponse(res);
+            if (active && data) {
+              setUserWedding({
+                destination: data.destination,
+                slug: data.slug,
+                role: data.role,
+                plan: data.plan,
+              });
+            }
+          }
+        } catch {
+          // Usuário autenticado mas sem casamento vinculado ainda
+        }
+      });
+
+      return () => {
+        active = false;
+        unsubscribe();
+      };
+    } catch {
+      // Firebase não configurado no cliente
+    }
+  }, []);
+
+  const panelHref = userWedding?.destination || (userWedding?.slug ? `/${userWedding.slug}/painel` : "/login");
+  const receptionHref = userWedding?.slug ? `/${userWedding.slug}/recepcao` : "/login";
+
+  async function handleCheckout(plan: "essencial" | "foreverPro", action: "new" | "upgrade" = "new") {
     try {
       setCheckoutLoading(plan);
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, action: "new" }),
+        body: JSON.stringify({
+          plan,
+          action,
+          weddingSlug: userWedding?.slug,
+          customerEmail: user?.email || undefined,
+        }),
       });
       const data = await res.json();
       if (!res.ok || !data.url) {
@@ -955,6 +1017,104 @@ export function ForeverLandingPage() {
       alert(message);
       setCheckoutLoading(null);
     }
+  }
+
+  function renderPlanButton(targetPlan: "essencial" | "foreverPro", isFooter = false) {
+    const currentPlan = userWedding?.plan;
+    const heightClass = isFooter ? "h-10" : "h-11";
+    const iconSize = isFooter ? 12 : 13;
+
+    if (currentPlan === targetPlan) {
+      return (
+        <Link
+          href={panelHref}
+          className={`inline-flex ${heightClass} w-full items-center justify-center gap-2 rounded-full border-2 border-[#722F37] bg-[#722F3715] px-4 text-xs font-semibold text-[#722F37] transition-all hover:bg-[#722F3725]`}
+        >
+          <Check size={iconSize + 2} strokeWidth={2.5} className="text-[#722F37]" />
+          <span>Seu plano atual (Ativo)</span>
+        </Link>
+      );
+    }
+
+    if (currentPlan === "foreverPro" && targetPlan === "essencial") {
+      return (
+        <div
+          className={`inline-flex ${heightClass} w-full items-center justify-center gap-2 rounded-full border border-[#16161615] bg-[#16161608] px-4 text-xs font-medium text-[#8C877F] select-none cursor-default`}
+        >
+          <Check size={iconSize} className="text-[#8C877F]" />
+          <span>Incluso no seu plano PRO</span>
+        </div>
+      );
+    }
+
+    if (currentPlan === "essencial" && targetPlan === "foreverPro") {
+      return (
+        <button
+          type="button"
+          disabled={checkoutLoading !== null}
+          onClick={() => handleCheckout("foreverPro", "upgrade")}
+          className={`inline-flex ${heightClass} w-full items-center justify-center gap-2 rounded-full bg-[#722F37] px-4 text-xs font-semibold text-white shadow-md shadow-[#722F3720] transition-all duration-300 hover:bg-[#5b242b] hover:shadow-lg hover:shadow-[#722F3730] disabled:cursor-not-allowed disabled:opacity-60`}
+        >
+          {checkoutLoading === "foreverPro" ? (
+            <>
+              <Loader2 size={iconSize} className="animate-spin text-white" />
+              <span>Redirecionando…</span>
+            </>
+          ) : (
+            <>
+              <Heart size={iconSize} className="fill-white text-white" />
+              <span>Fazer upgrade para PRO</span>
+              <ArrowUpRight size={iconSize} className="text-white/80" />
+            </>
+          )}
+        </button>
+      );
+    }
+
+    if (targetPlan === "essencial") {
+      return (
+        <button
+          type="button"
+          disabled={checkoutLoading !== null}
+          onClick={() => handleCheckout("essencial", "new")}
+          className={`inline-flex ${heightClass} w-full items-center justify-center gap-2 rounded-full border border-[#16161625] bg-white px-4 text-xs font-medium text-[#161616] shadow-xs transition-all hover:border-[#16161645] hover:bg-[#16161606] disabled:cursor-not-allowed disabled:opacity-60`}
+        >
+          {checkoutLoading === "essencial" ? (
+            <>
+              <Loader2 size={iconSize} className="animate-spin text-[#161616]" />
+              <span>{isFooter ? "Aguarde…" : "Redirecionando…"}</span>
+            </>
+          ) : (
+            <>
+              <span>Assinar Forever Essencial</span>
+              <ArrowUpRight size={iconSize} className="text-[#8C877F]" />
+            </>
+          )}
+        </button>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        disabled={checkoutLoading !== null}
+        onClick={() => handleCheckout("foreverPro", "new")}
+        className={`inline-flex ${heightClass} w-full items-center justify-center gap-2 rounded-full bg-[#722F37] px-4 text-xs font-semibold text-white shadow-md shadow-[#722F3720] transition-all duration-300 hover:bg-[#5b242b] hover:shadow-lg hover:shadow-[#722F3730] disabled:cursor-not-allowed disabled:opacity-60`}
+      >
+        {checkoutLoading === "foreverPro" ? (
+          <>
+            <Loader2 size={iconSize} className="animate-spin text-white" />
+            <span>{isFooter ? "Aguarde…" : "Redirecionando…"}</span>
+          </>
+        ) : (
+          <>
+            <Heart size={iconSize} className="fill-white text-white" />
+            <span>Assinar Forever PRO</span>
+            <ArrowUpRight size={iconSize} className="text-white/80" />
+          </>
+        )}
+      </button>
+    );
   }
 
   return (
@@ -973,16 +1133,28 @@ export function ForeverLandingPage() {
             <a href="#duvidas" className="transition-colors hover:text-[#161616]">Dúvidas</a>
           </nav>
           <div className="flex items-center gap-5">
-            <Link href="/login" className="hidden text-[13px] text-[#161616] transition-colors hover:text-[#722F37] sm:block">
-              Entrar
-            </Link>
-            <a
-              href="#preco"
-              className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-[#722F37] px-4 text-[13px] font-medium text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-md hover:shadow-[#722F3725]"
-            >
-              <span>Criar meu site</span>
-              <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
-            </a>
+            {user ? (
+              <Link
+                href={panelHref}
+                className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-[#722F37] px-4 text-[13px] font-medium text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-md hover:shadow-[#722F3725]"
+              >
+                <span>Acessar meu painel</span>
+                <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="hidden text-[13px] text-[#161616] transition-colors hover:text-[#722F37] sm:block">
+                  Entrar
+                </Link>
+                <a
+                  href="#preco"
+                  className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-[#722F37] px-4 text-[13px] font-medium text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-md hover:shadow-[#722F3725]"
+                >
+                  <span>Criar meu site</span>
+                  <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
+                </a>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -1006,10 +1178,23 @@ export function ForeverLandingPage() {
               </p>
             </Reveal>
             <Reveal delay={0.24} className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              <PrimaryButton href="#preco">
-                Criar meu site
-              </PrimaryButton>
-              <GhostButton href="/login">Já tenho conta</GhostButton>
+              {user ? (
+                <>
+                  <PrimaryButton href={panelHref}>
+                    Acessar meu painel
+                  </PrimaryButton>
+                  <GhostButton href="#preco">
+                    {userWedding?.plan ? "Ver meu plano" : "Ver planos"}
+                  </GhostButton>
+                </>
+              ) : (
+                <>
+                  <PrimaryButton href="#preco">
+                    Criar meu site
+                  </PrimaryButton>
+                  <GhostButton href="/login">Já tenho conta</GhostButton>
+                </>
+              )}
             </Reveal>
           </div>
 
@@ -1244,7 +1429,16 @@ export function ForeverLandingPage() {
                       {/* Column Forever Essencial */}
                       <th className={`w-[28%] border-l ${line} px-6 pb-8 text-center align-bottom`}>
                         <span className="text-[11px] uppercase tracking-[0.2em] text-[#8C877F]">Básico & Completo</span>
-                        <h4 className="mt-1 text-xl font-medium text-[#161616]">Forever Essencial</h4>
+                        <div className="mt-1 flex items-center justify-center gap-1.5">
+                          <h4 className="text-xl font-medium text-[#161616]">Forever Essencial</h4>
+                        </div>
+                        {userWedding?.plan === "essencial" && (
+                          <div className="mt-1.5">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[#722F3715] px-2.5 py-0.5 text-[10px] font-semibold text-[#722F37]">
+                              <Check size={11} strokeWidth={2.5} /> Seu plano atual
+                            </span>
+                          </div>
+                        )}
                         <div className="mt-3">
                           <p className="font-serif text-[clamp(36px,4vw,48px)] font-light leading-none text-[#161616]">
                             <span className="font-sans text-base font-normal text-[#8C877F] align-super">R$&nbsp;</span>497
@@ -1252,24 +1446,7 @@ export function ForeverLandingPage() {
                           <span className="mt-4 block text-[11px] text-[#8C877F]">Pagamento único · Até 50 convidados</span>
                         </div>
                         <div className="mt-5">
-                          <button
-                            type="button"
-                            disabled={checkoutLoading !== null}
-                            onClick={() => handleCheckout("essencial")}
-                            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-[#16161625] bg-white px-4 text-xs font-medium text-[#161616] shadow-xs transition-all hover:border-[#16161645] hover:bg-[#16161606] disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {checkoutLoading === "essencial" ? (
-                              <>
-                                <Loader2 size={13} className="animate-spin text-[#161616]" />
-                                <span>Redirecionando…</span>
-                              </>
-                            ) : (
-                              <>
-                                <span>Assinar Forever Essencial</span>
-                                <ArrowUpRight size={13} className="text-[#8C877F]" />
-                              </>
-                            )}
-                          </button>
+                          {renderPlanButton("essencial", false)}
                         </div>
                       </th>
 
@@ -1279,7 +1456,16 @@ export function ForeverLandingPage() {
                           <Heart size={11} className="fill-[#722F37] text-[#722F37]" />
                           <span>Organização & Recepção</span>
                         </div>
-                        <h4 className="mt-1 text-xl font-medium text-[#161616]">Forever PRO</h4>
+                        <div className="mt-1 flex items-center justify-center gap-1.5">
+                          <h4 className="text-xl font-medium text-[#161616]">Forever PRO</h4>
+                        </div>
+                        {userWedding?.plan === "foreverPro" && (
+                          <div className="mt-1.5">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[#722F3715] px-2.5 py-0.5 text-[10px] font-semibold text-[#722F37]">
+                              <Heart size={11} className="fill-[#722F37] text-[#722F37]" /> Seu plano atual
+                            </span>
+                          </div>
+                        )}
                         <div className="mt-3">
                           <p className="font-serif text-[clamp(36px,4vw,48px)] font-light leading-none text-[#161616]">
                             <span className="font-sans text-xl font-normal text-[#8C877F] align-super">R$&nbsp;</span>997
@@ -1287,25 +1473,7 @@ export function ForeverLandingPage() {
                           <span className="mt-4 block text-[11px] text-[#8C877F]">Pagamento único · Convidados ilimitados</span>
                         </div>
                         <div className="mt-5">
-                          <button
-                            type="button"
-                            disabled={checkoutLoading !== null}
-                            onClick={() => handleCheckout("foreverPro")}
-                            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-[#722F37] px-4 text-xs font-semibold text-white shadow-md shadow-[#722F3720] transition-all duration-300 hover:bg-[#5b242b] hover:shadow-lg hover:shadow-[#722F3730] disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {checkoutLoading === "foreverPro" ? (
-                              <>
-                                <Loader2 size={13} className="animate-spin text-white" />
-                                <span>Redirecionando…</span>
-                              </>
-                            ) : (
-                              <>
-                                <Heart size={12} className="fill-white text-white" />
-                                <span>Assinar Forever PRO</span>
-                                <ArrowUpRight size={13} className="text-white/80" />
-                              </>
-                            )}
-                          </button>
+                          {renderPlanButton("foreverPro", false)}
                         </div>
                       </th>
                     </tr>
@@ -1375,45 +1543,10 @@ export function ForeverLandingPage() {
                         Checkout seguro via Stripe com aprovação imediata. Pagamento único com 0% de comissão sobre seus presentes.
                       </td>
                       <td className={`border-l ${line} px-6 pt-8 text-center`}>
-                        <button
-                          type="button"
-                          disabled={checkoutLoading !== null}
-                          onClick={() => handleCheckout("essencial")}
-                          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#16161625] bg-white px-4 text-xs font-medium text-[#161616] shadow-xs transition-all hover:border-[#16161645] hover:bg-[#16161606] disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {checkoutLoading === "essencial" ? (
-                            <>
-                              <Loader2 size={12} className="animate-spin text-[#161616]" />
-                              <span>Aguarde…</span>
-                            </>
-                          ) : (
-                            <>
-                              <span>Assinar Forever Essencial</span>
-                              <ArrowUpRight size={12} className="text-[#8C877F]" />
-                            </>
-                          )}
-                        </button>
+                        {renderPlanButton("essencial", true)}
                       </td>
                       <td className={`border-l ${line} px-6 pt-8 text-center`}>
-                        <button
-                          type="button"
-                          disabled={checkoutLoading !== null}
-                          onClick={() => handleCheckout("foreverPro")}
-                          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-[#722F37] px-4 text-xs font-semibold text-white shadow-md shadow-[#722F3720] transition-all duration-300 hover:bg-[#5b242b] hover:shadow-lg hover:shadow-[#722F3730] disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {checkoutLoading === "foreverPro" ? (
-                            <>
-                              <Loader2 size={12} className="animate-spin text-white" />
-                              <span>Aguarde…</span>
-                            </>
-                          ) : (
-                            <>
-                              <Heart size={12} className="fill-white text-white" />
-                              <span>Assinar Forever PRO</span>
-                              <ArrowUpRight size={12} className="text-white/80" />
-                            </>
-                          )}
-                        </button>
+                        {renderPlanButton("foreverPro", true)}
                       </td>
                     </tr>
                   </tfoot>
@@ -1479,10 +1612,23 @@ export function ForeverLandingPage() {
               Crie o site do seu casamento em poucos minutos. Sem burocracia, pronto para usar na mesma hora.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-              <PrimaryButton href="#preco">
-                Ver plano e começar
-              </PrimaryButton>
-              <GhostButton href="/login">Acessar meu painel</GhostButton>
+              {user ? (
+                <>
+                  <PrimaryButton href={panelHref}>
+                    Ir para o meu painel
+                  </PrimaryButton>
+                  <GhostButton href="#preco">
+                    {userWedding?.plan ? "Ver meu plano" : "Ver planos"}
+                  </GhostButton>
+                </>
+              ) : (
+                <>
+                  <PrimaryButton href="#preco">
+                    Ver plano e começar
+                  </PrimaryButton>
+                  <GhostButton href="/login">Acessar meu painel</GhostButton>
+                </>
+              )}
             </div>
           </Reveal>
         </section>
@@ -1577,21 +1723,43 @@ export function ForeverLandingPage() {
                   Seu espaço
                 </h3>
                 <ul className="mt-4 space-y-3 text-xs">
-                  <li>
-                    <a href="#preco" className="text-[#6B6760] transition-colors hover:text-[#161616]">
-                      Criar meu site
-                    </a>
-                  </li>
-                  <li>
-                    <Link href="/login" className="text-[#6B6760] transition-colors hover:text-[#161616]">
-                      Acessar meu painel
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/login" className="text-[#6B6760] transition-colors hover:text-[#161616]">
-                      Área da recepção
-                    </Link>
-                  </li>
+                  {user ? (
+                    <>
+                      <li>
+                        <Link href={panelHref} className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                          Acessar meu painel
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href={receptionHref} className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                          Área da recepção
+                        </Link>
+                      </li>
+                      <li>
+                        <a href="#preco" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                          {userWedding?.plan ? "Meu plano & Assinatura" : "Planos & Assinatura"}
+                        </a>
+                      </li>
+                    </>
+                  ) : (
+                    <>
+                      <li>
+                        <a href="#preco" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                          Criar meu site
+                        </a>
+                      </li>
+                      <li>
+                        <Link href="/login" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                          Acessar meu painel
+                        </Link>
+                      </li>
+                      <li>
+                        <Link href="/login" className="text-[#6B6760] transition-colors hover:text-[#161616]">
+                          Área da recepção
+                        </Link>
+                      </li>
+                    </>
+                  )}
                 </ul>
               </div>
 
