@@ -1,4 +1,5 @@
 "use client";
+import { useTableSearch, useQueryState, parseAsString, parseAsStringLiteral, parseAsBoolean, tableUrlOptions } from "./table-url-state";
 import { AdminTable } from "@/components/ui/AdminTable";
 import { TooltipButton } from "@/components/ui/TooltipButton";
 import { useFeedbackToasts } from "@/components/ui/ForeverToaster";
@@ -87,7 +88,8 @@ export function EventOperations({
     void setTableModal(null, { history: "replace" });
   }
 
-  const [query, setQuery] = useState(""),
+  const [query, setQuery] = useTableSearch();
+  const
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [loading, setLoading] = useState(true);
@@ -109,9 +111,9 @@ export function EventOperations({
     }
   }, [tableModal.action, tableModal.table, tables]);
   const [password, setPassword] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [tableFilter, setTableFilter] = useState("all"),
-    [onlyRestrictions, setOnlyRestrictions] = useState(true);
+  const [statusFilter, setStatusFilter] = useQueryState("access", parseAsStringLiteral(["all","active","revoked"]).withDefault("all").withOptions(tableUrlOptions));
+  const [tableFilter, setTableFilter] = useQueryState("mesa", parseAsString.withDefault("all").withOptions(tableUrlOptions)),
+    [onlyRestrictions, setOnlyRestrictions] = useQueryState("restrictions", parseAsBoolean.withDefault(true).withOptions(tableUrlOptions));
   useFeedbackToasts(error);
   async function refresh() {
     const data = await api("/api/admin/operations");
@@ -289,7 +291,7 @@ export function EventOperations({
         {section === "team" && (
           <div className="space-y-4">
             <p className="text-xs leading-relaxed text-neutral-500">A equipe acessa somente o controle de chegada: nomes, mesas e registro ou cancelamento de chegadas. As pessoas entram pelo mesmo login do painel.</p>
-            <div className="w-full sm:w-60"><WeddingSelect label="Filtrar acesso da equipe" value={statusFilter} onValueChange={setStatusFilter} options={[{value:"all",label:"Todos os acessos"},{value:"active",label:"Acessos ativos"},{value:"revoked",label:"Acessos revogados"}]} /></div>
+            <div className="w-full sm:w-60"><WeddingSelect label="Filtrar acesso da equipe" value={statusFilter} onValueChange={value => setStatusFilter(value === "active" || value === "revoked" ? value : "all")} options={[{value:"all",label:"Todos os acessos"},{value:"active",label:"Acessos ativos"},{value:"revoked",label:"Acessos revogados"}]} /></div>
             <OperationsTable title="Pessoas da equipe" count={visibleTeam.length} label="Equipe da recepção" headers={["E-mail", "Permissão", "Situação", "Ações"]} empty={query || statusFilter !== "all" ? "Nenhuma pessoa encontrada com estes filtros." : "Nenhuma pessoa na equipe. Use Liberar acesso para adicionar."}>
               {visibleTeam.map(member => <tr key={member.id} className="hover:bg-neutral-50/40">
                 <td className="px-5 text-sm font-medium text-neutral-800">{member.email}</td>
