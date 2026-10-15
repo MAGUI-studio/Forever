@@ -39,7 +39,7 @@ export function AdminDialog({
           onPointerDownOutside={(e) => {
             if (busy) e.preventDefault();
           }}
-          className="admin-wedding fixed! top-1/2 left-1/2 z-[310] min-h-0! max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[var(--wedding-radius)] border border-[#722f3720] bg-[#fffdfa]! p-6 shadow-xl sm:p-8"
+          className="admin-wedding fixed! top-1/2 left-1/2 z-[310] min-h-0! max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[var(--wedding-radius)] border border-neutral-200 bg-white! p-6 shadow-xl sm:p-8"
         >
           <div
             aria-hidden="true"

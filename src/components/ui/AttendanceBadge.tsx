@@ -4,9 +4,9 @@ import { CheckCircleIcon, ClockIcon, XCircleIcon } from "@phosphor-icons/react";
 import type { Attendance } from "@/types/guests";
 
 const statusStyles = {
-  confirmado: {label: "Confirmado", icon: CheckCircleIcon, colors: "bg-[#edf3e6] text-[#40532d]"},
-  pendente: {label: "Pendente", icon: ClockIcon, colors: "bg-[#faf0df] text-[#885c1e]"},
-  recusado: {label: "Não comparecerá", icon: XCircleIcon, colors: "bg-[#faecef] text-[#994452]"},
+  confirmado: {label: "Confirmado", icon: CheckCircleIcon, colors: "bg-emerald-50 text-emerald-800"},
+  pendente: {label: "Pendente", icon: ClockIcon, colors: "bg-neutral-100 text-neutral-700"},
+  recusado: {label: "Não comparecerá", icon: XCircleIcon, colors: "bg-rose-50 text-rose-800"},
 };
 
 export function AttendanceBadge({status, label, className = ""}: {

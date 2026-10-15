@@ -1,3 +1,4 @@
+import { ForeverToaster } from "@/components/ui/ForeverToaster";
 import {rootMetadata} from "@/lib/seo";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
@@ -33,6 +34,7 @@ export default function RootLayout({
         <div className="w-full max-w-440 mx-auto relative bg-[var(--forever-paper,#F1F1F1)]">
           {children}
         </div>
+        <ForeverToaster />
       </body>
     </html>
   );
