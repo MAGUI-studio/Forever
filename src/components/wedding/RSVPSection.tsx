@@ -1,4 +1,5 @@
 "use client";
+import { notify, useFeedbackToasts } from "@/components/ui/ForeverToaster";
 import {useSiteCopy} from "./useSiteCopy";
 import {useWedding} from "./WeddingProvider";
 import { AttendanceBadge } from "@/components/ui/AttendanceBadge";
@@ -51,6 +52,7 @@ export function RSVPSection() {
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  useFeedbackToasts(error);
   const [saved, setSaved] = useState(false);
   const [closed, setClosed] = useState(false);
   useEffect(() => {
@@ -171,6 +173,7 @@ export function RSVPSection() {
         respondedAt: new Date().toISOString(),
       });
       setSaved(true);
+      notify.success("Resposta salva!", "Sua resposta foi registrada com carinho.");
       if (invite.guests.some((g) => g.status === "confirmado"))
         confetti({
           particleCount: 80,

@@ -1,4 +1,5 @@
 "use client";
+import { useFeedbackToasts } from "@/components/ui/ForeverToaster";
 import {useEffect,useState} from "react";
 import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "firebase/auth";
 import {clientAuth} from "@/lib/firebase/client";
@@ -15,6 +16,7 @@ import {StudioLoading} from "@/components/forever/StudioLoading";
 export function Login(){
  const router=useRouter();
  const [showPassword,setShowPassword]=useState(false),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[error,setError]=useState(""),[busy,setBusy]=useState(false),[ready,setReady]=useState(false),[resolving,setResolving]=useState(true),[authenticated,setAuthenticated]=useState(false);
+ useFeedbackToasts(error);
  useEffect(()=>{let active=true;try{const unsubscribe=onAuthStateChanged(clientAuth(),account=>{if(!active)return;setReady(true);setAuthenticated(!!account);setError("");if(!account){setResolving(false);return;}setResolving(true);void account.getIdToken().then(token=>fetch("/api/auth/destination",{headers:{Authorization:"Bearer "+token}})).then(readApiResponse).then(data=>{if(active)router.replace(data.destination);}).catch(e=>{if(active){setError(e.message);setResolving(false);}});});return ()=>{active=false;unsubscribe();};}catch(e){queueMicrotask(()=>{setReady(true);setResolving(false);setError((e as Error).message);});}},[router]);
  async function action(work:()=>Promise<unknown>){setBusy(true);setError("");try{await work();}catch{setError("Não foi possível entrar. Confira seu e-mail e senha e tente novamente.");}finally{setBusy(false);}}
 
