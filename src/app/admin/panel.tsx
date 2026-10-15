@@ -156,7 +156,7 @@ export function AdminPanel({
         setLoading(true);
         setInvites([]);
         const destination = u ? "dashboard" : "login";
-        if (view !== destination) router.replace(u?weddingPath("admin/dashboard"):"/login");
+        if (view !== destination) router.replace(u?weddingPath("dashboard"):"/login");
       });
     } catch (e) {
       queueMicrotask(() => {
@@ -190,7 +190,7 @@ export function AdminPanel({
     const session = await api("/api/admin/session", "GET", undefined, account);
     setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(session.wedding.modules??{});setTemplateId(session.wedding.templateId??"botanical-classic");setPlan(session.wedding.plan === "essencial" ? "essencial" : "foreverPro");
     const enabled=resolveModules(session.wedding.modules, session.wedding.plan);
-    if(sectionModule[section]&&!enabled[sectionModule[section]!]){setLoading(false);router.replace(weddingPath("admin/dashboard"));return;}
+    if(sectionModule[section]&&!enabled[sectionModule[section]!]){setLoading(false);router.replace(weddingPath("dashboard"));return;}
     const reception = session.role === "reception";
     if (enabled.guestList) setLoadingMessage("Carregando sua lista de convidados…");
     const list = enabled.guestList?await api(reception || section === "check-in" ? "/api/admin/reception" : "/api/admin/invites", "GET", undefined, account):{invitations:[]};
@@ -201,7 +201,7 @@ export function AdminPanel({
     setRole(session.role); setTables(operations.tables); setInvites(list.invitations);
     if(config) setSettings(config.settings);
     setAuthorized(true); setLoading(false);
-    if(reception && section !== "check-in") router.replace(weddingPath("admin/check-in"));
+    if(reception && section !== "check-in") router.replace(weddingPath("check-in"));
   }
   useEffect(() => {
     if(user && view === "dashboard") void load(user).catch(e => {setLoading(false);setError(e instanceof Error ? e.message : "Erro ao carregar painel.");});
@@ -306,7 +306,7 @@ export function AdminPanel({
         {user && view === "dashboard" && authorized && (
           <nav className="admin-nav flex-nowrap! gap-3! lg:flex-wrap! lg:gap-6!" aria-label="Navegação da administração">
             <div className="flex items-center gap-3.5">
-              <Link href={weddingPath("admin/dashboard")} aria-label="Forever — Início" className="transition-opacity hover:opacity-85">
+              <Link href={weddingPath("dashboard")} aria-label="Forever — Início" className="transition-opacity hover:opacity-85">
                 <ForeverLogo className="w-28 sm:w-32" />
               </Link>
               <span className="hidden sm:block h-7 w-px bg-[#722f3725]" aria-hidden="true" />
@@ -324,7 +324,7 @@ export function AdminPanel({
             <div className="hidden! lg:flex! order-last flex w-full items-center justify-center gap-2.5 lg:order-none lg:w-auto lg:flex-1" aria-label="Seções do painel">
               {role === "admin" && modules.guestList && (
                 <Link
-                  href={weddingPath("admin/guests")}
+                  href={weddingPath("guests")}
                   aria-current={section === "guests" ? "page" : undefined}
                   className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
                     section === "guests"
@@ -347,7 +347,7 @@ export function AdminPanel({
 
               {modules.checkIn && (
                 <Link
-                  href={weddingPath("admin/check-in")}
+                  href={weddingPath("check-in")}
                   aria-current={section === "check-in" ? "page" : undefined}
                   className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
                     section === "check-in"
@@ -426,7 +426,7 @@ export function AdminPanel({
                             return (
                               <Link
                                 key={item.href}
-                                href={weddingPath("admin/" + item.href)}
+                                href={weddingPath(item.href)}
                                 onClick={() => setOrgOpen(false)}
                                 className={`group/item relative flex flex-col gap-1 rounded-xl p-3 text-left transition-all duration-200 border ${
                                   isActive
@@ -484,7 +484,7 @@ export function AdminPanel({
               {role === "admin" && modules.siteEditor && (
                 <div className="group relative inline-flex items-center">
                   <Link
-                    href={weddingPath("admin/site")}
+                    href={weddingPath("site")}
                     aria-label="Personalizar site"
                     className={`inline-flex size-10 items-center justify-center rounded-xl border transition-all duration-200 hover:shadow-xs focus-visible:outline-2 focus-visible:outline-[#722F37] ${
                       section === "site"

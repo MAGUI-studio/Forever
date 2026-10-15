@@ -473,7 +473,7 @@ async function check(title, work) {
   });
   await check("login resolve casamento único e bloqueia novos vínculos duplicados",async()=>{
     const destination=load("src/app/api/auth/destination/route.ts");
-    const result=await destination.GET(request("GET",null,"managed"));assert.equal(result.status,200);assert.equal((await result.json()).destination,"/new-couple/admin/dashboard");
+    const result=await destination.GET(request("GET",null,"managed"));assert.equal(result.status,200);assert.equal((await result.json()).destination,"/new-couple/dashboard");
     const members=load("src/app/api/admin/members/route.ts");
     assert.equal((await members.POST(request("POST",{action:"add",email:"newstaff@example.com"}))).status,409);
     assert.equal((await destination.GET(request("GET",null,"outsider"))).status,403);

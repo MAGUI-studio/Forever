@@ -42,7 +42,7 @@ export function WeddingPreview() {
     <>
       <div className="sticky top-0 z-40 flex items-center justify-between gap-4 bg-white p-4 text-sm text-[#722F37]">
         <span>Prévia privada do conteúdo salvo</span>
-        <Link href={path("admin/site")}>Voltar à edição</Link>
+        <Link href={path("site")}>Voltar à edição</Link>
       </div>
       {error ? (
         <p role="alert" className="p-6 text-red-700">

@@ -84,11 +84,11 @@ export async function POST(request: Request) {
 
     // Success and cancel URLs
     const successUrl = isUpgrade && weddingSlug
-      ? `${origin}/${weddingSlug}/admin/dashboard?upgrade=success&session_id={CHECKOUT_SESSION_ID}`
+      ? `${origin}/${weddingSlug}/dashboard?upgrade=success&session_id={CHECKOUT_SESSION_ID}`
       : `${origin}/checkout/sucesso?session_id={CHECKOUT_SESSION_ID}`;
 
     const cancelUrl = isUpgrade && weddingSlug
-      ? `${origin}/${weddingSlug}/admin/dashboard`
+      ? `${origin}/${weddingSlug}/dashboard`
       : `${origin}/#preco`;
 
     const session = await stripe.checkout.sessions.create({

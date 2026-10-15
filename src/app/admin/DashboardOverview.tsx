@@ -337,7 +337,7 @@ export function DashboardOverview({
             <div className="flex flex-wrap items-center gap-3 pt-2">
               {modules.siteEditor && (
                 <Link
-                  href={weddingPath("admin/site")}
+                  href={weddingPath("site")}
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#722F37] px-5 py-2.5 text-xs font-semibold text-white transition-all hover:bg-[#5B252C] shadow-xs"
                 >
                   <Pencil size={14} />
@@ -447,7 +447,7 @@ export function DashboardOverview({
                 {dietaryCount > 0 && (
                   <div className="flex items-center justify-between py-1 border-b border-[#16161608] text-[#722F37]">
                     <span>Restrições alimentares:</span>
-                    <Link href={weddingPath("admin/buffet")} className="font-semibold underline">
+                    <Link href={weddingPath("buffet")} className="font-semibold underline">
                       {dietaryCount} {dietaryCount === 1 ? "convidado informou" : "convidados informaram"}
                     </Link>
                   </div>
@@ -458,7 +458,7 @@ export function DashboardOverview({
             {/* Quick Link to Guest List */}
             <div className="pt-2">
               <Link
-                href={weddingPath("admin/guests")}
+                href={weddingPath("guests")}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#722F37] hover:underline"
               >
                 <span>Ver lista completa de convidados</span>
