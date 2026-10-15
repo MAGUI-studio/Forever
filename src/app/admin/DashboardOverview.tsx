@@ -159,7 +159,7 @@ export function DashboardOverview({
   async function handleCopySiteLink() {
     try {
       const origin = typeof window !== "undefined" ? window.location.origin : "";
-      const url = `${origin}/casamento/${slug}`;
+      const url = `${origin}${weddingPath()}`;
       await navigator.clipboard.writeText(url);
       setCopiedLink(true);
       notify.success("Link do site copiado!", "Pronto para compartilhar.");
@@ -328,59 +328,31 @@ export function DashboardOverview({
       <section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xs">
         <div className="grid grid-cols-1 divide-y divide-[#722F3715] lg:grid-cols-2 lg:divide-y-0 lg:divide-x">
           {/* Left Side: Seu Site */}
-          <div className="p-6 sm:p-8 flex flex-col justify-between space-y-6">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-[#77736c]">
-                Do seu jeito
-              </p>
-              <h2 className="mt-2 font-serif text-2xl sm:text-3xl text-[#161616]">
-                Seu site de casamento
-              </h2>
-              <p className="mt-2 text-xs sm:text-sm leading-relaxed text-[#6B6760]">
-                Template: <strong className="text-[#161616]">{TEMPLATE_NAMES[templateId] ?? "Romance Contemporâneo"}</strong>.
-                Personalize fotos, textos, ordem das seções e acompanhe cada alteração antes de publicar.
-              </p>
-
-              {/* URL Pill */}
-              <div className="mt-4 flex items-center justify-between rounded-xl border border-[#16161610] bg-white px-3.5 py-2.5 text-xs">
-                <span className="font-mono text-xs text-[#161616] truncate font-medium">
-                  /casamento/{slug}
-                </span>
-                <button
-                  type="button"
-                  onClick={handleCopySiteLink}
-                  className="shrink-0 p-1 text-[#722F37] hover:opacity-75 cursor-pointer"
-                  title="Copiar link"
-                >
-                  {copiedLink ? <Check size={14} className="text-emerald-600" /> : <Copy size={14} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              {modules.siteEditor && (
-                <Link
-                  href={weddingPath("editar-site")}
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#722F37] px-5 py-2.5 text-xs font-semibold text-white transition-all hover:bg-[#5B252C] shadow-xs"
-                >
-                  <Pencil size={14} />
-                  <span>Personalizar site</span>
-                </Link>
-              )}
-
-              <Link
-                href={weddingPath()}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-[#722F3730] bg-white px-4 py-2.5 text-xs font-medium text-[#722F37] transition-all hover:bg-[#722F370a] shadow-xs"
-              >
-                <ExternalLink size={14} />
-                <span>Ver site</span>
+          <div className="flex flex-col gap-5 p-6 sm:p-8">
+            <div><p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Tudo à mão</p><h2 className="mt-2 font-serif text-2xl text-neutral-900 sm:text-3xl">O que vamos organizar hoje?</h2></div>
+            <div className="divide-y divide-neutral-100">
+              <Link href={weddingPath("convidados")} className="group flex items-center gap-3 rounded-xl px-2 py-4 transition-colors hover:bg-neutral-50">
+                <Users size={20} className="shrink-0 text-[#722F37]" aria-hidden="true" />
+                <div className="min-w-0 flex-1"><p className="text-sm font-medium text-neutral-900">Cuidar dos convites</p><p className="mt-1 text-xs text-neutral-500">{totalInvites-sentInvites} convites ainda não marcados como enviados</p></div>
+                <ArrowUpRight size={17} className="shrink-0 text-neutral-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
               </Link>
+              {modules.siteEditor && <Link href={weddingPath("editar-site")} className="group flex items-center gap-3 rounded-xl px-2 py-4 transition-colors hover:bg-neutral-50">
+                <Pencil size={20} className="shrink-0 text-[#722F37]" aria-hidden="true" />
+                <div className="min-w-0 flex-1"><p className="text-sm font-medium text-neutral-900">Deixar o site com a cara de vocês</p><p className="mt-1 text-xs text-neutral-500">Edite fotos, textos e informações da celebração.</p></div>
+                <ArrowUpRight size={17} className="shrink-0 text-neutral-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+              </Link>}
+              {modules.tables && <Link href={weddingPath("mesas")} className="group flex items-center gap-3 rounded-xl px-2 py-4 transition-colors hover:bg-neutral-50">
+                <CheckCircle2 size={20} className="shrink-0 text-[#722F37]" aria-hidden="true" />
+                <div className="min-w-0 flex-1"><p className="text-sm font-medium text-neutral-900">Organizar os lugares</p><p className="mt-1 text-xs text-neutral-500">{confirmedGuests.filter(guest=>!guest.tableId).length} confirmados sem mesa · {tables.length} mesas cadastradas</p></div>
+                <ArrowUpRight size={17} className="shrink-0 text-neutral-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden="true" />
+              </Link>}
+            </div>
+            <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-neutral-100 pt-4">
+              <span className="mr-auto min-w-0 break-all text-xs text-neutral-500">Site público <span className="ml-1 text-neutral-800">{weddingPath()}</span></span>
+              <button type="button" onClick={handleCopySiteLink} className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs text-neutral-600 transition-colors hover:bg-neutral-100">{copiedLink ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}{copiedLink ? "Copiado" : "Copiar link"}</button>
+              <Link href={weddingPath()} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs text-neutral-600 transition-colors hover:bg-neutral-100"><ExternalLink size={14} aria-hidden="true" />Ver site</Link>
             </div>
           </div>
-
           {/* Right Side: Andamento do RSVP & Entregas */}
           <div className="p-6 sm:p-8 flex flex-col justify-between space-y-6 bg-white">
             <div>
