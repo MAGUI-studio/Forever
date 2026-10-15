@@ -11,6 +11,7 @@ export class HttpError extends Error {
     public status: number,
     message: string,
     public redirect?: string,
+    public code?: string,
   ) {
     super(message);
   }
@@ -23,7 +24,7 @@ export function reply(data: unknown, status = 200) {
 }
 export function failure(error: unknown) {
   if (error instanceof HttpError)
-    return reply({ error: error.message, ...(error.redirect ? {redirect:error.redirect} : {}) }, error.status);
+    return reply({ error: error.message, ...(error.redirect ? {redirect:error.redirect} : {}), ...(error.code ? {code:error.code} : {}) }, error.status);
   if (error instanceof z.ZodError || error instanceof SyntaxError)
     return reply({ error: "Confira os dados informados." }, 400);
   return reply(
@@ -53,8 +54,8 @@ export async function requireAccess(request: Request) {
   const wedding=await requestWedding(request);
   const scope=scopedDatabase(db,wedding.slug);
   if(await isPlatformAdmin(identity.uid, identity))return {db:scope,uid:identity.uid,email:identity.email??"MAGUI.studio",role:"admin" as const,wedding};
+  if(wedding.plan === null)throw new HttpError(403,"Seu casamento está sem plano. Assine novamente para recuperar o acesso.",undefined,"PLAN_REQUIRED");
   if(isPlanExpired(wedding))throw new HttpError(403,"O prazo de acesso do seu plano terminou.",`/${wedding.slug}/acesso-expirado`);
-  if(wedding.plan === null)throw new HttpError(403,"Este casamento está sem plano. Entre em contato com a administração.");
   if(wedding.status==="suspended"||wedding.status==="archived")throw new HttpError(403,"Este casamento está suspenso ou arquivado.");
   const member=await db.doc("weddings/"+wedding.slug+"/members/"+identity.uid).get();
   if(member.data()?.active===true && member.data()?.role==="admin")return {db:scope,uid:identity.uid,email:identity.email??"Administrador",role:"admin" as const,wedding};
