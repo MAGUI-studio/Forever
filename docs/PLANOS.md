@@ -95,6 +95,23 @@ O Essencial vale até o fim do dia do evento. O PRO acrescenta três meses de ca
 
 ## Upgrade e pagamento
 
+### Primeira contratação e recontratação
+
+1. Os botões de assinatura levam a `/contratar?plan=essencial` ou `/contratar?plan=foreverPro`.
+2. O cliente cria sua conta Firebase ou entra em uma conta existente antes de abrir o Stripe.
+3. Se não tiver casamento, informa os nomes do casal e a data. O endereço é gerado automaticamente com os primeiros nomes, sem acentos (ex.: Marina Santos e Lucas Silva → `marina-e-lucas`). Se estiver ocupado ou não puder ser gerado, aparece o campo para escolher uma alternativa, com consulta de disponibilidade. A criação confirma a exclusividade em transação. A API cria um rascunho com `plan: null` e vincula o responsável pelo UID autenticado. Nenhuma cobrança acontece nessa etapa.
+4. Se já tiver um casamento Sem plano, a contratação usa esse mesmo documento e preserva convites, respostas e configurações. Não cria outro casamento.
+5. O checkout autentica o responsável e vincula plano, UID, casamento e tentativa de contratação nos metadados da sessão Stripe. Usuários da recepção não podem contratar em nome do casal.
+6. Cliques repetidos reutilizam a tentativa pela chave de idempotência. Trocar o plano encerra a sessão anterior ainda aberta antes de iniciar outra; um pagamento já concluído e aguardando webhook leva à consulta, sem nova cobrança.
+7. O retorno `/checkout/sucesso?session_id=...` exige autenticação e verifica a propriedade da sessão. Exibe confirmação pendente até o webhook persistir a ativação e o pedido; a URL de retorno sozinha não ativa nada.
+8. O webhook ativa o plano no casamento existente. Um casamento novo continua rascunho: pagamento não publica o site automaticamente.
+9. Após a confirmação, a tela oferece personalizar o site, adicionar convidados e acessar o painel.
+10. Cancelar o checkout mantém a conta e o rascunho. O cliente pode voltar à contratação para concluir; falhas assíncronas também permitem uma nova tentativa.
+
+Contas sem vínculo são encaminhadas à contratação após o login. Clientes Sem plano recebem no login um aviso com o botão de contratar novamente. Contas com plano ativo que entram em `/contratar` são encaminhadas ao painel; contas cujo prazo terminou seguem para a página de acesso expirado. Não é permitido cobrar um plano cuja validade já terminou para a data daquele casamento. Reativar o Essencial também verifica a capacidade de 50 convidados ativos.
+
+### Upgrade de um plano ativo
+
 1. “Conhecer Forever PRO” abre uma modal com benefícios, crédito do Essencial e valor final.
 2. O responsável escolhe continuar para pagamento; só então o checkout Stripe é criado.
 3. O valor base do upgrade é calculado como **R$ 997 − R$ 497 = R$ 500**. É crédito fixo do plano, não um cálculo de tempo restante ou consulta ao histórico individual de pagamentos.
