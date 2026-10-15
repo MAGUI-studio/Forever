@@ -458,7 +458,7 @@ export function DashboardOverview({
             {/* Quick Link to Guest List */}
             <div className="pt-2">
               <Link
-                href={weddingPath("guests")}
+                href={weddingPath("convidados")}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#722F37] hover:underline"
               >
                 <span>Ver lista completa de convidados</span>

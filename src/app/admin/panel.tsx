@@ -156,7 +156,7 @@ export function AdminPanel({
         setLoading(true);
         setInvites([]);
         const destination = u ? "dashboard" : "login";
-        if (view !== destination) router.replace(u?weddingPath("dashboard"):"/login");
+        if (view !== destination) router.replace(u?weddingPath("painel"):"/login");
       });
     } catch (e) {
       queueMicrotask(() => {
@@ -190,7 +190,7 @@ export function AdminPanel({
     const session = await api("/api/admin/session", "GET", undefined, account);
     setConfig(session.wedding.config);setTheme(session.wedding.theme);setModules(session.wedding.modules??{});setTemplateId(session.wedding.templateId??"botanical-classic");setPlan(session.wedding.plan === "essencial" ? "essencial" : "foreverPro");
     const enabled=resolveModules(session.wedding.modules, session.wedding.plan);
-    if(sectionModule[section]&&!enabled[sectionModule[section]!]){setLoading(false);router.replace(weddingPath("dashboard"));return;}
+    if(sectionModule[section]&&!enabled[sectionModule[section]!]){setLoading(false);router.replace(weddingPath("painel"));return;}
     const reception = session.role === "reception";
     if (enabled.guestList) setLoadingMessage("Carregando sua lista de convidados…");
     const list = enabled.guestList?await api(reception || section === "check-in" ? "/api/admin/reception" : "/api/admin/invites", "GET", undefined, account):{invitations:[]};
@@ -201,7 +201,7 @@ export function AdminPanel({
     setRole(session.role); setTables(operations.tables); setInvites(list.invitations);
     if(config) setSettings(config.settings);
     setAuthorized(true); setLoading(false);
-    if(reception && section !== "check-in") router.replace(weddingPath("check-in"));
+    if(reception && section !== "check-in") router.replace(weddingPath("recepcao"));
   }
   useEffect(() => {
     if(user && view === "dashboard") void load(user).catch(e => {setLoading(false);setError(e instanceof Error ? e.message : "Erro ao carregar painel.");});
@@ -306,7 +306,7 @@ export function AdminPanel({
         {user && view === "dashboard" && authorized && (
           <nav className="admin-nav flex-nowrap! gap-3! lg:flex-wrap! lg:gap-6!" aria-label="Navegação da administração">
             <div className="flex items-center gap-3.5">
-              <Link href={weddingPath("dashboard")} aria-label="Forever — Início" className="transition-opacity hover:opacity-85">
+              <Link href={weddingPath("painel")} aria-label="Forever — Início" className="transition-opacity hover:opacity-85">
                 <ForeverLogo className="w-28 sm:w-32" />
               </Link>
               <span className="hidden sm:block h-7 w-px bg-[#722f3725]" aria-hidden="true" />
@@ -324,7 +324,7 @@ export function AdminPanel({
             <div className="hidden! lg:flex! order-last flex w-full items-center justify-center gap-2.5 lg:order-none lg:w-auto lg:flex-1" aria-label="Seções do painel">
               {role === "admin" && modules.guestList && (
                 <Link
-                  href={weddingPath("guests")}
+                  href={weddingPath("convidados")}
                   aria-current={section === "guests" ? "page" : undefined}
                   className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
                     section === "guests"
@@ -347,7 +347,7 @@ export function AdminPanel({
 
               {modules.checkIn && (
                 <Link
-                  href={weddingPath("check-in")}
+                  href={weddingPath("recepcao")}
                   aria-current={section === "check-in" ? "page" : undefined}
                   className={`group relative inline-flex min-h-11 items-center gap-2 overflow-hidden rounded-xl px-4 text-xs transition-all duration-200 border ${
                     section === "check-in"
@@ -414,15 +414,15 @@ export function AdminPanel({
 
                       <div className="grid grid-cols-2 gap-1.5">
                         {[
-                          { href: "tables", label: "Mesas e lugares", description: "Organização de mesas e assentos", icon: LayoutGrid, key: "tables" as const },
+                          { href: "mesas", label: "Mesas e lugares", description: "Organização de mesas e assentos", icon: LayoutGrid, key: "tables" as const },
                           { href: "buffet", label: "Alimentação & buffet", description: "Restrições e preferências alimentares", icon: Utensils, key: "buffet" as const },
-                          { href: "history", label: "Histórico", description: "Auditoria e registro de alterações", icon: History, key: "history" as const },
-                          { href: "team", label: "Equipe da recepção", description: "Acessos da equipe para a portaria", icon: UserCheck, key: "team" as const },
+                          { href: "historico", label: "Histórico", description: "Auditoria e registro de alterações", icon: History, key: "history" as const },
+                          { href: "equipe", label: "Equipe da recepção", description: "Acessos da equipe para a portaria", icon: UserCheck, key: "team" as const },
                         ]
                           .filter(item => modules[item.key])
                           .map(item => {
                             const Icon = item.icon;
-                            const isActive = section === item.href;
+                            const isActive = section === item.key;
                             return (
                               <Link
                                 key={item.href}

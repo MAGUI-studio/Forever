@@ -27,10 +27,16 @@ export function MobileAdminMenu({role,section,email,busy,authorized,plan,onSetti
   const [open,setOpen] = useState(false);
   const reducedMotion = useReducedMotion();
   const links = [
-    {href:"/dashboard",label:"Visão geral",key:"overview",icon:LayoutDashboard},
-    {href:"/guests",label:"Lista de convidados",key:"guests",icon:Users},
-    {href:"/check-in",label:"Controle de chegada",key:"check-in",icon:Check},
-    ...[{key:"site",label:"Personalizar site"},{key:"tables",label:"Mesas e lugares"},{key:"buffet",label:"Alimentação e buffet"},{key:"history",label:"Histórico de alterações"},{key:"team",label:"Equipe da recepção"}].map(item=>({...item,href:"/"+item.key,icon:LayoutDashboard})),
+    {href:"/painel",label:"Visão geral",key:"overview",icon:LayoutDashboard},
+    {href:"/convidados",label:"Lista de convidados",key:"guests",icon:Users},
+    {href:"/recepcao",label:"Controle de chegada",key:"check-in",icon:Check},
+    ...[
+      {key:"site",href:"/site",label:"Personalizar site"},
+      {key:"tables",href:"/mesas",label:"Mesas e lugares"},
+      {key:"buffet",href:"/buffet",label:"Alimentação e buffet"},
+      {key:"history",href:"/historico",label:"Histórico de alterações"},
+      {key:"team",href:"/equipe",label:"Equipe da recepção"}
+    ].map(item=>({...item,icon:LayoutDashboard})),
   ];
   return <Dialog.Root open={open} onOpenChange={setOpen}>
     <Dialog.Trigger asChild><button type="button" aria-label="Abrir menu" className="ml-auto inline-flex size-11 shrink-0 items-center justify-center rounded-[var(--wedding-radius)] text-[#722F37] transition-colors hover:bg-[#722F370d] focus-visible:outline-2 focus-visible:outline-[#722F37] lg:hidden"><Menu size={24} /></button></Dialog.Trigger>

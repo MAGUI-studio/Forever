@@ -24,11 +24,19 @@ export const FOREVER_ORIGIN = (
     : "https://forever.magui.studio"
 ).replace(/\/+$/, "");
 export const reservedSlugs = new Set([
+  "painel",
+  "convidados",
+  "recepcao",
+  "mesas",
+  "buffet",
+  "historico",
+  "equipe",
+  "previa",
+  "previa-editor",
   "dashboard",
   "guests",
   "check-in",
   "tables",
-  "buffet",
   "history",
   "team",
   "site",

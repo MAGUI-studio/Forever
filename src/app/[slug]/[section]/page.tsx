@@ -5,20 +5,31 @@ import { AdminPanel } from "@/app/admin/panel";
 import { SitePreviewFrame } from "@/app/admin/SitePreviewFrame";
 import { notFound } from "next/navigation";
 
-const VALID_SECTIONS = [
-  "dashboard",
-  "guests",
-  "check-in",
-  "tables",
-  "buffet",
-  "history",
-  "team",
-  "site",
-  "preview",
-  "editor-preview",
-  "site-settings",
-  "login",
-] as const;
+const REDIRECT_MAP: Record<string, string> = {
+  dashboard: "painel",
+  guests: "convidados",
+  "check-in": "recepcao",
+  portaria: "recepcao",
+  tables: "mesas",
+  history: "historico",
+  team: "equipe",
+  preview: "previa",
+  "editor-preview": "previa-editor",
+  "site-settings": "site",
+};
+
+const TITLES: Record<string, string> = {
+  painel: "Painel do casamento",
+  convidados: "Lista de convidados",
+  recepcao: "Controle de chegada",
+  mesas: "Mesas e lugares",
+  buffet: "Alimentação e buffet",
+  historico: "Histórico de alterações",
+  equipe: "Equipe da recepção",
+  site: "Editor do site",
+  previa: "Prévia do site",
+  "previa-editor": "Prévia do editor",
+};
 
 export async function generateMetadata({
   params,
@@ -26,23 +37,12 @@ export async function generateMetadata({
   params: Promise<{ slug: string; section: string }>;
 }) {
   const { slug, section } = await params;
-  const titles: Record<string, string> = {
-    dashboard: "Painel do casamento",
-    guests: "Lista de convidados",
-    "check-in": "Controle de chegada",
-    tables: "Mesas e lugares",
-    buffet: "Alimentação e buffet",
-    history: "Histórico de alterações",
-    team: "Equipe da recepção",
-    site: "Editor do site",
-    preview: "Prévia do site",
-    "editor-preview": "Prévia do editor",
-  };
-  const name = section ?? "dashboard";
+  const canonicalSection = REDIRECT_MAP[section] ?? section;
+  const title = (TITLES[canonicalSection] ?? "Painel do casamento") + " | Forever";
   return pageMetadata({
-    title: (titles[name] ?? "Painel administrativo") + " | Forever",
+    title,
     description: "Área reservada do casamento no Forever.",
-    path: "/" + encodeURIComponent(slug) + "/" + encodeURIComponent(name),
+    path: "/" + encodeURIComponent(slug) + "/" + encodeURIComponent(canonicalSection),
     index: false,
   });
 }
@@ -53,19 +53,22 @@ export default async function Page({
   params: Promise<{ slug: string; section: string }>;
 }) {
   const { slug, section: name } = await params;
-  if (!VALID_SECTIONS.includes(name as (typeof VALID_SECTIONS)[number])) {
-    notFound();
+
+  if (REDIRECT_MAP[name]) {
+    redirect(`/${slug}/${REDIRECT_MAP[name]}`);
   }
-  if (name === "preview") return <WeddingPreview />;
-  if (name === "editor-preview") return <SitePreviewFrame />;
-  if (name === "site-settings") redirect(`/${slug}/site`);
-  if (name === "site") return <AdminPanel view="dashboard" section={name} />;
+
   if (name === "login") redirect("/login");
-  if (name === "dashboard") return <AdminPanel view="dashboard" />;
-  return (
-    <AdminPanel
-      view="dashboard"
-      section={name as "guests" | "check-in" | "tables" | "buffet" | "history" | "team"}
-    />
-  );
+  if (name === "previa") return <WeddingPreview />;
+  if (name === "previa-editor") return <SitePreviewFrame />;
+  if (name === "painel") return <AdminPanel view="dashboard" section="overview" />;
+  if (name === "convidados") return <AdminPanel view="dashboard" section="guests" />;
+  if (name === "recepcao") return <AdminPanel view="dashboard" section="check-in" />;
+  if (name === "mesas") return <AdminPanel view="dashboard" section="tables" />;
+  if (name === "buffet") return <AdminPanel view="dashboard" section="buffet" />;
+  if (name === "historico") return <AdminPanel view="dashboard" section="history" />;
+  if (name === "equipe") return <AdminPanel view="dashboard" section="team" />;
+  if (name === "site") return <AdminPanel view="dashboard" section="site" />;
+
+  notFound();
 }
