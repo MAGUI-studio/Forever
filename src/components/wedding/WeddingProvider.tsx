@@ -60,8 +60,8 @@ export function WeddingProvider({
   modules?:Partial<WeddingModules>;templateId?:TemplateId;preview?:boolean;
   children: ReactNode;
 }) {
-  const [enabledModules,updateModules]=useState(()=>resolveModules(modules));
-  const setModules=useCallback((value:Partial<WeddingModules>)=>updateModules(resolveModules(value)),[]);
+  const [enabledModules,updateModules]=useState(()=>({...resolveModules(), ...modules}));
+  const setModules=useCallback((value:Partial<WeddingModules>)=>updateModules({...resolveModules(), ...value}),[]);
   const [selectedTemplate,setTemplateId]=useState(templateId);
   const [current, setConfig] = useState(config);
   const [currentTheme, setTheme] = useState(theme);

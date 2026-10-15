@@ -11,10 +11,10 @@ export async function PublicWedding({
   children: React.ReactNode;requiredModule?:WeddingModule;
 }) {
   const wedding = await findWedding(slug);
-  if (!wedding || wedding.status !== "published") notFound();
-  if(requiredModule&&!resolveModules(wedding.modules)[requiredModule])notFound();
+  if (!wedding || (wedding.status !== "published" || wedding.plan === null)) notFound();
+  if(requiredModule&&!resolveModules(wedding.modules, wedding.plan)[requiredModule])notFound();
   return (
-    <WeddingProvider slug={slug} config={wedding.config} theme={wedding.theme} modules={wedding.modules} templateId={wedding.templateId}>
+    <WeddingProvider slug={slug} config={wedding.config} theme={wedding.theme} modules={resolveModules(wedding.modules, wedding.plan)} templateId={wedding.templateId}>
       <PageCurtainLoader />
       {children}
     </WeddingProvider>

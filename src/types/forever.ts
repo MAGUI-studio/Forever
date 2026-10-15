@@ -4,7 +4,7 @@ export type WeddingStatus = "draft" | "published" | "suspended" | "archived";
 export type WeddingTheme = "botanical" | "rose" | "ocean";
 export type {WeddingPlan};
 export interface WeddingDocument {
-  plan?: WeddingPlan;
+  plan?: WeddingPlan | null;
   siteRevision?: number;
   siteDraft?: {
     config: WeddingConfig;

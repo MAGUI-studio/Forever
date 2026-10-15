@@ -50,12 +50,13 @@ export async function requireAccess(request: Request) {
   catch { throw new HttpError(401, "Sua sessão expirou. Entre novamente."); }
   const wedding=await requestWedding(request);
   const scope=scopedDatabase(db,wedding.slug);
-  if(await isPlatformAdmin(identity.uid))return {db:scope,uid:identity.uid,email:identity.email??"MAGUI.studio",role:"admin" as const,wedding};
+  if(await isPlatformAdmin(identity.uid, identity))return {db:scope,uid:identity.uid,email:identity.email??"MAGUI.studio",role:"admin" as const,wedding};
+  if(wedding.plan === null)throw new HttpError(403,"Este casamento está sem plano. Entre em contato com a administração.");
   if(wedding.status==="suspended"||wedding.status==="archived")throw new HttpError(403,"Este casamento está suspenso ou arquivado.");
   const member=await db.doc("weddings/"+wedding.slug+"/members/"+identity.uid).get();
   if(member.data()?.active===true && member.data()?.role==="admin")return {db:scope,uid:identity.uid,email:identity.email??"Administrador",role:"admin" as const,wedding};
   const email=identity.email?.toLowerCase();
-  if(email&&resolveModules(wedding.modules).team){const reception=await scope.collection("receptionTeam").doc(tokenId(email)).get();
+  if(email&&resolveModules(wedding.modules, wedding.plan).team){const reception=await scope.collection("receptionTeam").doc(tokenId(email)).get();
     if(reception.data()?.active===true && (identity.email_verified||reception.data()?.uid===identity.uid))return {db:scope,uid:identity.uid,email,role:"reception" as const,wedding};
   }
   throw new HttpError(403, "Esta conta não tem acesso ao painel.");
@@ -263,7 +264,7 @@ export const inviteSchema = z
     kind: z.enum(["individual", "group"]).optional(),
     label: z.string().trim().max(100),
     active: z.boolean(),
-    guests: z.array(guestSchema).min(1).max(40),
+    guests: z.array(guestSchema).min(1),
   })
   .strict()
   .refine(
@@ -289,9 +290,9 @@ export const settingsSchema = z
 export async function requestWedding(request:Request,publicOnly=false){
  const slug=request.headers.get("x-wedding-slug")??"";
  const wedding=await findWedding(slug);
- if(!wedding || (publicOnly && wedding.status!=="published"))throw new HttpError(404,"Casamento indisponível.");
+ if(!wedding || (publicOnly && (wedding.status!=="published" || wedding.plan === null)))throw new HttpError(404,"Casamento indisponível.");
  return wedding;
 }
 export async function publicWeddingDatabase(request:Request){const wedding=await requestWedding(request,true);return scopedDatabase(services().db,wedding.slug);}
 
-export function assertModule(wedding:{modules?:Partial<import("@/config/modules").WeddingModules>; plan?: import("@/config/forever").WeddingPlan},module:WeddingModule){if(!resolveModules(wedding.modules, wedding.plan)[module])throw new HttpError(403,"Este recurso não está disponível para este casamento.");}
+export function assertModule(wedding:{modules?:Partial<import("@/config/modules").WeddingModules>; plan?: import("@/config/forever").WeddingPlan | null},module:WeddingModule){if(!resolveModules(wedding.modules, wedding.plan)[module])throw new HttpError(403,"Este recurso não está disponível para este casamento.");}

@@ -14,6 +14,6 @@ export async function platformIdentity(request: Request) {
   } catch {
     throw new HttpError(401, "Sua sessão expirou.");
   }
-  const superadmin=await isPlatformAdmin(identity.uid);
+  const superadmin=await isPlatformAdmin(identity.uid, identity);
   return { identity, superadmin };
 }

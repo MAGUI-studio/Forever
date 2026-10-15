@@ -4,7 +4,7 @@ import { requireAdmin, failure, reply } from "@/lib/guest-server";
 export async function GET(request: Request) {
   try {
     const db = await requireAdmin(request);
-    const {wedding}=await requireAccess(request),modules=resolveModules(wedding.modules);
+    const {wedding}=await requireAccess(request),modules=resolveModules(wedding.modules, wedding.plan);
     const names = ["members",...(modules.guestList?["invitations"]:[]),...(modules.team?["receptionTeam"]:[]),...(modules.history?["auditLog"]:[])];
     const collections = Object.fromEntries(
       await Promise.all(

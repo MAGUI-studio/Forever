@@ -7,7 +7,7 @@ import {z} from "zod";
 import {body,failure,HttpError,reply,requireAdmin,requireAccess,tokenId} from "@/lib/guest-server";
 import {audit} from "@/lib/event-audit";
 import type {EventTable,Guest} from "@/types/guests";
-export async function GET(request:Request){try{const db=await requireAdmin(request);const {wedding}=await requireAccess(request),modules=resolveModules(wedding.modules);const [tables,team,history]=await Promise.all([db.doc("settings/tables").get(),db.collection("receptionTeam").orderBy("email").get(),db.collection("auditLog").orderBy("at","desc").limit(100).get()]);return reply({tables:modules.tables?tables.data()?.tables??[]:[],team:modules.team?team.docs.map(d=>({id:d.id,...d.data()})):[],history:modules.history?history.docs.map(d=>({id:d.id,...d.data()})):[]});}catch(e){return failure(e);}}
+export async function GET(request:Request){try{const db=await requireAdmin(request);const {wedding}=await requireAccess(request),modules=resolveModules(wedding.modules, wedding.plan);const [tables,team,history]=await Promise.all([db.doc("settings/tables").get(),db.collection("receptionTeam").orderBy("email").get(),db.collection("auditLog").orderBy("at","desc").limit(100).get()]);return reply({tables:modules.tables?tables.data()?.tables??[]:[],team:modules.team?team.docs.map(d=>({id:d.id,...d.data()})):[],history:modules.history?history.docs.map(d=>({id:d.id,...d.data()})):[]});}catch(e){return failure(e);}}
 const schema=z.discriminatedUnion("action",[
  z.object({action:z.literal("table"),id:z.string().max(80).optional(),name:z.string().trim().min(2).max(80),capacity:z.number().int().min(1).max(100)}).strict(),
  z.object({action:z.literal("delete-table"),id:z.string().min(1).max(80)}).strict(),

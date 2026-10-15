@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const { token } = z
       .object({ token: tokenSchema })
       .parse(await body(request));
-    const wedding=await requestWedding(request,true);assertModule(wedding,"rsvp");const modules=resolveModules(wedding.modules);
+    const wedding=await requestWedding(request,true);assertModule(wedding,"rsvp");const modules=resolveModules(wedding.modules, wedding.plan);
     const db = await publicWeddingDatabase(request);
     checkLookupRateLimit(request);
     const resolved = await resolveInvitation(db, token);

@@ -2,7 +2,8 @@ import type { WeddingConfig } from "@/types/wedding";
 
 export type WeddingPlan = "essencial" | "foreverPro";
 export const defaultWeddingPlan: WeddingPlan = "foreverPro";
-export function normalizeWeddingPlan(plan?: string | null): WeddingPlan {
+export function normalizeWeddingPlan(plan?: string | null): WeddingPlan | null {
+  if (plan === null) return null;
   return plan === "essencial" ? "essencial" : "foreverPro";
 }
 export const PLAN_GUEST_LIMITS: Record<WeddingPlan, number> = {
@@ -13,7 +14,8 @@ export const PLAN_NAMES: Record<WeddingPlan, string> = {
   essencial: "Forever Essencial",
   foreverPro: "Forever PRO",
 };
-export function getWeddingGuestLimit(plan?: WeddingPlan): number {
+export function getWeddingGuestLimit(plan?: WeddingPlan | null): number {
+  if (plan === null) return 0;
   if (plan === "essencial") return 50;
   return Infinity;
 }
@@ -40,6 +42,7 @@ export const reservedSlugs = new Set([
   "history",
   "team",
   "site",
+  "editar-site",
   "preview",
   "editor-preview",
   "admin",

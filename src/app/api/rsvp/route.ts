@@ -30,8 +30,7 @@ const schema = z
           })
           .strict(),
       )
-      .min(1)
-      .max(40),
+      .min(1),
     message: z.string().trim().max(500).optional(),
     dietaryRestrictions: z.string().trim().max(500).optional(),
   })
@@ -40,7 +39,7 @@ export async function POST(request: Request) {
   try {
     sameOrigin(request);
     const data = schema.parse(await body(request));
-    const wedding=await requestWedding(request,true);assertModule(wedding,"rsvp");const modules=resolveModules(wedding.modules);
+    const wedding=await requestWedding(request,true);assertModule(wedding,"rsvp");const modules=resolveModules(wedding.modules, wedding.plan);
     const db = await publicWeddingDatabase(request);
     if(!modules.dietaryRestrictions&&(data.dietaryRestrictions?.trim()||data.responses.some(r=>r.dietaryRestrictions?.trim())))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
     if(!modules.messages&&(data.message?.trim()||data.responses.some(r=>r.message?.trim())))throw new HttpError(403,"Este recurso não está disponível para este casamento.");

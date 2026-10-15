@@ -6,12 +6,12 @@ import {audit} from "@/lib/event-audit";
 import type {Guest, Invitation} from "@/types/guests";
 export async function GET(request:Request) {
  try {
-  const {db,wedding}=await requireAccess(request);assertModule(wedding,"checkIn");const modules=resolveModules(wedding.modules);
+  const {db,wedding}=await requireAccess(request);assertModule(wedding,"checkIn");const modules=resolveModules(wedding.modules, wedding.plan);
   const [list,tables]=await Promise.all([db.collection("invitations").orderBy("updatedAt","desc").get(),db.doc("settings/tables").get()]);
   return reply({tables:modules.tables?tables.data()?.tables ?? []:[], invitations:list.docs.map(d=>({id:d.id,...d.data()} as Invitation)).filter(i=>i.active).map(i=>({id:i.id,label:i.label,kind:i.kind ?? (i.guests.length>1 ? "group":"individual"),active:true,revision:i.revision,guests:i.guests.filter(g=>g.status === "confirmado").map(({id,name,child,status,checkedIn,checkedInAt,tableId,seat})=>({id,name,child,status,checkedIn,checkedInAt:checkedInAt ?? null,tableId:modules.tables?tableId ?? "":"",seat:modules.tables?seat ?? "":""}))}))});
  }catch(e){return failure(e);}
 }
-const schema=z.object({id:z.string().regex(/^[a-f0-9]{64}$/),guestIds:z.array(z.string().uuid()).min(1).max(40),checkedIn:z.boolean(),expectedCheckedIn:z.boolean()}).strict();
+const schema=z.object({id:z.string().regex(/^[a-f0-9]{64}$/),guestIds:z.array(z.string().uuid()).min(1),checkedIn:z.boolean(),expectedCheckedIn:z.boolean()}).strict();
 export async function PATCH(request:Request) {
  try {
   const {db,email,wedding}=await requireAccess(request);assertModule(wedding,"checkIn"); const data=schema.parse(await body(request));
