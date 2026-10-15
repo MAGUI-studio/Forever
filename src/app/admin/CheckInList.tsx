@@ -1,142 +1,119 @@
 "use client";
-import {useWedding} from "@/components/wedding/WeddingProvider";
+import { AdminPageHeading } from "./AdminPageHeading";
 
-import {DashboardSkeleton} from "./skeleton";
-import {AdminContainer} from "./AdminContainer";
-import {useState} from "react";
-import {Search, RefreshCw, Check, Undo2, Users, Clock, DoorOpen, ChevronDown} from "lucide-react";
-import {WeddingSelect} from "@/components/ui/WeddingSelect";
-import {AttendanceBadge} from "@/components/ui/AttendanceBadge";
-import {ExpandingIconButton, ExpandingIconButtonGroup} from "@/components/ui/ExpandingIconButton";
-import {SectionDivider} from "@/components/ui/SectionDivider";
-import {WeddingBranch} from "@/components/wedding/WeddingOrnaments";
-import type {Invitation,EventTable} from "@/types/guests";
+import { GuestNames } from "@/components/ui/GuestNames";
+import { Fragment, useMemo, useState } from "react";
+import { Search, RefreshCw, Check, Undo2, Users, Clock, DoorOpen, ChevronDown, ArrowDown, ArrowUp, X, CircleCheck } from "lucide-react";
+import { useWedding } from "@/components/wedding/WeddingProvider";
+import { WeddingSelect } from "@/components/ui/WeddingSelect";
+import { AdminTable, AdminTableDetails, shouldToggleTableRow } from "@/components/ui/AdminTable";
+import type { Invitation, EventTable } from "@/types/guests";
 
 type CheckInListProps = {
   invitations: Invitation[];
   tables: EventTable[];
   busy: boolean;
   loading?: boolean;
-  onToggle: (invitation:Invitation, guestIds:string[], checkedIn:boolean) => void;
+  onToggle: (invitation: Invitation, guestIds: string[], checkedIn: boolean) => void;
   onRefresh: () => void;
 };
-const normalize = (value:string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
+const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("pt-BR");
+const actionClass = "inline-flex min-h-9 items-center justify-center gap-2 rounded-lg px-3 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:cursor-not-allowed disabled:opacity-40";
 
-export function CheckInList({invitations,tables,busy,loading = false,onToggle,onRefresh}:CheckInListProps) {
-  const {modules}=useWedding();
-  const [query,setQuery] = useState("");
-  const [filter,setFilter] = useState("all");
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  const active = invitations.filter(i => i.active);
-  const confirmed = active.flatMap(i => i.guests.filter(g => g.status === "confirmado"));
-  const arrived = confirmed.filter(g => g.checkedIn).length;
-  const filtered = active.map(invitation => ({invitation, guests:invitation.guests.filter(guest => guest.status === "confirmado" && normalize(guest.name + " " + invitation.label + " " + (tables.find(t=>t.id===guest.tableId)?.name??"")).includes(normalize(query)) && (filter === "all" || (filter === "arrived" ? guest.checkedIn : !guest.checkedIn)))})).filter(item => item.guests.length);
-  const sections = [
-    {id:"groups",title:"Famílias e grupos",items:filtered.filter(({invitation:i}) => i.kind === "group" || (!i.kind && i.guests.length > 1))},
-    {id:"individuals",title:"Convites individuais",items:filtered.filter(({invitation:i}) => i.kind === "individual" || (!i.kind && i.guests.length === 1))},
-  ];
-  return <AdminContainer variant="content">
-    <div className="flex items-start justify-between gap-5">
-      <div><p className="text-[10px] tracking-[.22em] text-[var(--forever-primary,#722F37)] uppercase">O grande dia chegou</p><h1 className="mt-3 font-serif text-4xl leading-tight text-[var(--forever-ink,#161616)] sm:text-5xl">Controle de <em className="text-[var(--forever-primary,#722F37)]">chegada</em></h1><p className="mt-3 text-xs text-[var(--forever-accent,#77736c)]">Acompanhe a recepção dos convidados confirmados.</p></div>
-      <span className="hidden h-20 w-20 shrink-0 overflow-hidden text-[var(--forever-primary,#722F37)] opacity-40 sm:block [&>svg]:h-full [&>svg]:w-full" aria-hidden="true"><WeddingBranch /></span>
-    </div>
-    <div className="mt-7 grid grid-cols-3 gap-3 sm:gap-4">
-      {[{label:"Confirmados",count:confirmed.length,icon:Users},{label:"Já chegaram",count:arrived,icon:DoorOpen},{label:"Aguardando",count:confirmed.length-arrived,icon:Clock}].map(({label,count,icon:Icon},index) => <div key={label} className={"relative isolate overflow-hidden rounded-[var(--wedding-radius)] p-4 sm:p-5 " + (index === 1 ? "bg-[var(--forever-primary,#722F37)] text-white" : "bg-[#fffdfa] text-[var(--forever-primary,#722F37)]")}><Icon size={78} className="pointer-events-none absolute -right-3 -bottom-3 -z-10 -rotate-12 opacity-10" aria-hidden="true" /><p className="text-[10px] sm:text-xs">{label}</p><p className="mt-3 font-serif text-3xl sm:text-4xl">{loading ? <span className="inline-block h-[1em] w-[1ch] animate-pulse rounded bg-current opacity-15 motion-reduce:animate-none" /> : count}</p></div>)}
-    </div>
-    <div className="flex flex-col gap-4 py-6 lg:flex-row lg:items-center lg:justify-between">
-      <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(220px,340px)_220px] sm:gap-6">
-        <label className="flex min-h-12 min-w-0 items-center gap-3 rounded-[var(--wedding-radius)] border border-[#722f3730] bg-[#fffdfa] px-3 text-[var(--forever-primary,#722F37)] transition-shadow focus-within:ring-2 focus-within:ring-[#722f3720]"><Search size={19} className="shrink-0" aria-hidden="true" /><input aria-label="Buscar convidados confirmados" className="h-12 w-full min-w-0 border-0! bg-transparent text-sm text-[var(--forever-ink,#161616)] outline-none! ring-0! shadow-none! placeholder:text-[#8a887b]" placeholder="Buscar nome, família ou mesa" value={query} onChange={event=>setQuery(event.target.value)} /></label>
-        <WeddingSelect label="Filtrar chegada" className="h-12! min-h-12! border! border-[#722f3730]! bg-[#fffdfa]! px-3! text-sm! shadow-none!" value={filter} onValueChange={setFilter} options={[{value:"all",label:"Todos os confirmados"},{value:"waiting",label:"Aguardando chegada"},{value:"arrived",label:"Já chegaram"}]} />
-      </div>
-      <button type="button" disabled={busy} onClick={onRefresh} className="inline-flex min-h-11 items-center justify-center gap-2 self-end rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#722F37)] transition-colors hover:bg-[var(--forever-hover-tint,#722f3710)] disabled:opacity-50"><RefreshCw size={16} className={busy ? "animate-spin" : ""} aria-hidden="true" />Atualizar</button>
-    </div>
-    <p className="mb-4 text-[10px] text-[var(--forever-accent,#77736c)]">Atualização automática a cada 15 segundos enquanto esta página estiver aberta. Use “Desfazer chegada” para corrigir uma marcação.</p>
-    <div className="space-y-8">
-      {loading && <DashboardSkeleton checkIn />}
-      {sections.filter(section=>section.items.length).map(section=><section key={section.id} className="space-y-5">
-        <SectionDivider
-          title={section.title}
-          count={section.items.length}
-          actions={
-            <button
-              type="button"
-              className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--wedding-radius)] px-2 text-xs transition-colors hover:bg-[var(--forever-hover-tint,#722f3710)] focus-visible:outline-2 focus-visible:outline-[var(--forever-primary,#722F37)]"
-              onClick={() =>
-                setCollapsed((current) => {
-                  const allExpanded = section.items.every(
-                    ({ invitation: invite }) => !current[invite.id],
-                  );
-                  return {
-                    ...current,
-                    ...Object.fromEntries(
-                      section.items.map(({ invitation: invite }) => [
-                        invite.id,
-                        allExpanded,
-                      ]),
-                    ),
-                  };
-                })
-              }
-            >
-              <ChevronDown
-                size={14}
-                className={
-                  section.items.every(
-                    ({ invitation: invite }) => !collapsed[invite.id],
-                  )
-                    ? "rotate-180 transition-transform"
-                    : "transition-transform"
-                }
-                aria-hidden="true"
-              />
-              {section.items.every(
-                ({ invitation: invite }) => !collapsed[invite.id],
-              )
-                ? "Recolher todos"
-                : "Expandir todos"}
-            </button>
-          }
-        />
-        {section.items.map(({invitation,guests})=><article key={invitation.id} className="rounded-[var(--wedding-radius)] border border-[#722f3720] bg-[#fffefbdb] p-5 sm:p-7">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="font-serif text-3xl text-[var(--forever-ink,#161616)]">
-                <button
-                  type="button"
-                  className="admin-invite-toggle"
-                  aria-expanded={!collapsed[invitation.id]}
-                  aria-controls={"checkin-body-" + invitation.id}
-                  aria-label={(collapsed[invitation.id] ? "Expandir convite " : "Recolher convite ") + invitation.label}
-                  onClick={() => setCollapsed(current => ({...current, [invitation.id]: !current[invitation.id]}))}
-                >
-                  <span>{invitation.label}</span>
-                  <ChevronDown size={20} className={collapsed[invitation.id] ? "" : "is-expanded"} aria-hidden="true" />
-                </button>
-              </h2>
-              <p className="mt-1 text-xs text-[var(--forever-accent,#77736c)]">{guests.length} {guests.length === 1 ? "pessoa" : "pessoas"} nesta lista</p>
-            </div>
-            {guests.filter(g=>!g.checkedIn).length>1&&<button disabled={busy} type="button" className="inline-flex min-h-11 items-center gap-2 rounded-[var(--wedding-radius)] px-3 text-xs text-[var(--forever-primary,#722F37)] hover:bg-[var(--forever-hover-tint,#722f3710)] disabled:opacity-40" onClick={()=>onToggle(invitation,guests.filter(g=>!g.checkedIn).map(g=>g.id),true)}><Check size={16}/>Registrar chegada de {guests.filter(g=>!g.checkedIn).length} pessoas</button>}
-          </div>
-          <div
-            id={"checkin-body-" + invitation.id}
-            className="admin-invite-collapse"
-            data-open={!collapsed[invitation.id]}
-            aria-hidden={!!collapsed[invitation.id]}
-            inert={collapsed[invitation.id] ? true : undefined}
-          >
-            <div className="admin-invite-collapse-inner">
-              <div className="mt-4 divide-y divide-[#722f3715]">{guests.map(guest=><div key={guest.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 py-4 last:pb-0 sm:flex sm:justify-between">
-                <div className="min-w-0"><p className="text-sm break-words text-[var(--forever-primary,#722F37)]">{guest.name}{guest.child ? " · Criança" : ""}</p>{modules.tables&&<p className="mt-1 text-xs text-[var(--forever-accent,#77736c)]">{tables.find(t=>t.id===guest.tableId)?.name??"Mesa ainda não definida"}{guest.seat?" · Lugar "+guest.seat:""}</p>}{guest.checkedInAt&&<p className="mt-1 text-[10px] text-[var(--forever-accent,#77736c)]">Chegada às {new Date(guest.checkedInAt).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</p>}</div>
-                <div className="contents sm:flex sm:items-center sm:gap-3">
-                  <AttendanceBadge status={guest.checkedIn ? "confirmado" : "pendente"} label={guest.checkedIn ? "Já chegou" : "Aguardando chegada"} className="w-[145px]! text-[11px]!" />
-                  <ExpandingIconButtonGroup className="col-span-2 flex justify-end"><ExpandingIconButton icon={guest.checkedIn ? <Undo2 size={17} aria-hidden="true" /> : <Check size={17} aria-hidden="true" />} label={guest.checkedIn ? "Desfazer chegada" : "Registrar chegada"} aria-label={(guest.checkedIn ? "Desfazer chegada de " : "Registrar chegada de ") + guest.name} aria-pressed={guest.checkedIn} disabled={busy} onClick={()=>onToggle(invitation,[guest.id],!guest.checkedIn)} /></ExpandingIconButtonGroup>
-                </div>
-              </div>)}</div>
-            </div>
-          </div>
+function ArrivalBadge({ arrived }: { arrived: boolean }) {
+  const Icon = arrived ? CircleCheck : Clock;
+  return <span className={`relative isolate inline-flex min-h-9 w-[200px] items-center justify-center overflow-hidden rounded-full px-4 py-2 text-xs font-medium ${arrived ? "bg-emerald-50 text-emerald-800" : "bg-neutral-100 text-neutral-700"}`}>
+    <Icon size={46} strokeWidth={1.5} className="pointer-events-none absolute -right-1 -bottom-2 -z-10 -rotate-12 opacity-[0.09]" aria-hidden="true" />
+    <span>{arrived ? "Já chegou" : "Aguardando chegada"}</span>
+  </span>;
+}
+
+export function CheckInList({ invitations, tables, busy, loading = false, onToggle, onRefresh }: CheckInListProps) {
+  const { modules } = useWedding();
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [kind, setKind] = useState("all");
+  const [descending, setDescending] = useState(false);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const tableMap = useMemo(() => new Map(tables.map(table => [table.id, table.name])), [tables]);
+  const active = invitations.filter(invitation => invitation.active);
+  const confirmed = active.flatMap(invitation => invitation.guests.filter(guest => guest.status === "confirmado"));
+  const arrived = confirmed.filter(guest => guest.checkedIn).length;
+  const groups = active.map(invitation => ({ invitation, guests: invitation.guests.filter(guest => guest.status === "confirmado" && normalize(`${guest.name} ${invitation.label} ${modules.tables ? tableMap.get(guest.tableId ?? "") ?? "" : ""}`).includes(normalize(query)) && (filter === "all" || (filter === "arrived" ? guest.checkedIn : !guest.checkedIn))) })).filter(item => item.guests.length);
+  const isGroup = (invitation: Invitation) => invitation.kind === "group" || (!invitation.kind && invitation.guests.length > 1);
+  const counts = { all: groups.length, group: groups.filter(({ invitation }) => isGroup(invitation)).length, individual: groups.filter(({ invitation }) => !isGroup(invitation)).length };
+  const visible = groups.filter(({ invitation }) => kind === "all" || (kind === "group" ? isGroup(invitation) : !isGroup(invitation))).sort((a, b) => a.invitation.label.localeCompare(b.invitation.label, "pt-BR") * (descending ? -1 : 1));
+  const visibleGuests = visible.flatMap(item => item.guests);
+  const allExpanded = visible.length > 0 && visible.every(({ invitation }) => expanded[invitation.id]);
+  const toggle = (id: string) => setExpanded(current => ({ ...current, [id]: !current[id] }));
+  const colSpan = modules.tables ? 6 : 5;
+  const blocked = busy || loading;
+
+  return <div className="space-y-6 pb-16 pt-6 sm:pt-8">
+    <div className="grid grid-cols-1 items-center gap-6 border-b border-neutral-200/80 pb-6 xl:grid-cols-[minmax(280px,0.85fr)_minmax(0,3fr)]">
+      <AdminPageHeading context="O grande dia chegou" title="Controle de" accent="chegada" description="Receba e acompanhe os convidados confirmados." />
+      <div className="grid grid-cols-1 gap-3 min-[460px]:grid-cols-3" aria-label="Resumo da recepção" aria-busy={loading}>
+        {[{ label: "Confirmados", count: confirmed.length, icon: Users, caption: "Pessoas esperadas" }, { label: "Já chegaram", count: arrived, icon: DoorOpen, caption: confirmed.length ? `${Math.round(arrived / confirmed.length * 100)}% dos confirmados` : "Aguardando chegadas" }, { label: "Aguardando", count: confirmed.length - arrived, icon: Clock, caption: "Ainda não chegaram" }].map(({ label, count, icon: Icon, caption }) => <article key={label} className="relative flex min-h-32 flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xs">
+          <Icon size={80} className="pointer-events-none absolute -bottom-3 -right-3 -rotate-12 text-neutral-900 opacity-[0.04]" aria-hidden="true" />
+          <p className="relative text-xs font-medium text-neutral-500">{label}</p><strong className="relative my-1 font-serif text-3xl font-normal text-neutral-900 sm:text-4xl">{loading ? "…" : count}</strong><span className="relative text-[11px] text-neutral-500">{caption}</span>
         </article>)}
-      </section>)}
-      {!loading && !filtered.length && <div className="rounded-[var(--wedding-radius)] bg-[#fffdfa] px-6 py-12 text-center"><Users size={28} className="mx-auto text-[var(--forever-primary,#722F37)]" aria-hidden="true" /><h2 className="mt-4 font-serif text-2xl text-[var(--forever-ink,#161616)]">{confirmed.length ? "Nenhum convidado encontrado" : "Aguardando as confirmações"}</h2><p className="mt-3 text-sm text-[var(--forever-accent,#77736c)]">{confirmed.length ? "Ajuste a busca ou o filtro para consultar outras pessoas." : "Os convidados com presença confirmada aparecerão aqui."}</p></div>}
+      </div>
     </div>
-  </AdminContainer>;
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+      <div className="flex flex-1 flex-wrap items-center gap-2.5">
+        <div className="relative min-w-[220px] flex-1 sm:max-w-[360px]">
+          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" aria-hidden="true" />
+          <input aria-label="Buscar convidados confirmados" placeholder={modules.tables ? "Buscar por nome, família ou mesa..." : "Buscar por nome ou família..."} value={query} onChange={event => setQuery(event.target.value)} className="h-11 w-full rounded-xl border border-neutral-200 bg-white pl-9 pr-9 text-xs text-neutral-900 shadow-2xs outline-none placeholder:text-neutral-400 focus:border-[#722F37] focus:ring-2 focus:ring-[#722F3715]" />
+          {query && <button type="button" aria-label="Limpar busca" onClick={() => setQuery("")} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-neutral-500"><X size={14} /></button>}
+        </div>
+        <div className="w-full sm:w-[220px]"><WeddingSelect label="Filtrar chegada" value={filter} onValueChange={setFilter} className="h-11! min-h-11! rounded-xl! border! border-neutral-200! bg-white! px-3! text-xs! text-neutral-900! shadow-2xs!" options={[{ value: "all", label: "Todos os confirmados" }, { value: "waiting", label: "Aguardando chegada" }, { value: "arrived", label: "Já chegaram" }]} /></div>
+      </div>
+      <button type="button" disabled={blocked} onClick={onRefresh} className="inline-flex h-11 items-center justify-center gap-2 self-end rounded-xl border border-neutral-200 bg-white px-3.5 text-xs font-medium text-neutral-700 shadow-2xs hover:bg-neutral-50 disabled:opacity-50"><RefreshCw size={14} className={busy ? "animate-spin motion-reduce:animate-none" : ""} aria-hidden="true" />Atualizar</button>
+    </div>
+    <div className="guest-table-view overflow-hidden rounded-2xl border border-neutral-200/80 bg-white shadow-xs" aria-busy={blocked}>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100 px-5 py-3.5">
+        <div className="flex flex-wrap gap-1.5" aria-label="Tipo de convite">
+          {([{ value: "all", label: "Todos" }, { value: "group", label: "Famílias e grupos" }, { value: "individual", label: "Individuais" }] as const).map(tab => <button key={tab.value} type="button" aria-pressed={kind === tab.value} onClick={() => setKind(tab.value)} className={`inline-flex min-h-9 items-center gap-2 rounded-xl px-3.5 text-xs font-medium transition-colors ${kind === tab.value ? "bg-[#722F37] text-white" : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900"}`}>{tab.label}<span className="opacity-70">({counts[tab.value]})</span></button>)}
+        </div>
+        <button type="button" disabled={!visible.length} onClick={() => setExpanded(current => ({ ...current, ...Object.fromEntries(visible.map(({ invitation }) => [invitation.id, !allExpanded])) }))} className={actionClass}><ChevronDown size={14} className={`transition-transform ${allExpanded ? "rotate-180" : ""}`} aria-hidden="true" />{allExpanded ? "Recolher todos" : "Expandir todos"}</button>
+      </div>
+      <p className="border-b border-neutral-100 bg-neutral-50/40 px-5 py-2.5 text-xs text-neutral-500">Clique na linha para ver as pessoas do convite e registrar a chegada. Atualização automática a cada 15 segundos.</p>
+      <AdminTable label="Lista de recepção dos convidados confirmados" header={<>
+        <th scope="col" className="w-9 px-3 py-3.5"><span className="sr-only">Expandir</span></th>
+        <th scope="col" aria-sort={descending ? "descending" : "ascending"} className="px-5 py-3.5"><button type="button" onClick={() => setDescending(value => !value)} className="inline-flex items-center gap-1">Convite{descending ? <ArrowDown size={13} /> : <ArrowUp size={13} />}</button></th>
+        <th scope="col" className="px-5 py-3.5">Convidados</th>
+        <th scope="col" className="px-5 py-3.5">Chegada</th>
+        {modules.tables && <th scope="col" className="px-5 py-3.5">Mesa</th>}
+        <th scope="col" className="px-5 py-3.5 text-right">Ações</th>
+      </>}>
+        {loading ? <tr><td colSpan={colSpan} className="p-10 text-center text-sm text-neutral-500">Carregando recepção…</td></tr> : !visible.length ? <tr><td colSpan={colSpan} className="px-5 py-14 text-center"><Users size={28} className="mx-auto text-neutral-400" aria-hidden="true" /><p className="mt-3 text-sm font-medium text-neutral-800">{confirmed.length ? "Nenhum convidado encontrado" : "Aguardando as confirmações"}</p><p className="mt-2 text-xs text-neutral-500">{confirmed.length ? "Ajuste a busca ou os filtros para consultar outras pessoas." : "As pessoas com presença confirmada aparecerão aqui."}</p>{(query || filter !== "all" || kind !== "all") && <button type="button" className={`${actionClass} mt-3`} onClick={() => { setQuery(""); setFilter("all"); setKind("all"); }}>Limpar busca e filtros</button>}</td></tr> : visible.map(({ invitation, guests }) => {
+          const open = !!expanded[invitation.id];
+          const waiting = guests.filter(guest => !guest.checkedIn);
+          const arrivedCount = guests.length - waiting.length;
+          const assignedTables = [...new Set(guests.map(guest => tableMap.get(guest.tableId ?? "")).filter(Boolean))];
+          return <Fragment key={invitation.id}>
+            <tr className={`cursor-pointer transition-colors ${open ? "bg-neutral-50/60" : "hover:bg-neutral-50/40"}`} onClick={event => { if (shouldToggleTableRow(event.target)) toggle(invitation.id); }}>
+              <td className="px-3 text-center"><button type="button" aria-label={`${open ? "Recolher" : "Expandir"} ${invitation.label}`} aria-expanded={open} aria-controls={`reception-${invitation.id}`} onClick={() => toggle(invitation.id)} className="inline-flex size-9 items-center justify-center rounded-lg text-neutral-500 hover:bg-neutral-100"><ChevronDown size={15} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} /></button></td>
+              <td className="px-5"><button type="button" aria-expanded={open} aria-controls={`reception-${invitation.id}`} onClick={() => toggle(invitation.id)} className="text-left text-sm font-medium uppercase text-neutral-900">{invitation.label}</button><p className="mt-1.5 text-xs text-neutral-500">{guests.length} {guests.length === 1 ? "pessoa nesta seleção" : "pessoas nesta seleção"}</p></td>
+              <td className="max-w-72 px-5 text-xs leading-relaxed text-neutral-600"><GuestNames guests={guests} /></td>
+              <td className="px-5">{waiting.length === 0 ? <ArrivalBadge arrived /> : arrivedCount === 0 ? <ArrivalBadge arrived={false} /> : <span className="relative isolate inline-flex min-h-9 w-[200px] items-center justify-center overflow-hidden rounded-full bg-neutral-100 px-4 py-2 text-xs font-medium text-neutral-700"><DoorOpen size={46} className="pointer-events-none absolute -bottom-2 -right-1 -z-10 -rotate-12 opacity-[0.09]" aria-hidden="true" />{arrivedCount} de {guests.length} chegaram</span>}</td>
+              {modules.tables && <td className="px-5 text-xs text-neutral-500">{assignedTables.join(", ") || "Sem mesa"}</td>}
+              <td className="px-5 text-right"><button type="button" disabled={blocked || !waiting.length} onClick={() => onToggle(invitation, waiting.map(guest => guest.id), true)} className={`${actionClass} whitespace-nowrap`}><Check size={16} aria-hidden="true" />{!waiting.length ? "Todos chegaram" : waiting.length === 1 ? "Registrar chegada" : `Registrar ${waiting.length} chegadas`}</button></td>
+            </tr>
+            <AdminTableDetails id={`reception-${invitation.id}`} expanded={open} colSpan={colSpan}>
+              <div className="rounded-xl border border-neutral-200/70 bg-white px-4 py-4 sm:px-5">
+                <p className="border-b border-neutral-100 pb-3 text-sm font-medium text-neutral-900">Convidados confirmados nesta seleção</p>
+                <div className="divide-y divide-neutral-100">{guests.map(guest => <div key={guest.id} className="grid grid-cols-1 items-center gap-3 py-3.5 sm:grid-cols-[minmax(0,1fr)_200px_minmax(160px,auto)]">
+                  <div><p className="text-sm font-medium text-neutral-800"><span className="uppercase">{guest.name}</span>{guest.child && <span className="ml-2 text-xs font-normal text-neutral-500">Criança</span>}</p>{modules.tables && <p className="mt-1 text-xs text-neutral-500">{tableMap.get(guest.tableId ?? "") ?? "Sem mesa"}{guest.seat ? ` · Lugar ${guest.seat}` : ""}</p>}{guest.checkedIn && guest.checkedInAt && <p className="mt-1 text-xs text-neutral-500">Chegada às {new Date(guest.checkedInAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>}</div>
+                  <ArrivalBadge arrived={guest.checkedIn} />
+                  <button type="button" disabled={blocked} aria-label={`${guest.checkedIn ? "Desfazer chegada de" : "Registrar chegada de"} ${guest.name}`} aria-pressed={guest.checkedIn} className={`${actionClass} justify-self-end`} onClick={() => onToggle(invitation, [guest.id], !guest.checkedIn)}>{guest.checkedIn ? <Undo2 size={16} aria-hidden="true" /> : <Check size={16} aria-hidden="true" />}{guest.checkedIn ? "Desfazer chegada" : "Registrar chegada"}</button>
+                </div>)}</div>
+              </div>
+            </AdminTableDetails>
+          </Fragment>;
+        })}
+      </AdminTable>
+      <div className="border-t border-neutral-100 px-5 py-3 text-xs text-neutral-500" aria-live="polite">{visible.length} convites exibidos · {visibleGuests.length} pessoas nesta seleção · {visibleGuests.filter(guest => guest.checkedIn).length} já chegaram</div>
+    </div>
+  </div>;
 }
