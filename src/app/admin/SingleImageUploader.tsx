@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import type { User } from "firebase/auth";
 import { isUploadThingUrl } from "@/config/gallery";
-import { isCustomImageUrl } from "@/lib/template-images";
+
 import { useUploadThing } from "@/lib/uploadthing";
 import {
   Info,
@@ -247,8 +247,8 @@ export function SingleImageUploader({
     }
   }
 
-  const hasCustomUpload = isCustomImageUrl(currentUrl);
-  const displayUrl = hasCustomUpload ? (currentUrl || defaultUrl) : defaultUrl;
+  const hasCustomUpload = Boolean(currentUrl?.trim());
+  const displayUrl = currentUrl || defaultUrl;
   const isBusy = isUploading || isAutoSaving || isCleaning;
 
   return (

@@ -3,14 +3,16 @@ import {venueMapUrl} from "@/lib/wedding-settings";
 import {VenuePhotoMap} from "../VenuePhotoMap";
 
 import {useEffect,useRef} from "react";
+import Image from "next/image";
 import {MotionConfig,motion,useReducedMotion} from "framer-motion";
 import {ArrowDown,ArrowUpRight,Heart,Navigation,GlassWater,Music2} from "lucide-react";
 import {useWedding} from "../WeddingProvider";
 import {useSiteCopy} from "../useSiteCopy";
+import {DressCodeSection} from "../DressCodeSection";
 import {RSVPSection} from "../RSVPSection";
 import {romanceAssets} from "@/config/templates/romance-assets";
 import {resolveTemplateImage} from "@/lib/template-images";
-import {ContemporaryRomanceDressCode,ContemporaryRomanceGifts,ContemporaryRomanceFooter} from "./ContemporaryRomanceSections";
+import {ContemporaryRomanceGifts,ContemporaryRomanceFooter} from "./ContemporaryRomanceSections";
 import {ContemporaryRomanceOrnaments} from "./ContemporaryRomanceOrnaments";
 import {RomanceCountdown} from "./RomanceCountdown";
 import {RomanceGarland} from "./RomanceGarland";
@@ -58,7 +60,7 @@ export function ContemporaryRomanceTemplate(){
  return <MotionConfig reducedMotion="user"><main data-wedding-template="contemporary-romance" className="w-full overflow-x-hidden bg-[var(--forever-paper)] text-[var(--forever-ink)]">
   <section id="inicio" className="relative isolate flex flex-col justify-between overflow-hidden bg-[#32151C] px-6 pb-8 pt-7 text-white sm:px-12 lg:px-20">
    <div aria-hidden="true" className="absolute inset-0 -z-20"><RomancePhoto src={heroImage} preload sizes="100vw" className="h-full w-full"/></div>
-   <div aria-hidden="true" className="absolute inset-0 -z-10 bg-[#2A1119]/50"/>
+   <div aria-hidden="true" className="absolute inset-0 -z-10" style={{background:"linear-gradient(180deg, rgba(30,12,18,0.76) 0%, rgba(30,12,18,0.84) 50%, rgba(30,12,18,0.80) 100%)"}}/>
    <ContemporaryRomanceOrnaments pattern="cover" tone="photo"/>
    <div className="relative mx-auto my-auto w-full max-w-7xl py-16 text-center sm:py-24">
     <RomanceReveal delay={0.2}><p className={`${eyebrow} mx-auto mb-10 max-w-md leading-6 text-white/85`}>{copy("romance.hero.eyebrow")}</p></RomanceReveal>
@@ -103,13 +105,19 @@ export function ContemporaryRomanceTemplate(){
    </div>
   </section>
 
-  <section id="programacao" className="relative isolate overflow-hidden bg-[var(--forever-primary)] px-6 py-20 text-white sm:px-12 sm:py-28 lg:px-20">
-   <ContemporaryRomanceOrnaments pattern="schedule" tone="olive"/>
-   <div className="relative mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-24"><div><RomanceReveal><p className={`${eyebrow} mb-5 text-white/65`}>{copy("romance.schedule.eyebrow")}</p><h2 className="font-serif text-5xl font-light leading-[1.02] tracking-[-0.035em] sm:text-7xl">{copy("romance.schedule.title")}</h2><p className="mt-6 max-w-lg text-sm leading-8 text-white/70">{copy("romance.schedule.intro")}</p></RomanceReveal><div className="mt-10 divide-y divide-white/20">{moments.map((Icon,index)=><RomanceReveal key={index} delay={index*0.08} className="flex items-start gap-6 py-7"><Icon aria-hidden="true" size={25} strokeWidth={1} className="mt-1 shrink-0 text-white/65"/><div><h3 className="font-serif text-3xl font-light">{copy(`romance.schedule.time${index+1}`)}</h3><p className="mt-3 max-w-md text-sm leading-7 text-white/70">{copy(`romance.schedule.event${index+1}`)}</p></div></RomanceReveal>)}</div></div><div className="relative pl-8 pb-8"><RomancePhoto src={scheduleImage} className="aspect-[3/4] rounded-t-full"/><div aria-hidden="true" className="pointer-events-none absolute inset-x-0 -bottom-0 top-6 -z-10 rounded-t-full border border-white/30"/></div></div>
-  </section>
-  <ContemporaryRomanceDressCode/>
+  <DressCodeSection/>
   {showGifts&&<ContemporaryRomanceGifts/>}
-  {showRsvp&&<RSVPSection/>}
-  <ContemporaryRomanceFooter/>
- </main></MotionConfig>;
+  <div className="romance-finale">
+   <section id="programacao" className="romance-schedule relative isolate overflow-hidden px-6 py-20 text-white sm:px-12 sm:py-28 lg:px-20">
+    {scheduleImage&&<Image src={scheduleImage} alt="" fill sizes="100vw" className="romance-schedule-background"/>}
+    <div className="romance-schedule-shade" aria-hidden="true"/>
+    <ContemporaryRomanceOrnaments pattern="schedule" tone="photo"/>
+    <div className="relative mx-auto max-w-7xl">
+     <RomanceReveal className="max-w-3xl"><p className={`${eyebrow} mb-5 text-white/75`}>{copy("romance.schedule.eyebrow")}</p><h2 className="font-serif text-5xl font-light leading-[1.02] tracking-[-0.035em] sm:text-7xl">{copy("romance.schedule.title")}</h2><p className="mt-6 max-w-lg text-sm leading-8 text-white/85">{copy("romance.schedule.intro")}</p></RomanceReveal>
+     <div className="mt-10 max-w-3xl divide-y divide-white/20">{moments.map((Icon,index)=><RomanceReveal key={index} delay={index*0.08} className="flex items-start gap-6 py-7"><Icon aria-hidden="true" size={25} strokeWidth={1} className="mt-1 shrink-0 text-white/75"/><div><h3 className="font-serif text-3xl font-light">{copy(`romance.schedule.time${index+1}`)}</h3><p className="mt-3 max-w-md text-sm leading-7 text-white/85">{copy(`romance.schedule.event${index+1}`)}</p></div></RomanceReveal>)}</div>
+    </div>
+   </section>
+   {showRsvp&&<RSVPSection/>}
+   <ContemporaryRomanceFooter/>
+  </div> </main></MotionConfig>;
 }

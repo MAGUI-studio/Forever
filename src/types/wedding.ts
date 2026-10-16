@@ -46,6 +46,8 @@ export interface DressCodePaletteColor {
   hex: string;
 }
 
+export type DressCodeStyle = "botanical" | "minimalist";
+
 export interface DressCodeInfo {
   title: string;
   description: string;
@@ -106,6 +108,7 @@ export interface WeddingConfig {
   ceremony: EventLocation;
   party: EventLocation;
   dressCode: DressCodeInfo;
+  dressCodeStyle?: DressCodeStyle;
   gifts: GiftItem[];
   pix: PixConfig;
   creditCard?: CreditCardConfig;

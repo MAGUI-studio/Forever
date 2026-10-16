@@ -42,6 +42,8 @@ interface DashboardOverviewProps {
 }
 
 const TEMPLATE_NAMES: Record<string, string> = {
+  "minimalist-modern": "Minimalista Moderno",
+  "serene-breeze": "Brisa Serena",
   "contemporary-romance": "Romance Contemporâneo",
   "botanical-classic": "Botânico Clássico",
 };

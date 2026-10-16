@@ -4,9 +4,11 @@ import { romanceAssets } from "@/config/templates/romance-assets";
 import type { TemplateId } from "@/config/templates/registry";
 
 export const templateImageDefaults: Record<TemplateId, Record<string, string>> = {
+  "minimalist-modern": {hero:"/templates/minimalist-modern/hero.webp",story:"/templates/minimalist-modern/story.webp",dress:"/templates/minimalist-modern/dress.webp",venue:""},
+  "serene-breeze": {hero:"/detalhes/praia.jpg",story:"/casal/festa-de-casamento.png",venue:"/detalhes/paisagem.jpg"},
   "botanical-classic": {
-    hero: "/casal/festa-de-casamento.png",
-    venue: "/detalhes/mesa.jpg",
+    hero: "/templates/botanical-classic/hero.webp",
+    venue: "/templates/botanical-classic/venue.webp",
   },
   "contemporary-romance": {
     hero: romanceAssets.hero,
@@ -21,6 +23,10 @@ export const templateImageDefaults: Record<TemplateId, Record<string, string>> =
 };
 
 export const defaultAssetUrls = new Set([
+  ...["hero","story","detail","venue","schedule"].map(key=>`/templates/contemporary-romance/${key}.webp`),
+  "/casal/aliancas-que-selam-nossa-promessa.png",
+  "/casal/cerimonia-religiosa.png",
+  ...Object.values(templateImageDefaults).flatMap(slots => Object.values(slots)),
   "/casal/festa-de-casamento.png",
   "/detalhes/aliancas-florais.jpg",
   "/detalhes/mesa.jpg",
@@ -57,6 +63,16 @@ export function getCustomImageUrl(
   key: string
 ): string {
   if (!config) return "";
+  // The shared dress-code form is the source of truth, including explicit removal.
+  if (key === "dress" && config.dressCode?.gallery.length) return config.dressCode.gallery[0].image;
+
+  if (templateId === "minimalist-modern" || templateId === "serene-breeze") {
+    const images=config.customImages;
+    // An explicit empty slot means the photo was removed in the form.
+    for (const slot of [`${templateId}.${key}`,key]) {
+      if (images && Object.prototype.hasOwnProperty.call(images,slot)) return images[slot];
+    }
+  }
 
   // 1. Check customImages dictionary
   const namespacedKey = `${templateId}.${key}`;
@@ -74,7 +90,7 @@ export function getCustomImageUrl(
     }
   }
 
-  if (key === "story" && templateId === "contemporary-romance") {
+  if (key === "story") {
     if (isCustomImageUrl(config.couple?.story?.image)) {
       return config.couple.story!.image!;
     }
@@ -84,6 +100,10 @@ export function getCustomImageUrl(
     if (isCustomImageUrl(config.ceremony?.image)) {
       return config.ceremony.image!;
     }
+  }
+
+  if (key === "dress" && isCustomImageUrl(config.dressCode?.gallery[0]?.image)) {
+    return config.dressCode.gallery[0].image;
   }
 
   return "";
@@ -100,6 +120,11 @@ export function resolveTemplateImage(
 ): string {
   const custom = getCustomImageUrl(config, templateId, key);
   if (custom) return custom;
+  // Never restore a decorative image after an explicit removal in the editor.
+  if(config?.customImages && [`${templateId}.${key}`,key].some(slot=>Object.prototype.hasOwnProperty.call(config.customImages,slot)&&config.customImages![slot]===""))return "";
+  if(key==="dress"&&config?.dressCode?.gallery.length)return "";
+  if(templateId==="minimalist-modern")return templateImageDefaults[templateId][key]??"";
+  if (key === "dress" || templateId === "serene-breeze") return "";
   return templateImageDefaults[templateId]?.[key] ?? "";
 }
 

@@ -6,7 +6,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion
 
 import type { TemplateOrnamentsProps } from "./ornament-types";
 
-export function BotanicalClassicOrnaments({ progress, variant = "botanical", tone = "olive", venue = false }: TemplateOrnamentsProps) {
+export function BotanicalClassicOrnaments({ progress, variant = "botanical", tone = "olive", venue = false, disableMotion = false }: TemplateOrnamentsProps) {
   const frame = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: frame, offset: ["start end", "end start"] });
   const reduced = useReducedMotion();
@@ -19,18 +19,18 @@ export function BotanicalClassicOrnaments({ progress, variant = "botanical", ton
 
   return (
     <div ref={frame} data-wedding-ornaments={design} aria-hidden="true" className={`absolute inset-0 pointer-events-none overflow-hidden ${color}`}>
-      <motion.div style={reduced ? undefined : { y: branchY }} className={`absolute ${design === "venue" ? "-left-12 sm:-left-8 top-[35%]" : "-left-8 sm:left-3 bottom-8 sm:bottom-10"} ${sideSize} opacity-25`}>
+      <motion.div style={reduced || disableMotion ? undefined : { y: branchY }} className={`absolute ${design === "venue" ? "-left-12 sm:-left-8 top-[35%]" : "-left-8 sm:left-3 bottom-8 sm:bottom-10"} ${sideSize} opacity-25`}>
         {design === "hearts" ? <Heart className="w-full h-auto -rotate-12" strokeWidth={0.6} /> : floral ? <WeddingFlowers /> : <BotanicalClassicBranch />}
       </motion.div>
-      <motion.div style={reduced ? undefined : { y: heartY }} className={`absolute ${design === "venue" ? "-right-10 sm:-right-4 bottom-8" : "-right-8 sm:right-3 top-16 sm:top-24"} ${sideSize} opacity-25`}>
+      <motion.div style={reduced || disableMotion ? undefined : { y: heartY }} className={`absolute ${design === "venue" ? "-right-10 sm:-right-4 bottom-8" : "-right-8 sm:right-3 top-16 sm:top-24"} ${sideSize} opacity-25`}>
         <div className={design === "hearts" ? "rotate-12" : "rotate-180"}>
           {design === "hearts" ? <Heart className="w-full h-auto" strokeWidth={0.6} /> : design === "vows" || floral ? <WeddingFlowers /> : <BotanicalClassicBranch />}
         </div>
       </motion.div>
-      <motion.div style={reduced ? undefined : { y: heartY }} className="absolute left-[10%] sm:left-[16%] top-[20%] opacity-30 -rotate-12">
+      <motion.div style={reduced || disableMotion ? undefined : { y: heartY }} className="absolute left-[10%] sm:left-[16%] top-[20%] opacity-30 -rotate-12">
         <Heart className="w-6 h-6 sm:w-9 sm:h-9" strokeWidth={0.9} />
       </motion.div>
-      <motion.div style={reduced ? undefined : { y: branchY }} className="absolute right-[10%] sm:right-[17%] bottom-[12%] opacity-30 rotate-12">
+      <motion.div style={reduced || disableMotion ? undefined : { y: branchY }} className="absolute right-[10%] sm:right-[17%] bottom-[12%] opacity-30 rotate-12">
         {floral ? <WeddingFlowers compact /> : <Heart className="w-5 h-5 sm:w-8 sm:h-8" strokeWidth={0.9} />}
       </motion.div>
     </div>

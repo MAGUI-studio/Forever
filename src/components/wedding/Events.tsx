@@ -21,7 +21,7 @@ export function Events() {
   const venueImage = resolveTemplateImage(weddingConfig, "botanical-classic", "venue");
 
   return (
-    <section ref={section} id="eventos" className="cinematic-section relative overflow-hidden w-full pt-10 sm:pt-16 pb-12 sm:pb-20 px-6 sm:px-12 lg:px-20 bg-[#5D613C] text-[#F1F1F1] [&_a:focus-visible]:outline-[#F1F1F1] [&_button:focus-visible]:outline-[#F1F1F1] [&_[tabindex]:focus-visible]:outline-[#F1F1F1]">
+    <section ref={section} id="eventos" className="cinematic-section relative overflow-hidden w-full pt-10 sm:pt-16 pb-24 sm:pb-36 rounded-b-[2.5rem] sm:rounded-b-[4rem] px-6 sm:px-12 lg:px-20 bg-[#5D613C] text-[#F1F1F1] [&_a:focus-visible]:outline-[#F1F1F1] [&_button:focus-visible]:outline-[#F1F1F1] [&_[tabindex]:focus-visible]:outline-[#F1F1F1]">
       <WeddingOrnaments progress={scrollYProgress} variant="venue" />
       <div className="relative z-10 max-w-7xl mx-auto">
         <div className="text-center space-y-4 max-w-3xl mx-auto mb-12 sm:mb-16">

@@ -1,6 +1,6 @@
 "use client";
 import { StoryEnvelope } from "../StoryEnvelope";
-import { DressCode } from "../DressCode";
+import { DressCodeSection as DressCode } from "../DressCodeSection";
 import { GiftList } from "../GiftList";
 import { RSVPSection } from "../RSVPSection";
 import { Footer } from "../Footer";

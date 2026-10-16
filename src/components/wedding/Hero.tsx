@@ -25,7 +25,7 @@ export function Hero() {
   const contentY = useTransform(scrollYProgress, [0, 1], [0, 65]);
   const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0.15]);
   const heroImage = resolveTemplateImage(weddingConfig, "botanical-classic", "hero");
-  return <section ref={section} id="inicio" className="relative w-full overflow-hidden bg-[#17130D] px-6 sm:px-12 lg:px-20 pt-8 sm:pt-12 pb-24 sm:pb-36 text-[#F1F1F1]">
+  return <section ref={section} id="inicio" className="relative w-full overflow-hidden bg-[#5D613C] px-6 sm:px-12 lg:px-20 pt-8 sm:pt-12 pb-24 sm:pb-36 text-[#F1F1F1]">
     <motion.div style={reducedMotion ? undefined : { y: imageY, scale: imageScale }} className="absolute inset-x-0 -inset-y-[20%] origin-center">
       <Image unoptimized
         src={heroImage}
@@ -38,7 +38,7 @@ export function Hero() {
         className="object-cover object-center"
       />
     </motion.div>
-    <div className="absolute inset-0 bg-[#17130D]/80" />
+    <div aria-hidden="true" className="absolute inset-0" style={{background:"linear-gradient(180deg, rgba(43,44,32,0.42) 0%, rgba(35,37,27,0.50) 55%, rgba(73,77,48,0.60) 100%)"}} />
 
     <WeddingOrnaments progress={scrollYProgress} variant="hearts" tone="photo" />
     <motion.div style={reducedMotion ? undefined : { y: contentY, opacity }} className="relative z-10 text-center flex flex-col items-center gap-9 sm:gap-12 pb-10 sm:pb-14">

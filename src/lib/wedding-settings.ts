@@ -1,5 +1,13 @@
 import type {EventLocation,WeddingConfig} from "@/types/wedding";
 
+/** Hide an inherited same-location note without discarding other arrival advice. */
+export function venueDisplayTips(venue:Pick<EventLocation,"tips">,sameVenue?:boolean):string {
+  const tips=venue.tips??"";
+  return sameVenue===false
+    ?tips.replace(/A cerimônia e a recepção acontecerão no mesmo local[.!]?/gi,"").trim()
+    :tips;
+}
+
 /** Keep legacy display fields derived from the single date and venue inputs. */
 export function synchronizeWeddingSettings(config:WeddingConfig):WeddingConfig {
   const date=new Date(config.couple.weddingDate);

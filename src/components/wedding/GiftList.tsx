@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import {useSiteCopy} from "./useSiteCopy";
 import {useEffect,useMemo,useRef,useState} from "react";
 import {motion,useReducedMotion} from "framer-motion";
@@ -22,7 +23,7 @@ const sortOptions: { id: SortOption; label: string; desc: string }[] = [
 
 export function GiftList(){
  const copy=useSiteCopy();
- const {config}=useWedding();
+ const {config,templateId}=useWedding();
  const gifts=config.gifts;
  const [visibleCount,setVisibleCount]=useState(6);
  const [selectedGift,setSelectedGift]=useState<GiftItem|null>(null);
@@ -69,7 +70,7 @@ export function GiftList(){
  return <section id="presentes" className="cinematic-section relative overflow-hidden w-full py-16 sm:py-24 px-6 sm:px-12 lg:px-20 bg-[var(--page-background,#F1F1F1)] text-[#3D2501]">
   <WeddingOrnaments variant="hearts" tone="paper"/>
   <div className="relative z-10 max-w-7xl mx-auto space-y-12 sm:space-y-16">
-   <div className="text-center max-w-3xl mx-auto space-y-5">
+   <div className="gift-intro text-center max-w-3xl mx-auto space-y-5">
     <p data-cinema-copy className="cinema-eyebrow text-[#5D613C]">{copy("gifts.text2")}</p>
     <h2 className="font-serif text-5xl sm:text-7xl font-light tracking-[-0.04em] leading-[1.08]">{copy("gifts.heading")}</h2>
     <p data-cinema-copy className="font-serif italic text-xl sm:text-2xl text-[#80654E]">{copy("gifts.text5")}</p>
@@ -77,7 +78,7 @@ export function GiftList(){
    </div>
 
    {!gifts.length?<p role="status" className="py-12 text-center font-serif text-xl text-[#80654E]">A lista de presentes ainda está vazia. Em breve os noivos poderão compartilhar suas escolhas por aqui.</p>:<>
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 max-w-4xl mx-auto">
+    <div className="gift-toolbar flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 max-w-4xl mx-auto">
       {/* Busca personalizada no estilo do template */}
       <div className="relative flex-1 group">
         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5D613C] pointer-events-none transition-colors group-focus-within:text-[#3D2501]" aria-hidden="true"/>
@@ -120,7 +121,7 @@ export function GiftList(){
         <DropdownMenu.Content
           align="end"
           sideOffset={8}
-          className="z-50 min-w-56 overflow-hidden rounded-[var(--wedding-radius)] border border-[#5d613c25] bg-[#fffdfa] p-1.5 shadow-[0_16px_40px_#3d250118] animate-in fade-in-0 zoom-in-95"
+          className="gift-sort-menu z-50 min-w-56 overflow-hidden rounded-[var(--wedding-radius)] border border-[#5d613c25] bg-[#fffdfa] p-1.5 shadow-[0_16px_40px_#3d250118] animate-in fade-in-0 zoom-in-95"
         >
           <DropdownMenu.Label className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-[#80654E]">
             Ordenar presentes
@@ -135,7 +136,7 @@ export function GiftList(){
                 className={
                   "group flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-xs outline-none transition-colors " +
                   (isSelected
-                    ? "bg-[#5D613C] text-[#fffdfa] shadow-xs"
+                    ? "gift-sort-selected bg-[#5D613C] text-[#fffdfa] shadow-xs"
                     : "text-[#3D2501] hover:bg-[#5d613c12] focus:bg-[#5d613c12]")
                 }
               >
@@ -176,6 +177,7 @@ export function GiftList(){
             className="gift-card group flex flex-col justify-between gap-6 rounded-[var(--wedding-radius)] border border-[#5d613c15] bg-[#fffdfa] p-6"
           >
             <div className="space-y-3">
+              {templateId==="minimalist-modern"&&gift.image&&<div className="minimal-gift-photo"><Image src={gift.image} alt={gift.title} fill sizes="(min-width: 1760px) 400px, (min-width: 900px) 30vw, (min-width: 640px) 45vw, 90vw" className="object-cover"/></div>}
               <div className="space-y-1">
                 <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-[#5D613C] block font-semibold">
                   {gift.categoryLabel}

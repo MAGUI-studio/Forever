@@ -70,7 +70,7 @@ export function WeddingProvider({
   const path=useCallback((path="")=>weddingPath(slug,path),[slug]);
   const effectiveConfig=useMemo(()=>synchronizeWeddingSettings(preview?config:current),[preview,config,current]);
   const activeTemplate=preview?templateId:selectedTemplate;
-  const colors=activeTemplate==="contemporary-romance"?templatePalettes[activeTemplate]:{...themes[currentTheme],hover:currentTheme==="botanical"?"#4b4f30":`color-mix(in srgb, ${themes[currentTheme].primary} 80%, black)`};
+  const colors=activeTemplate!=="botanical-classic"?templatePalettes[activeTemplate]:{...themes[currentTheme],hover:currentTheme==="botanical"?"#4b4f30":`color-mix(in srgb, ${themes[currentTheme].primary} 80%, black)`};
   const themeStyle=weddingThemeStyle(colors);
   return (
     <WeddingContext.Provider

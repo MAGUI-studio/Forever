@@ -10,7 +10,7 @@ export function unsavedSections(config: WeddingConfig, templateId: TemplateId, s
   const add = (section: CopySection) => labels.add(copySections[section].label);
   if (saved.templateId !== templateId) labels.add("Template do site");
   const baselineCopy = saved.templateId === templateId ? saved.config.copy : switchTemplateCopy(saved.config.copy, saved.templateId, templateId);
-  for (const field of templateCopyFields(templateId)) {
+  for (const field of templateCopyFields(templateId,config.dressCodeStyle)) {
     if (changed(baselineCopy?.[field.key], config.copy?.[field.key])) add(field.section);
   }
   const { story: oldStory, headline: oldHeadline, coverImage: oldCover, ...oldCouple } = saved.config.couple;
@@ -23,7 +23,7 @@ export function unsavedSections(config: WeddingConfig, templateId: TemplateId, s
   if (changed(saved.config.sameVenue !== false, config.sameVenue !== false) || changed(oldVenue, venue) || changed(saved.config.party, config.party)) labels.add("Configurações");
   if (changed(oldVenueImage, venueImage)) add("events");
   if (changed(saved.config.gallery, config.gallery) || changed(saved.config.galleryStyle, config.galleryStyle) || changed(saved.config.sections, config.sections)) add("gallery");
-  if (changed(saved.config.dressCode, config.dressCode)) add("dressCode");
+  if (changed(saved.config.dressCode, config.dressCode)||changed(saved.config.dressCodeStyle,config.dressCodeStyle)) add("dressCode");
   if (changed(saved.config.gifts, config.gifts) || changed(saved.config.giftPaymentLink, config.giftPaymentLink) || changed(saved.config.pix, config.pix) || changed(saved.config.creditCard, config.creditCard)) add("gifts");
   if (changed(saved.config.rsvp, config.rsvp)) add("rsvp");
   const imageSections: Record<string, CopySection> = { hero: "hero", story: "story", detail: "story", venue: "events", schedule: "schedule", dress: "dressCode", rsvp: "rsvp", footer: "footer" };

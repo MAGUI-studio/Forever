@@ -729,12 +729,13 @@ const templates = [
     name: "Minimalista Moderno",
     plan: "foreverPro" as const,
     mood: "Alta costura e contemporâneo",
-    text: "Contraste em preto e branco com linhas puras e tipografia marcante para casamentos minimalistas e cosmopolitas.",
+    text: "Preto, branco e detalhes dourados com tipografia elegante para casamentos minimalistas e cosmopolitas.",
     color: "#161616",
-    swatches: ["#161616", "#444444", "#9E9E9E", "#F5F5F5"],
+    swatches: ["#161616", "#8B6B35", "#D8C29A", "#FFFFFF"],
   },
   {
     name: "Brisa Serena",
+    isComingSoon: true,
     plan: "foreverPro" as const,
     mood: "Beira-mar, linho e leveza",
     text: "Tons de azul marinho profundo e azul celeste suave, trazendo uma atmosfera calma, fresca e poética.",
@@ -774,7 +775,7 @@ const pricingComparison: PricingCategory[] = [
       },
       {
         name: "Templates exclusivos (Minimalista & Brisa)",
-        description: "Estilos minimalista em preto & branco e linho à beira-mar",
+        description: "Estilos minimalista em preto, branco & dourado e linho à beira-mar",
         essencial: false,
         foreverPro: true,
         isForeverProExclusive: true,
@@ -1335,7 +1336,7 @@ export function ForeverLandingPage() {
                         <p className="mt-8 font-serif text-[clamp(64px,7vw,96px)] font-light leading-none" style={{ color: template.color }}>
                           Aa<span className="italic">&</span>
                         </p>
-                        <h3 className="mt-8 font-serif text-3xl font-normal text-[#161616]">{template.name}</h3>
+                        <h3 className="mt-8 font-serif text-3xl font-normal text-[#161616]">{template.name}{"isComingSoon" in template && template.isComingSoon && <span className="ml-3 inline-block align-middle rounded-full bg-[#16161608] px-3 py-1 font-sans text-[10px] uppercase tracking-widest text-[#6B6760]">Em breve</span>}</h3>
                         <p className="mt-4 max-w-sm text-sm leading-relaxed text-[#6B6760]">{template.text}</p>
                       </div>
                       <div className="mt-10 flex items-center gap-2">

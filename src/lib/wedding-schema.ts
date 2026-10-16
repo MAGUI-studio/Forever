@@ -1,5 +1,6 @@
-import {templateIds,copyDefaults,fixedCopyKeys} from "@/config/templates/registry";
+import {isTemplateAvailable,templateIds,copyDefaults,fixedCopyKeys} from "@/config/templates/registry";
 import {MAX_GALLERY_PHOTOS} from "@/config/gallery";
+import {dressCodeStyleIds} from "@/config/dress-code";
 import { z } from "zod";
 import { validWeddingSlug } from "@/config/forever";
 const text = z.string().trim().max(500);
@@ -34,6 +35,7 @@ export const weddingConfigSchema = z
     giftPaymentLink: z.string().max(2048).refine(value=>!value||/^https:\/\/[^\s]+$/i.test(value),"Use um link de pagamento HTTPS.").optional(),
     copy:z.record(z.string().max(5000)).refine(value=>Object.keys(value).every(key=>key in copyDefaults),"Texto desconhecido no template.").transform(value=>Object.fromEntries(Object.entries(value).filter(([key])=>!fixedCopyKeys.has(key)&&key!=="hero.text5"))).optional(),
     customImages: z.record(url).optional(),
+    dressCodeStyle:z.enum(dressCodeStyleIds).optional(),
     sections: z
       .object({
         gallery: z.boolean().optional(),
@@ -159,7 +161,7 @@ export const slugSchema = z
   );
 export const weddingUpdateSchema = z
   .object({
-    templateId:z.enum(templateIds).optional(),
+    templateId:z.enum(templateIds).refine(isTemplateAvailable,"Este template está em breve e ainda não pode ser selecionado.").optional(),
     expectedUpdatedAt:z.string().optional(),
     config: weddingConfigSchema,
     theme: z.enum(["botanical", "rose", "ocean"]),

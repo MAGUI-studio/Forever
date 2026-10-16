@@ -7,6 +7,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { CaretDownIcon, CheckIcon } from "@phosphor-icons/react";
 import {useWedding} from "../WeddingProvider";
 import {useSiteCopy} from "../useSiteCopy";
+import {DressCodeDetails} from "../DressCodeDetails";
 import {formatCurrency} from "@/lib/utils";
 import type {GiftItem} from "@/types/wedding";
 import {PixModal} from "../PixModal";
@@ -17,18 +18,18 @@ import {RomanceFooterHearts} from "./RomanceFooterHearts";
 import {RomancePhoto,RomanceReveal} from "./RomanceMotion";
 
 export function ContemporaryRomanceDressCode(){
- const {config}=useWedding();
+ const {config,templateId}=useWedding();
  const copy=useSiteCopy();
- const dressImage=resolveTemplateImage(config,"contemporary-romance","dress");
+ const dress=config.dressCode;
+ const dressImage=resolveTemplateImage(config,templateId,"dress");
  return <section id="dress-code" className="relative isolate overflow-hidden px-6 py-20 sm:px-12 sm:py-32 lg:px-20">
   <ContemporaryRomanceOrnaments pattern="dress"/>
-  <div className="relative mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-12 lg:gap-16">
-   <div className="relative lg:col-span-5 lg:col-start-1 lg:row-start-1"><RomancePhoto src={dressImage} className="aspect-[4/5] w-[90%] grayscale"/><span aria-hidden="true" className="absolute -bottom-8 right-0 w-32 -rotate-12 text-[var(--forever-primary)]"><ContemporaryRomanceAccent/></span></div>
-   <RomanceReveal className="lg:col-span-6 lg:col-start-7 lg:row-start-1"><p className="mb-6 text-[10px] uppercase tracking-[0.25em] text-[var(--forever-accent)]">{copy("romance.dress.eyebrow")}</p><h2 className="font-serif text-5xl font-light leading-[1.02] tracking-[-0.035em] sm:text-7xl">{copy("romance.dress.title")}</h2><p className="mt-8 max-w-xl font-serif text-2xl font-light leading-relaxed sm:text-3xl">{copy("romance.dress.description")}</p><div className="mt-10 flex items-start gap-4 border-t border-[var(--forever-primary)]/20 pt-7"><Heart aria-hidden="true" size={18} strokeWidth={1} className="mt-1 shrink-0 text-[var(--forever-primary)]"/><p className="max-w-md text-sm leading-7 text-[var(--forever-accent)]">{copy("romance.dress.note")}</p></div></RomanceReveal>
+  <div className={"relative mx-auto grid max-w-7xl items-center gap-12 lg:gap-16 "+(dressImage?"lg:grid-cols-12":"max-w-3xl")}>
+   {dressImage&&<div className="relative lg:col-span-5"><RomancePhoto src={dressImage} className="aspect-[4/5] w-[90%]"/><span aria-hidden="true" className="absolute -bottom-8 right-0 w-32 -rotate-12 text-[var(--forever-primary)]"><ContemporaryRomanceAccent/></span></div>}
+   <RomanceReveal className={dressImage?"lg:col-span-6 lg:col-start-7":""}><p className="mb-6 text-[10px] uppercase tracking-[0.25em] text-[var(--forever-accent)]">{copy("romance.dress.eyebrow")}</p><h2 className="font-serif text-5xl font-light leading-[1.02] tracking-[-0.035em] sm:text-7xl">{dress.title}</h2><p className="mb-10 mt-8 max-w-xl font-serif text-2xl font-light leading-relaxed sm:text-3xl">{dress.description}</p><DressCodeDetails/></RomanceReveal>
   </div>
  </section>;
 }
-
 type RomanceSortOption = "default" | "price-asc" | "price-desc";
 const romanceSortOptions: { id: RomanceSortOption; label: string; desc: string }[] = [
   { id: "default", label: "Ordem padrão", desc: "Seleção curada pelos noivos" },
@@ -181,7 +182,7 @@ export function ContemporaryRomanceFooter(){
     <p className="mx-auto max-w-2xl font-serif text-4xl font-light italic leading-[1.15] tracking-[-0.025em] text-[var(--forever-primary)] sm:text-6xl lg:text-7xl">
      {copy("romance.footer.message")}
     </p>
-    <p className="mt-10 font-serif text-[clamp(2.5rem,6.8vw,8rem)] font-light leading-[1.1] tracking-[-0.04em] text-[var(--forever-ink)]">
+    <p className="romance-footer-names mt-10 font-serif font-light leading-[1.1] tracking-[-0.04em] text-[var(--forever-ink)]">
      {config.couple.partner1} <span className="mx-2 italic font-light text-[var(--forever-primary)]">&</span> {config.couple.partner2}
     </p>
     {config.couple.hashtag && (
