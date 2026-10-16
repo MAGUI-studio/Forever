@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { WeddingOrnaments } from "./WeddingOrnaments";
 import { useWedding } from "./WeddingProvider";
 import { formatCurrency } from "@/lib/utils";
+import { giftSearchIndex, searchGifts } from "@/lib/gift-catalog";
 import type { GiftItem } from "@/types/wedding";
 import { PixModal } from "./PixModal";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
@@ -35,29 +36,11 @@ export function GiftList() {
 
   const currentSort = sortOptions.find((o) => o.id === sortBy) || sortOptions[0];
 
-  const filteredGifts = useMemo(() => {
-    const normalize = (s: string) =>
-      s
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase();
-    let list = gifts;
-    const q = normalize(searchQuery.trim());
-    if (q) {
-      list = list.filter(
-        (item) =>
-          normalize(item.title).includes(q) ||
-          normalize(item.description ?? "").includes(q) ||
-          normalize(item.categoryLabel ?? "").includes(q),
-      );
-    }
-    if (sortBy === "price-asc") {
-      list = [...list].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
-    } else if (sortBy === "price-desc") {
-      list = [...list].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-    }
-    return list;
-  }, [gifts, searchQuery, sortBy]);
+  const searchIndex = useMemo(() => giftSearchIndex(gifts), [gifts]);
+  const filteredGifts = useMemo(
+    () => searchGifts(gifts, searchIndex, searchQuery, sortBy),
+    [gifts, searchIndex, searchQuery, sortBy],
+  );
 
   const visibleGifts = filteredGifts.slice(0, visibleCount);
   const remaining = Math.max(0, filteredGifts.length - visibleCount);

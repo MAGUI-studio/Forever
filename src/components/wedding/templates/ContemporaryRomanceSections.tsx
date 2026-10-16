@@ -9,6 +9,7 @@ import { useWedding } from "../WeddingProvider";
 import { useSiteCopy } from "../useSiteCopy";
 import { DressCodeDetails } from "../DressCodeDetails";
 import { formatCurrency } from "@/lib/utils";
+import { giftSearchIndex, searchGifts } from "@/lib/gift-catalog";
 import type { GiftItem } from "@/types/wedding";
 import { PixModal } from "../PixModal";
 import { romanceAssets } from "@/config/templates/romance-assets";
@@ -84,29 +85,11 @@ export function ContemporaryRomanceGifts() {
 
   const currentSort = romanceSortOptions.find((o) => o.id === sortBy) || romanceSortOptions[0];
 
-  const filtered = useMemo(() => {
-    const normalize = (s: string) =>
-      s
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase();
-    let list = config.gifts;
-    const q = normalize(searchQuery.trim());
-    if (q) {
-      list = list.filter(
-        (item) =>
-          normalize(item.title).includes(q) ||
-          normalize(item.description ?? "").includes(q) ||
-          normalize(item.categoryLabel ?? "").includes(q),
-      );
-    }
-    if (sortBy === "price-asc") {
-      list = [...list].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
-    } else if (sortBy === "price-desc") {
-      list = [...list].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
-    }
-    return list;
-  }, [config.gifts, searchQuery, sortBy]);
+  const searchIndex = useMemo(() => giftSearchIndex(config.gifts), [config.gifts]);
+  const filtered = useMemo(
+    () => searchGifts(config.gifts, searchIndex, searchQuery, sortBy),
+    [config.gifts, searchIndex, searchQuery, sortBy],
+  );
 
   const visible = filtered.slice(0, count);
 

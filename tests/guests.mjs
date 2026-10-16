@@ -8,6 +8,8 @@ const vm = runtimeRequire("node:vm");
 const ts = runtimeRequire("typescript");
 const { randomUUID } = runtimeRequire("node:crypto");
 const store = new Map();
+let identityChecks = 0;
+const reads = [];
 store.set("weddings/test-couple", {
   slug: "test-couple",
   status: "published",
@@ -24,7 +26,10 @@ const snapshot = (key) => ({
 });
 const ref = (key) => ({
   key,
-  get: async () => snapshot(key),
+  get: async () => {
+    reads.push(key);
+    return snapshot(key);
+  },
   create: async (value) => {
     assert(!store.has(key));
     store.set(key, clone(value));
@@ -37,6 +42,7 @@ const db = {
   doc: ref,
   collection: (name) => {
     const filters = [];
+    let selection = null;
     const query = {
       name,
       where: (key, operator, value) => {
@@ -44,16 +50,40 @@ const db = {
         filters.push([key, value]);
         return query;
       },
-      select: () => query,
+      select: (...fields) => {
+        selection = fields;
+        return query;
+      },
       doc: (id) => ref(name + "/" + id),
       orderBy: () => query,
       limit: () => query,
-      get: async () => ({
-        docs: [...store]
-          .filter(([k]) => k.startsWith(name + "/") && k.slice(name.length + 1).indexOf("/") === -1)
-          .filter(([, value]) => filters.every(([key, expected]) => value[key] === expected))
-          .map(([k, v]) => ({ id: k.split("/").at(-1), ref: ref(k), data: () => clone(v) })),
-      }),
+      get: async () => {
+        reads.push(name);
+        return {
+          docs: [...store]
+            .filter(
+              ([k]) => k.startsWith(name + "/") && k.slice(name.length + 1).indexOf("/") === -1,
+            )
+            .filter(([, value]) => filters.every(([key, expected]) => value[key] === expected))
+            .map(([k, v]) => ({
+              id: k.split("/").at(-1),
+              ref: ref(k),
+              data: () => {
+                if (selection === null) return clone(v);
+                const projected = {};
+                for (const field of selection) {
+                  const parts = field.split(".");
+                  const value = parts.reduce((node, part) => node?.[part], v);
+                  if (value === undefined) continue;
+                  let target = projected;
+                  for (const part of parts.slice(0, -1)) target = target[part] ??= {};
+                  target[parts.at(-1)] = clone(value);
+                }
+                return projected;
+              },
+            })),
+        };
+      },
     };
     return query;
   },
@@ -98,6 +128,7 @@ const services = () => ({
       for (const [email, user] of authAccounts) if (user.uid === uid) authAccounts.delete(email);
     },
     verifyIdToken: async (token) => {
+      identityChecks++;
       if (token === "managed")
         return { ...authAccounts.get("newstaff@example.com"), email_verified: false };
       if (token === "owner-verified")
@@ -2022,6 +2053,220 @@ async function check(title, work) {
       }
     },
   );
+  await check("rotas administrativas verificam a sessão uma única vez por requisição", async () => {
+    store.set("weddings/test-couple", {
+      ...store.get("weddings/test-couple"),
+      status: "published",
+      plan: "foreverPro",
+    });
+    store.set("weddings/test-couple/members/bride", { role: "admin", active: true });
+    async function once(work, status = 200) {
+      const before = identityChecks;
+      const response = await work();
+      assert.equal(response.status, status);
+      assert.equal(identityChecks - before, 1);
+      return response;
+    }
+    await once(() => admin.GET(request("GET")));
+    await once(() => ops.GET(request("GET")));
+    await once(() => load("src/app/api/admin/export/route.ts").GET(request("GET")));
+    await once(() => settings.PUT(request("PUT", { enabled: true, deadline: "" })));
+    const invitation = {
+      label: "Performance",
+      kind: "individual",
+      active: true,
+      guests: [
+        {
+          id: randomUUID(),
+          name: "Performance",
+          child: false,
+          status: "pendente",
+          checkedIn: false,
+        },
+      ],
+    };
+    const created = await (await once(() => admin.POST(request("POST", invitation)), 201)).json();
+    await once(() => admin.PATCH(request("PATCH", { id: created.id, revision: 1, invitation })));
+    await once(() => sent.POST(request("POST", { id: created.id, sent: true })));
+    await once(() =>
+      ops.POST(request("POST", { action: "table", name: "Performance", capacity: 8 })),
+    );
+    await once(() => admin.DELETE(request("DELETE", { id: created.id, revision: 2 })));
+  });
+  await check("planos sem organização não consultam mesas, equipe ou histórico", async () => {
+    store.set("weddings/test-couple", { ...store.get("weddings/test-couple"), plan: "essencial" });
+    const before = reads.length;
+    const response = await ops.GET(request("GET"));
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { tables: [], team: [], history: [] });
+    assert(
+      !reads
+        .slice(before)
+        .some((path) => /\/(?:settings\/tables|receptionTeam|auditLog)$/.test(path)),
+    );
+    store.set("weddings/test-couple", { ...store.get("weddings/test-couple"), plan: "foreverPro" });
+  });
+  await check(
+    "listagem do Studio dispensa leituras de membros e recepção para superadmin",
+    async () => {
+      const before = reads.length;
+      const response = await load("src/app/api/platform/weddings/route.ts").GET(
+        request("GET", null, "owner-verified"),
+      );
+      assert.equal(response.status, 200);
+      const result = await response.json();
+      assert.equal(result.superadmin, true);
+      assert(result.weddings.some((wedding) => wedding.slug === "test-couple"));
+      assert(!reads.slice(before).some((path) => /\/(?:members|receptionTeam)\//.test(path)));
+    },
+  );
+  await check(
+    "cada tela administrativa carrega apenas seus recursos com uma autenticação",
+    async () => {
+      const route = load("src/app/api/admin/session/route.ts");
+      const base = request("GET");
+      const req = (query) => new Request(base.url + "?" + query, { headers: base.headers });
+      const current = store.get("weddings/test-couple");
+      store.set("weddings/test-couple", {
+        ...current,
+        plan: "foreverPro",
+        siteDraft: { config: { secret: "draft" }, baseRevision: 0 },
+      });
+      const inviteData = await (await admin.GET(request("GET"))).json();
+      const operations = await (await ops.GET(request("GET"))).json();
+      const settingsData = await (await settings.GET(request("GET"))).json();
+      for (const section of [
+        "overview",
+        "guests",
+        "tables",
+        "buffet",
+        "history",
+        "team",
+        "check-in",
+        "site",
+      ]) {
+        const before = reads.length,
+          authBefore = identityChecks;
+        const response = await route.GET(req("section=" + section));
+        assert.equal(response.status, 200);
+        const result = await response.json();
+        assert.equal(identityChecks - authBefore, 1);
+        assert.equal(result.wedding.siteDraft, undefined);
+        const queried = reads.slice(before);
+        assert.equal(
+          queried.some((path) => path.endsWith("/auditLog")),
+          section === "history",
+        );
+        assert.equal(
+          queried.some((path) => path.endsWith("/receptionTeam")),
+          section === "team",
+        );
+        assert.equal(
+          queried.some((path) => path.endsWith("/invitations")),
+          !["team", "history", "site"].includes(section),
+        );
+        assert.equal(
+          queried.some((path) => path.endsWith("/settings/tables")),
+          !["team", "history", "site"].includes(section),
+        );
+        if (section === "site") {
+          assert.equal(result.panel, null);
+          continue;
+        }
+        assert.deepEqual(result.panel.settings, settingsData.settings);
+        if (section === "guests")
+          assert.deepEqual(result.panel.invitations, inviteData.invitations);
+        if (["overview", "tables", "buffet"].includes(section)) {
+          assert.equal(result.panel.invitations[0]?.personalTokens, undefined);
+          const details = (invitations) =>
+            invitations.map(
+              ({ id, active, guests, label, personalResponses, message, dietaryRestrictions }) => ({
+                id,
+                active,
+                guests,
+                label,
+                personalResponses,
+                message,
+                dietaryRestrictions,
+              }),
+            );
+          assert.deepEqual(details(result.panel.invitations), details(inviteData.invitations));
+        }
+        if (section === "overview") {
+          const { dashboardSummary } = load("src/lib/dashboard-summary.ts");
+          const summary = (invitations) =>
+            dashboardSummary(
+              invitations.filter((i) => i.active).flatMap((i) => i.guests),
+              invitations,
+            );
+          assert.equal(
+            JSON.stringify(summary(result.panel.invitations)),
+            JSON.stringify(summary(inviteData.invitations)),
+          );
+        }
+        if (section === "team") assert.deepEqual(result.panel.team, operations.team);
+        if (section === "history") assert.deepEqual(result.panel.history, operations.history);
+        if (section === "check-in") {
+          const reception = await (
+            await load("src/app/api/admin/reception/route.ts").GET(request("GET"))
+          ).json();
+          assert.deepEqual(result.panel.invitations, reception.invitations);
+        }
+      }
+      const linked = await (await route.GET(req("section=history&invitations=1"))).json();
+      assert.deepEqual(linked.panel.invitations, inviteData.invitations);
+      const frame = await (await route.GET(req("preview=frame"))).json();
+      assert.equal(frame.wedding.config, undefined);
+      assert.deepEqual(frame.wedding, {
+        plan: "foreverPro",
+        ...(current.theme ? { theme: current.theme } : {}),
+        ...(current.modules ? { modules: current.modules } : {}),
+      });
+      const legacy = await (await route.GET(request("GET"))).json();
+      assert.equal(legacy.wedding.siteDraft.config.secret, "draft");
+      assert.equal(
+        (
+          await route.GET(
+            new Request(base.url + "?section=overview", {
+              headers: { "x-wedding-slug": "test-couple" },
+            }),
+          )
+        ).status,
+        401,
+      );
+      store.set("weddings/test-couple", current);
+    },
+  );
+  await check("Studio recebe só os nomes e dados usados na listagem", async () => {
+    const route = load("src/app/api/platform/weddings/route.ts");
+    const base = request("GET", null, "owner-verified");
+    const full = await (await route.GET(base)).json();
+    const summary = await (
+      await route.GET(new Request(base.url + "?summary=1", { headers: base.headers }))
+    ).json();
+    assert.equal(summary.weddings.length, full.weddings.length);
+    for (const wedding of summary.weddings) {
+      const original = full.weddings.find((item) => item.slug === wedding.slug);
+      assert.equal(wedding.status, original.status);
+      assert.equal(wedding.plan, original.plan);
+      assert.deepEqual(wedding.modules, original.modules);
+      if (!original.config?.couple) {
+        assert.equal(wedding.config?.couple, undefined);
+        continue;
+      }
+      assert.deepEqual(
+        wedding.config,
+        JSON.parse(
+          JSON.stringify({
+            couple: {
+              partner1: original.config.couple.partner1,
+              partner2: original.config.couple.partner2,
+            },
+          }),
+        ),
+      );
+    }
+  });
   console.log(`\n${count} verificações passaram. Banco e autenticação simulados.`);
 })().catch((error) => {
   console.error(error);

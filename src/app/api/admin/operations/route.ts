@@ -4,31 +4,22 @@ import { bindWeddingUser, releaseWeddingUser } from "@/lib/wedding-membership";
 import { services } from "@/lib/firebase/admin";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import {
-  body,
-  failure,
-  HttpError,
-  reply,
-  requireAdmin,
-  requireAccess,
-  tokenId,
-} from "@/lib/guest-server";
+import { body, failure, HttpError, reply, requireAdminAccess, tokenId } from "@/lib/guest-server";
 import { audit } from "@/lib/event-audit";
 import type { EventTable, Guest } from "@/types/guests";
 export async function GET(request: Request) {
   try {
-    const db = await requireAdmin(request);
-    const { wedding } = await requireAccess(request),
+    const { db, wedding } = await requireAdminAccess(request),
       modules = resolveModules(wedding.modules, wedding.plan);
     const [tables, team, history] = await Promise.all([
-      db.doc("settings/tables").get(),
-      db.collection("receptionTeam").orderBy("email").get(),
-      db.collection("auditLog").orderBy("at", "desc").limit(100).get(),
+      modules.tables ? db.doc("settings/tables").get() : null,
+      modules.team ? db.collection("receptionTeam").orderBy("email").get() : null,
+      modules.history ? db.collection("auditLog").orderBy("at", "desc").limit(100).get() : null,
     ]);
     return reply({
-      tables: modules.tables ? (tables.data()?.tables ?? []) : [],
-      team: modules.team ? team.docs.map((d) => ({ id: d.id, ...d.data() })) : [],
-      history: modules.history ? history.docs.map((d) => ({ id: d.id, ...d.data() })) : [],
+      tables: tables?.data()?.tables ?? [],
+      team: team?.docs.map((d) => ({ id: d.id, ...d.data() })) ?? [],
+      history: history?.docs.map((d) => ({ id: d.id, ...d.data() })) ?? [],
     });
   } catch (e) {
     return failure(e);
@@ -73,8 +64,7 @@ const schema = z.discriminatedUnion("action", [
 ]);
 export async function POST(request: Request) {
   try {
-    const db = await requireAdmin(request),
-      { email: actor, wedding } = await requireAccess(request),
+    const { db, email: actor, wedding } = await requireAdminAccess(request),
       data = schema.parse(await body(request));
     assertModule(
       wedding,

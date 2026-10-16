@@ -90,24 +90,36 @@ export function CheckInList({
     invitations.map((invitation) => invitation.id),
   );
   const tableMap = useMemo(() => new Map(tables.map((table) => [table.id, table.name])), [tables]);
-  const active = invitations.filter((invitation) => invitation.active);
-  const confirmed = active.flatMap((invitation) =>
-    invitation.guests.filter((guest) => guest.status === "confirmado"),
+  const active = useMemo(
+    () => invitations.filter((invitation) => invitation.active),
+    [invitations],
+  );
+  const confirmed = useMemo(
+    () =>
+      active.flatMap((invitation) =>
+        invitation.guests.filter((guest) => guest.status === "confirmado"),
+      ),
+    [active],
   );
   const arrived = confirmed.filter((guest) => guest.checkedIn).length;
-  const groups = active
-    .map((invitation) => ({
-      invitation,
-      guests: invitation.guests.filter(
-        (guest) =>
-          guest.status === "confirmado" &&
-          normalize(
-            `${guest.name} ${invitation.label} ${modules.tables ? (tableMap.get(guest.tableId ?? "") ?? "") : ""}`,
-          ).includes(normalize(query)) &&
-          (filter === "all" || (filter === "arrived" ? guest.checkedIn : !guest.checkedIn)),
-      ),
-    }))
-    .filter((item) => item.guests.length);
+  const normalizedQuery = normalize(query);
+  const groups = useMemo(
+    () =>
+      active
+        .map((invitation) => ({
+          invitation,
+          guests: invitation.guests.filter(
+            (guest) =>
+              guest.status === "confirmado" &&
+              normalize(
+                `${guest.name} ${invitation.label} ${modules.tables ? (tableMap.get(guest.tableId ?? "") ?? "") : ""}`,
+              ).includes(normalizedQuery) &&
+              (filter === "all" || (filter === "arrived" ? guest.checkedIn : !guest.checkedIn)),
+          ),
+        }))
+        .filter((item) => item.guests.length),
+    [active, modules.tables, tableMap, normalizedQuery, filter],
+  );
   const isGroup = (invitation: Invitation) =>
     invitation.kind === "group" || (!invitation.kind && invitation.guests.length > 1);
   const counts = {

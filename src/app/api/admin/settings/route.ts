@@ -4,7 +4,7 @@ import {
   failure,
   reply,
   requireAdmin,
-  requireAccess,
+  requireAdminAccess,
   settingsSchema,
 } from "@/lib/guest-server";
 export const runtime = "nodejs";
@@ -19,9 +19,8 @@ export async function GET(request: Request) {
 }
 export async function PUT(request: Request) {
   try {
-    const db = await requireAdmin(request, "rsvp");
+    const { db, email } = await requireAdminAccess(request, "rsvp");
     const data = settingsSchema.parse(await body(request));
-    const { email } = await requireAccess(request);
     await db.runTransaction(async (t) => {
       t.set(db.doc("settings/rsvp"), data);
       audit(

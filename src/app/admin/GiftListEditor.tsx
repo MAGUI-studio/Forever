@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+import { savedGiftIndex } from "@/lib/gift-catalog";
 import { UnsavedIndicator } from "./UnsavedIndicator";
 import { Gift, Link2, Plus, Trash2, ChevronDown } from "lucide-react";
 import type { GiftItem } from "@/types/wedding";
@@ -24,27 +26,30 @@ export function GiftListEditor({
   onGiftsChange: (gifts: GiftItem[]) => void;
   onPaymentLinkChange: (link: string) => void;
 }) {
+  const savedById = useMemo(() => savedGiftIndex(savedGifts), [savedGifts]);
   const changed = (gift: GiftItem, key: keyof GiftItem) =>
-    !!savedGifts &&
-    JSON.stringify(savedGifts.find((item) => item.id === gift.id)?.[key]) !==
-      JSON.stringify(gift[key]);
-  const categories = Array.from(
-    new Set([
-      "Presentes",
-      "Casa nova",
-      "Eletrodomésticos",
-      "Eletroportáteis",
-      "Cama, mesa e banho",
-      "Decoração",
-      "Utensílios de cozinha",
-      "Para servir",
-      "Tecnologia",
-      "Lua de mel",
-      "Experiências",
-      "Personalizados",
-      "Outros",
-      ...gifts.map((gift) => gift.categoryLabel || gift.category).filter(Boolean),
-    ]),
+    !!savedGifts && JSON.stringify(savedById.get(gift.id)?.[key]) !== JSON.stringify(gift[key]);
+  const categories = useMemo(
+    () =>
+      Array.from(
+        new Set([
+          "Presentes",
+          "Casa nova",
+          "Eletrodomésticos",
+          "Eletroportáteis",
+          "Cama, mesa e banho",
+          "Decoração",
+          "Utensílios de cozinha",
+          "Para servir",
+          "Tecnologia",
+          "Lua de mel",
+          "Experiências",
+          "Personalizados",
+          "Outros",
+          ...gifts.map((gift) => gift.categoryLabel || gift.category).filter(Boolean),
+        ]),
+      ),
+    [gifts],
   );
   function update(id: string, change: Partial<GiftItem>) {
     onGiftsChange(gifts.map((gift) => (gift.id === id ? { ...gift, ...change } : gift)));

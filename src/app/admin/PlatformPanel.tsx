@@ -77,14 +77,17 @@ export function PlatformPanel() {
     async (method = "GET", data?: unknown) => {
       if (!user) throw Error("Entre para continuar.");
       return readApiResponse(
-        await fetch("/api/platform/weddings", {
-          method,
-          headers: {
-            Authorization: "Bearer " + (await user.getIdToken()),
-            "Content-Type": "application/json",
+        await fetch(
+          method === "GET" ? "/api/platform/weddings?summary=1" : "/api/platform/weddings",
+          {
+            method,
+            headers: {
+              Authorization: "Bearer " + (await user.getIdToken()),
+              "Content-Type": "application/json",
+            },
+            ...(data ? { body: JSON.stringify(data) } : {}),
           },
-          ...(data ? { body: JSON.stringify(data) } : {}),
-        }),
+        ),
       );
     },
     [user],

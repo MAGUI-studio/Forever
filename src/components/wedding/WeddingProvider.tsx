@@ -82,33 +82,37 @@ export function WeddingProvider({
     [preview, config, current],
   );
   const activeTemplate = preview ? templateId : selectedTemplate;
-  const colors =
-    activeTemplate !== "botanical-classic"
-      ? templatePalettes[activeTemplate]
-      : {
-          ...themes[currentTheme],
-          hover:
-            currentTheme === "botanical"
-              ? "#4b4f30"
-              : `color-mix(in srgb, ${themes[currentTheme].primary} 80%, black)`,
-        };
-  const themeStyle = weddingThemeStyle(colors);
+  const themeStyle = useMemo(() => {
+    const colors =
+      activeTemplate !== "botanical-classic"
+        ? templatePalettes[activeTemplate]
+        : {
+            ...themes[currentTheme],
+            hover:
+              currentTheme === "botanical"
+                ? "#4b4f30"
+                : `color-mix(in srgb, ${themes[currentTheme].primary} 80%, black)`,
+          };
+    return weddingThemeStyle(colors);
+  }, [activeTemplate, currentTheme]);
+  const value = useMemo(
+    () => ({
+      slug,
+      modules: enabledModules,
+      setModules,
+      config: effectiveConfig,
+      templateId: activeTemplate,
+      setTemplateId,
+      preview,
+      setConfig,
+      setTheme,
+      themeStyle,
+      path,
+    }),
+    [slug, enabledModules, setModules, effectiveConfig, activeTemplate, preview, themeStyle, path],
+  );
   return (
-    <WeddingContext.Provider
-      value={{
-        slug,
-        modules: enabledModules,
-        setModules,
-        config: effectiveConfig,
-        templateId: preview ? templateId : selectedTemplate,
-        setTemplateId,
-        preview,
-        setConfig,
-        setTheme,
-        themeStyle,
-        path,
-      }}
-    >
+    <WeddingContext.Provider value={value}>
       <div style={themeStyle}>{children}</div>
     </WeddingContext.Provider>
   );

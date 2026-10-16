@@ -1,10 +1,8 @@
 import { resolveModules, redactModuleData } from "@/config/modules";
-import { requireAccess } from "@/lib/guest-server";
-import { requireAdmin, failure, reply } from "@/lib/guest-server";
+import { requireAdminAccess, failure, reply } from "@/lib/guest-server";
 export async function GET(request: Request) {
   try {
-    const db = await requireAdmin(request);
-    const { wedding } = await requireAccess(request),
+    const { db, wedding } = await requireAdminAccess(request),
       modules = resolveModules(wedding.modules, wedding.plan);
     const names = [
       "members",
@@ -12,24 +10,21 @@ export async function GET(request: Request) {
       ...(modules.team ? ["receptionTeam"] : []),
       ...(modules.history ? ["auditLog"] : []),
     ];
-    const collections = Object.fromEntries(
-      await Promise.all(
+    const [collectionEntries, settingEntries] = await Promise.all([
+      Promise.all(
         names.map(async (name) => [
           name,
-          (await db.collection(name).get()).docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-          })),
+          (await db.collection(name).get()).docs.map((d) => ({ id: d.id, ...d.data() })),
         ]),
       ),
-    );
-    const settings = Object.fromEntries(
-      await Promise.all(
+      Promise.all(
         [...(modules.rsvp ? ["rsvp"] : []), ...(modules.tables ? ["tables"] : [])].map(
           async (key) => [key, (await db.doc("settings/" + key).get()).data() ?? null],
         ),
       ),
-    );
+    ]);
+    const collections = Object.fromEntries(collectionEntries);
+    const settings = Object.fromEntries(settingEntries);
     return reply(
       redactModuleData(
         {

@@ -101,3 +101,80 @@ assert.equal(venueDisplayTips({ tips: "Entrada pelo jardim." }, true), "Entrada 
 console.log(
   "All three templates preserve editable content, both dress styles and intentional empty text.",
 );
+
+for (const template of registry.templateIds) {
+  const defaults = registry.templateCopyDefaults(template);
+  for (const copy of [
+    undefined,
+    {},
+    Object.fromEntries(Object.keys(defaults).map((key) => [key, ""])),
+    Object.fromEntries(Object.keys(defaults).map((key) => [key, `Custom ${key}`])),
+  ]) {
+    for (const key of [...Object.keys(defaults), "missing.key"]) {
+      let expected;
+      if (key === "gifts.heading" && copy?.[key] === undefined)
+        expected =
+          (copy?.["gifts.text3"] ?? registry.copyDefaults["gifts.text3"]) +
+          (copy?.["gifts.text4"] ?? registry.copyDefaults["gifts.text4"]);
+      else if (key === "dressCode.heading" && copy?.[key] === undefined)
+        expected =
+          (copy?.["dressCode.text2"] ?? registry.copyDefaults["dressCode.text2"]) +
+          (copy?.["dressCode.text3"] ?? registry.copyDefaults["dressCode.text3"]);
+      else
+        expected = registry.fixedCopyKeys.has(key)
+          ? registry.copyDefaults[key]
+          : (copy?.[key] ?? defaults[key] ?? "");
+      assert.equal(registry.siteCopy(copy, key, template), expected);
+    }
+  }
+  const changed = registry.templateCopyDefaults(template);
+  changed["rsvp.text1"] = "mutated";
+  assert.equal(registry.templateCopyDefaults(template)["rsvp.text1"], defaults["rsvp.text1"]);
+}
+console.log(
+  "OK allocation-free text lookup preserves all four templates, fixed text, legacy headings and empty overrides",
+);
+
+const { rsvpPageConfig } = load("src/lib/rsvp-page-config.ts");
+const config = {
+  ...load("src/config/forever.ts").emptyWeddingConfig,
+  copy: { "rsvp.text1": "Personalizado", "hero.text1": "Other" },
+  gifts: [{ id: "gift", title: "Gift", price: 30 }],
+  gallery: [{ id: "photo", url: "photo" }],
+  customImages: { hero: "image" },
+};
+const before = JSON.stringify(config);
+const rsvpConfig = rsvpPageConfig(config);
+assert.equal(JSON.stringify(config), before);
+assert.equal(rsvpConfig.couple.partner1, config.couple.partner1);
+assert.equal(rsvpConfig.couple.partner2, config.couple.partner2);
+assert.equal(rsvpConfig.gifts.length, 0);
+assert.equal(rsvpConfig.gallery.length, 0);
+assert.equal(rsvpConfig.couple.story, undefined);
+assert.equal(Object.keys(rsvpConfig.customImages).length, 0);
+for (const template of registry.templateIds)
+  for (const key of Object.keys(registry.copyDefaults).filter((key) => key.startsWith("rsvp.")))
+    assert.equal(
+      registry.siteCopy(rsvpConfig.copy, key, template),
+      registry.siteCopy(config.copy, key, template),
+    );
+console.log(
+  "OK standalone RSVP keeps names and every displayed text without serializing gifts, gallery or story",
+);
+
+const { panelConfig } = load("src/lib/panel-config.ts");
+assert.equal(panelConfig(config, "guests"), config);
+assert.equal(panelConfig(config, "site"), config);
+for (const section of ["overview", "tables", "buffet", "history", "team", "check-in"]) {
+  const compact = panelConfig(config, section);
+  assert.equal(compact.couple.partner1, config.couple.partner1);
+  assert.equal(compact.couple.weddingDate, config.couple.weddingDate);
+  assert.equal(compact.rsvp, config.rsvp);
+  assert.equal(compact.gifts.length, 0);
+  assert.equal(compact.gallery.length, 0);
+  assert.equal(compact.copy, undefined);
+}
+assert.equal(JSON.stringify(config), before);
+console.log(
+  "OK admin summaries retain dates and names while full configuration remains available for PDFs and editing",
+);

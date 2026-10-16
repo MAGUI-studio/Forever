@@ -78,7 +78,7 @@ assert.deepEqual(JSON.parse(stripComments(jsonc, "fixture.jsonc").code), {
 for (const file of [
   "src/app/page.tsx",
   "scripts/task.mjs",
-  "google-apps-script/Code.gs",
+  "scripts/fixture.gs",
   "firestore.rules",
   "formatCode.js",
 ])

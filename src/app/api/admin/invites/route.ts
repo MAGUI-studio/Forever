@@ -1,4 +1,5 @@
-import { resolveModules, redactModuleData } from "@/config/modules";
+import { adminInvitations } from "@/lib/admin-invitations";
+import { resolveModules } from "@/config/modules";
 import { getWeddingGuestLimit } from "@/config/forever";
 import { audit } from "@/lib/event-audit";
 import { randomBytes } from "node:crypto";
@@ -9,61 +10,24 @@ import {
   HttpError,
   inviteSchema,
   reply,
-  requireAdmin,
-  requireAccess,
+  requireAdminAccess,
   tokenId,
-  personalToken,
   generateShortCode,
-  deterministicShortCode,
 } from "@/lib/guest-server";
 export const runtime = "nodejs";
 export async function GET(request: Request) {
   try {
-    const db = await requireAdmin(request, "guestList");
-    const { wedding } = await requireAccess(request);
-    const snap = await db.collection("invitations").orderBy("updatedAt", "desc").get();
-    return reply(
-      redactModuleData(
-        {
-          invitations: snap.docs.map((d) => {
-            const item = d.data();
-            const code = item.code ?? deterministicShortCode(d.id);
-            const guestCodes = item.guestCodes ?? {};
-            const personalCodes = Object.fromEntries(
-              (item.guests ?? []).map((g: { id: string }) => [
-                g.id,
-                guestCodes[g.id] ??
-                  (item.kind === "individual" || (item.guests ?? []).length === 1
-                    ? code
-                    : deterministicShortCode(d.id + ":" + g.id)),
-              ]),
-            );
-            return {
-              sentAt: null,
-              ...item,
-              id: d.id,
-              code,
-              personalCodes,
-              personalTokens: Object.fromEntries(
-                (item.guests ?? []).map((g: { id: string }) => [
-                  g.id,
-                  personalToken(d.id, item.token, g.id),
-                ]),
-              ),
-            };
-          }),
-        },
-        resolveModules(wedding.modules, wedding.plan),
-      ),
-    );
+    const { db, wedding } = await requireAdminAccess(request, "guestList");
+    return reply({
+      invitations: await adminInvitations(db, resolveModules(wedding.modules, wedding.plan)),
+    });
   } catch (e) {
     return failure(e);
   }
 }
 export async function POST(request: Request) {
   try {
-    const db = await requireAdmin(request, "guestList");
-    const { email: actor, wedding } = await requireAccess(request);
+    const { db, email: actor, wedding } = await requireAdminAccess(request, "guestList");
     const data = inviteSchema.parse(await body(request));
     if (
       !resolveModules(wedding.modules, wedding.plan).checkIn &&
@@ -133,8 +97,7 @@ const updateSchema = z.object({
 });
 export async function PATCH(request: Request) {
   try {
-    const db = await requireAdmin(request, "guestList");
-    const { email: actor, wedding } = await requireAccess(request);
+    const { db, email: actor, wedding } = await requireAdminAccess(request, "guestList");
     const data = updateSchema.parse(await body(request));
     const ref = db.collection("invitations").doc(data.id);
     await db.runTransaction(async (t) => {
@@ -231,8 +194,7 @@ export async function PATCH(request: Request) {
 }
 export async function DELETE(request: Request) {
   try {
-    const db = await requireAdmin(request, "guestList");
-    const { email: actor, wedding } = await requireAccess(request);
+    const { db, email: actor } = await requireAdminAccess(request, "guestList");
     const data = updateSchema.pick({ id: true, revision: true }).parse(await body(request));
     const ref = db.collection("invitations").doc(data.id);
     await db.runTransaction(async (t) => {

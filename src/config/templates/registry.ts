@@ -154,7 +154,6 @@ export function siteCopy(
   key: string,
   templateId: TemplateId = defaultTemplateId,
 ) {
-  const defaults = templateCopyDefaults(templateId);
   if (key === "gifts.heading" && copy?.[key] === undefined)
     return (
       (copy?.["gifts.text3"] ?? copyDefaults["gifts.text3"]) +
@@ -165,7 +164,9 @@ export function siteCopy(
       (copy?.["dressCode.text2"] ?? copyDefaults["dressCode.text2"]) +
       (copy?.["dressCode.text3"] ?? copyDefaults["dressCode.text3"])
     );
-  return fixedCopyKeys.has(key) ? copyDefaults[key] : (copy?.[key] ?? defaults[key] ?? "");
+  return fixedCopyKeys.has(key)
+    ? copyDefaults[key]
+    : (copy?.[key] ?? templateCopyOverrides[templateId]?.[key] ?? copyDefaults[key] ?? "");
 }
 
 export const templateSections: Record<TemplateId, CopySection[]> = {
@@ -263,24 +264,20 @@ export function templateCopyFields(
       : field,
   );
 }
+const templateCopyOverrides: Partial<Record<TemplateId, Record<string, string>>> = {
+  "serene-breeze": {
+    "pro.hero.eyebrow": "Com a leveza de um encontro, para a vida inteira",
+    "pro.events.title": "Onde o amor encontra o horizonte",
+    "pro.gallery.title": "Marés de boas memórias",
+  },
+  "contemporary-romance": {
+    "rsvp.text1": "Você faz parte desse dia",
+    "rsvp.text4":
+      "Estamos contando os dias para celebrar ao seu lado. Confirme sua presença com o código do seu convite.",
+  },
+};
 export function templateCopyDefaults(id: TemplateId): Record<string, string> {
-  return {
-    ...copyDefaults,
-    ...(id === "serene-breeze"
-      ? {
-          "pro.hero.eyebrow": "Com a leveza de um encontro, para a vida inteira",
-          "pro.events.title": "Onde o amor encontra o horizonte",
-          "pro.gallery.title": "Marés de boas memórias",
-        }
-      : {}),
-    ...(id === "contemporary-romance"
-      ? {
-          "rsvp.text1": "Você faz parte desse dia",
-          "rsvp.text4":
-            "Estamos contando os dias para celebrar ao seu lado. Confirme sua presença com o código do seu convite.",
-        }
-      : {}),
-  };
+  return { ...copyDefaults, ...templateCopyOverrides[id] };
 }
 
 export function switchTemplateCopy(

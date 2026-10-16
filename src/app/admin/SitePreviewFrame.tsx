@@ -36,7 +36,7 @@ export function SitePreviewFrame() {
       }
       try {
         const data = await readApiResponse(
-          await fetch("/api/admin/session", {
+          await fetch("/api/admin/session?preview=frame", {
             headers: {
               Authorization: "Bearer " + (await user.getIdToken()),
               "x-wedding-slug": slug,

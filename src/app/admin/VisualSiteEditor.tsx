@@ -20,7 +20,7 @@ import {
 import type { GalleryStyle, GalleryPhoto } from "@/types/wedding";
 import { templatePalettes, weddingThemeStyle } from "@/config/templates/theme";
 import { foreverTheme } from "@/config/brand";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase/client";
 import { readApiResponse } from "@/lib/api-response";
@@ -246,7 +246,7 @@ export function VisualSiteEditor() {
     return () => clearTimeout(timer);
   }, [notice]);
   const formOnly = templateId === "minimalist-modern" || templateId === "serene-breeze";
-  const copyDefaults = templateCopyDefaults(templateId);
+  const copyDefaults = useMemo(() => templateCopyDefaults(templateId), [templateId]);
   function chooseTemplate(next: TemplateId) {
     if (!isTemplateAvailable(next)) return;
     setDraft((current) =>
@@ -273,9 +273,10 @@ export function VisualSiteEditor() {
   }
   useEffect(() => {
     if (loading || !toolbar.current) return;
-    const observer = new ResizeObserver(([entry]) =>
-      setToolbarHeight(entry.contentRect.height + 20),
-    );
+    const observer = new ResizeObserver(([entry]) => {
+      const height = entry.contentRect.height + 20;
+      setToolbarHeight((current) => (current === height ? current : height));
+    });
     observer.observe(toolbar.current);
     return () => observer.disconnect();
   }, [loading]);
@@ -286,8 +287,11 @@ export function VisualSiteEditor() {
     const box = previewBox.current;
     if (!box) return;
     const observer = new ResizeObserver(([entry]) => {
-      if (entry.contentRect.width > 0 && entry.contentRect.height > 0)
-        setPreviewSize({ width: entry.contentRect.width, height: entry.contentRect.height });
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0)
+        setPreviewSize((current) =>
+          current.width === width && current.height === height ? current : { width, height },
+        );
     });
     observer.observe(box);
     return () => observer.disconnect();
@@ -295,9 +299,13 @@ export function VisualSiteEditor() {
   const viewportWidth = device === "mobile" ? 390 : Math.max(1, previewSize.width);
   const previewScale = Math.min(1, previewSize.width / viewportWidth);
   const viewportHeight = Math.max(1, previewSize.height / previewScale);
-  const savedVersion = savedSnapshot
-    ? (JSON.parse(savedSnapshot) as { config: WeddingConfig; templateId: TemplateId })
-    : null;
+  const savedVersion = useMemo(
+    () =>
+      savedSnapshot
+        ? (JSON.parse(savedSnapshot) as { config: WeddingConfig; templateId: TemplateId })
+        : null,
+    [savedSnapshot],
+  );
   function fieldChanged(path: (string | number)[]) {
     const read = (config: WeddingConfig | null) =>
       path.reduce<unknown>(
@@ -309,20 +317,33 @@ export function VisualSiteEditor() {
       !!savedVersion && JSON.stringify(read(savedVersion.config)) !== JSON.stringify(read(draft))
     );
   }
-  const publication = draft
-    ? weddingUpdateSchema.safeParse({
-        config: synchronizeWeddingSettings(draft),
-        templateId,
-        theme: "botanical",
-        status: "published",
-      })
-    : null;
-  const publicationErrors =
-    publication && !publication.success
-      ? [...new Set(publication.error.issues.map((issue) => issue.message))]
-      : [];
-  const dirty = !!draft && JSON.stringify({ config: draft, templateId }) !== savedSnapshot;
-  const changedSections = dirty && draft ? unsavedSections(draft, templateId, savedSnapshot) : [];
+  const publication = useMemo(
+    () =>
+      draft
+        ? weddingUpdateSchema.safeParse({
+            config: synchronizeWeddingSettings(draft),
+            templateId,
+            theme: "botanical",
+            status: "published",
+          })
+        : null,
+    [draft, templateId],
+  );
+  const publicationErrors = useMemo(
+    () =>
+      publication && !publication.success
+        ? [...new Set(publication.error.issues.map((issue) => issue.message))]
+        : [],
+    [publication],
+  );
+  const dirty = useMemo(
+    () => !!draft && JSON.stringify({ config: draft, templateId }) !== savedSnapshot,
+    [draft, templateId, savedSnapshot],
+  );
+  const changedSections = useMemo(
+    () => (dirty && draft ? unsavedSections(draft, templateId, savedSnapshot) : []),
+    [dirty, draft, templateId, savedSnapshot],
+  );
   const load = useCallback(
     async (account: User) => {
       const data: SiteResponse = await readApiResponse(
@@ -588,14 +609,21 @@ export function VisualSiteEditor() {
     )
       void setSelected("settings");
   }, [draft, loading, selected, templateId, modules, setSelected]);
-  const fields = templateCopyFields(templateId, draft?.dressCodeStyle)
-    .map((field) => ({ ...field, defaultValue: copyDefaults[field.key] }))
-    .filter(
-      (item) =>
-        item.section === selected &&
-        (!item.module || modules[item.module]) &&
-        (copySections[item.section].module ? modules[copySections[item.section].module!] : true),
-    );
+  const dressCodeStyle = draft?.dressCodeStyle;
+  const fields = useMemo(
+    () =>
+      templateCopyFields(templateId, dressCodeStyle)
+        .map((field) => ({ ...field, defaultValue: copyDefaults[field.key] }))
+        .filter(
+          (item) =>
+            item.section === selected &&
+            (!item.module || modules[item.module]) &&
+            (copySections[item.section].module
+              ? modules[copySections[item.section].module!]
+              : true),
+        ),
+    [templateId, dressCodeStyle, copyDefaults, selected, modules],
+  );
   if (loading) return <AdminLoading />;
   return (
     <>

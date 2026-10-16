@@ -14,9 +14,9 @@ import { AdminPageHeading } from "./AdminPageHeading";
 import { notify, useFeedbackToasts } from "@/components/ui/ForeverToaster";
 import { resolveModules, sectionModule } from "@/config/modules";
 import { AdminLoading } from "./AdminLoading";
-import { VisualSiteEditor } from "./VisualSiteEditor";
+import dynamic from "next/dynamic";
 import { AdminContainer } from "./AdminContainer";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { PencilSimpleIcon } from "@phosphor-icons/react";
 import { WeddingSelect } from "@/components/ui/WeddingSelect";
 import { readApiResponse } from "@/lib/api-response";
@@ -69,7 +69,18 @@ import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User } fr
 import { clientAuth } from "@/lib/firebase/client";
 import { PLAN_NAMES, getWeddingGuestLimit, type WeddingPlan } from "@/config/forever";
 import { ForeverLogo } from "@/components/forever/ForeverLogo";
-import type { Invitation, RSVPSettings } from "@/types/guests";
+import type { Invitation, RSVPSettings, AuditEntry, ReceptionMember } from "@/types/guests";
+const VisualSiteEditor = dynamic(
+  () => import("./VisualSiteEditor").then((editor) => editor.VisualSiteEditor),
+  { loading: () => <AdminLoading /> },
+);
+
+const normalized = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
 export function AdminPanel({
   view,
   section = "overview",
@@ -97,6 +108,7 @@ export function AdminPanel({
   const [plan, setPlan] = useState<WeddingPlan>("foreverPro");
   const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadedSection, setLoadedSection] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState("Verificando seu acesso…");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -108,6 +120,10 @@ export function AdminPanel({
   );
   const [role, setRole] = useState<"admin" | "reception">("admin");
   const [tables, setTables] = useState<import("@/types/guests").EventTable[]>([]);
+  const [operationsData, setOperationsData] = useState<{
+    history: AuditEntry[];
+    team: ReceptionMember[];
+  }>({ history: [], team: [] });
   const [authorized, setAuthorized] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -116,6 +132,7 @@ export function AdminPanel({
   const [busy, setBusy] = useState(false);
   const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
   const [invites, setInvites] = useState<Invitation[]>([]);
+  const [invitationsLoaded, setInvitationsLoaded] = useState(false);
   const [settings, setSettings] = useState<RSVPSettings>({
     enabled: true,
     deadline: "",
@@ -241,9 +258,17 @@ export function AdminPanel({
     }
     return result;
   }
-  async function load(account = user) {
+  async function load(account = user, isCurrent = () => true) {
     setLoadingMessage("Buscando os detalhes do seu casamento…");
-    const session = await api("/api/admin/session", "GET", undefined, account);
+    const includeInvitations = !!modalState.modal && modalState.modal !== "settings";
+    const session = await api(
+      `/api/admin/session?section=${section}${includeInvitations ? "&invitations=1" : ""}`,
+      "GET",
+      undefined,
+      account,
+    );
+    if (!isCurrent()) return;
+    setLoadedSection(section);
     setConfig(session.wedding.config);
     setTheme(session.wedding.theme);
     setModules(resolveModules(session.wedding.modules, session.wedding.plan));
@@ -255,42 +280,60 @@ export function AdminPanel({
       router.replace(weddingPath("painel"));
       return;
     }
-    const reception = session.role === "reception";
-    if (enabled.guestList) setLoadingMessage("Carregando sua lista de convidados…");
-    const list = enabled.guestList
-      ? await api(
-          reception || section === "check-in" ? "/api/admin/reception" : "/api/admin/invites",
-          "GET",
-          undefined,
-          account,
-        )
-      : { invitations: [] };
-    if (!reception && enabled.rsvp)
-      setLoadingMessage("Buscando as configurações de confirmação de presença…");
-    const config =
-      reception || !enabled.rsvp
-        ? null
-        : await api("/api/admin/settings", "GET", undefined, account);
-    if (!reception) setLoadingMessage("Carregando a organização do grande dia…");
-    const operations = reception
-      ? list
-      : await api("/api/admin/operations", "GET", undefined, account);
+    if (section === "site" && enabled.siteEditor && session.role === "admin") {
+      setRole(session.role);
+      setAuthorized(true);
+      setLoading(false);
+      return;
+    }
+    const data = session.panel;
+    if (!data) throw new Error("Não foi possível carregar painel.");
     setRole(session.role);
-    setTables(operations.tables);
-    setInvites(list.invitations);
-    if (config) setSettings(config.settings);
+    setTables(data.tables);
+    setOperationsData({ history: data.history, team: data.team });
+    setInvites(data.invitations);
+    setInvitationsLoaded(data.invitationsLoaded);
+    if (data.settings) setSettings(data.settings);
     setAuthorized(true);
     setLoading(false);
-    if (reception && section !== "check-in") router.replace(weddingPath("recepcao"));
+    if (session.role === "reception" && section !== "check-in")
+      router.replace(weddingPath("recepcao"));
   }
+
   useEffect(() => {
+    let active = true;
     if (user && view === "dashboard")
-      void load(user).catch((e) => {
+      void load(user, () => active).catch((e) => {
+        if (!active) return;
+        setLoadedSection(section);
+        setAuthorized(false);
         setLoading(false);
         setError(e instanceof Error ? e.message : "Erro ao carregar painel.");
       });
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, view]);
+  }, [user, view, section]);
+  useEffect(() => {
+    if (!authorized || invitationsLoaded || !modalState.modal || modalState.modal === "settings")
+      return;
+    let cancelled = false;
+    void api("/api/admin/invites")
+      .then((data) => {
+        if (!cancelled) {
+          setInvites(data.invitations);
+          setInvitationsLoaded(true);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) setError(error.message);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authorized, invitationsLoaded, modalState.modal]);
   useEffect(() => {
     if (!user || !authorized || view !== "dashboard") return;
     const params = new URLSearchParams(window.location.search);
@@ -333,15 +376,20 @@ export function AdminPanel({
   useEffect(() => {
     if (!authorized || section !== "check-in" || busy) return;
     let cancelled = false;
+    let inFlight = false;
     const timer = setInterval(async () => {
-      if (document.visibilityState !== "visible") return;
+      if (document.visibilityState !== "visible" || inFlight) return;
+      inFlight = true;
       try {
         const list = await api("/api/admin/reception");
         if (!cancelled) {
           setInvites(list.invitations);
           setTables(list.tables);
         }
-      } catch {}
+      } catch {
+      } finally {
+        inFlight = false;
+      }
     }, 15000);
     return () => {
       cancelled = true;
@@ -349,6 +397,11 @@ export function AdminPanel({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authorized, section, busy, user]);
+  async function refreshReception() {
+    const list = await api("/api/admin/reception");
+    setInvites(list.invitations);
+    setTables(list.tables);
+  }
   async function copyInvitationLink(token: string, key: string) {
     try {
       await navigator.clipboard.writeText(invitationUrl(token, slug));
@@ -425,32 +478,38 @@ export function AdminPanel({
       if (!invitationEditor) await load();
     });
   }
-  const allGuests = invites.filter((i) => i.active).flatMap((i) => i.guests);
-  const normalized = (s: string) =>
-    s
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-  const visible = invites.filter(
-    (i) =>
-      (normalized(i.label).includes(normalized(query)) ||
-        i.guests.some((g) => normalized(g.name).includes(normalized(query)))) &&
-      (filter === "todos" ||
-        (filter === "abertos"
-          ? !!i.openedAt
-          : filter === "nao-respondidos"
-            ? i.active && i.guests.some((g) => g.status === "pendente")
-            : filter === "respondidos"
-              ? i.guests.every((g) => g.status !== "pendente")
-              : filter === "enviados"
-                ? !!i.sentAt
-                : filter === "nao-enviados"
-                  ? !i.sentAt
-                  : filter === "inativos"
-                    ? !i.active
-                    : i.active && i.guests.some((g) => g.status === filter))),
+  const allGuests = useMemo(
+    () => invites.filter((i) => i.active).flatMap((i) => i.guests),
+    [invites],
   );
-  if (view === "dashboard" && (!ready || (!!user && loading && !authorized)))
+  const normalizedQuery = normalized(query);
+  const visible = useMemo(
+    () =>
+      invites.filter(
+        (i) =>
+          (normalized(i.label).includes(normalizedQuery) ||
+            i.guests.some((g) => normalized(g.name).includes(normalizedQuery))) &&
+          (filter === "todos" ||
+            (filter === "abertos"
+              ? !!i.openedAt
+              : filter === "nao-respondidos"
+                ? i.active && i.guests.some((g) => g.status === "pendente")
+                : filter === "respondidos"
+                  ? i.guests.every((g) => g.status !== "pendente")
+                  : filter === "enviados"
+                    ? !!i.sentAt
+                    : filter === "nao-enviados"
+                      ? !i.sentAt
+                      : filter === "inativos"
+                        ? !i.active
+                        : i.active && i.guests.some((g) => g.status === filter))),
+      ),
+    [invites, normalizedQuery, filter],
+  );
+  if (
+    view === "dashboard" &&
+    (!ready || (!!user && ((loading && !authorized) || (authorized && loadedSection !== section))))
+  )
     return <AdminLoading description={!ready ? "Verificando seu acesso…" : loadingMessage} />;
   if (authorized && section === "site" && modules.siteEditor) return <VisualSiteEditor />;
   return (
@@ -963,6 +1022,8 @@ export function AdminPanel({
                   section={section}
                   invitations={invites}
                   tables={tables}
+                  history={operationsData.history}
+                  team={operationsData.team}
                   api={api}
                   onRefresh={load}
                 />
@@ -985,7 +1046,7 @@ export function AdminPanel({
                         checkedIn,
                         expectedCheckedIn: !checkedIn,
                       });
-                      await load();
+                      await refreshReception();
                     })
                   }
                 />

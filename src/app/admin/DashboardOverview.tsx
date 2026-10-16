@@ -1,8 +1,9 @@
 "use client";
+import { dashboardSummary } from "@/lib/dashboard-summary";
 import { PRO_SUPPORT_URL } from "@/config/plan-access";
 import { notify } from "@/components/ui/ForeverToaster";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -67,52 +68,20 @@ export function DashboardOverview({
   const [copiedLink, setCopiedLink] = useState(false);
 
   const totalGuests = guests.length;
-  const confirmedGuests = guests.filter((g) => g.status === "confirmado");
-  const pendingGuests = guests.filter((g) => g.status === "pendente");
-  const declinedGuests = guests.filter((g) => g.status === "recusado");
-
-  const confirmedPct =
-    totalGuests > 0 ? Math.round((confirmedGuests.length / totalGuests) * 100) : 0;
-  const pendingPct = totalGuests > 0 ? Math.round((pendingGuests.length / totalGuests) * 100) : 0;
-  const declinedPct = totalGuests > 0 ? Math.round((declinedGuests.length / totalGuests) * 100) : 0;
-
-  const activeInvitations = invitations.filter((i) => i.active);
-  const totalInvites = activeInvitations.length;
-  const sentInvites = activeInvitations.filter((i) => !!i.sentAt).length;
-  const openedInvites = activeInvitations.filter((i) => !!i.openedAt).length;
-  const sentPct = totalInvites > 0 ? Math.round((sentInvites / totalInvites) * 100) : 0;
-
-  const guestMessages: { name: string; message: string }[] = [];
-  activeInvitations.forEach((inv) => {
-    if (inv.personalResponses) {
-      Object.entries(inv.personalResponses).forEach(([guestId, resp]) => {
-        if (resp.message?.trim()) {
-          const g = inv.guests.find((guest) => guest.id === guestId);
-          guestMessages.push({
-            name: g ? g.name : inv.label,
-            message: resp.message.trim(),
-          });
-        }
-      });
-    }
-    if (inv.message?.trim()) {
-      const alreadyAdded = guestMessages.some((m) => m.message === inv.message.trim());
-      if (!alreadyAdded) {
-        guestMessages.push({
-          name: inv.label,
-          message: inv.message.trim(),
-        });
-      }
-    }
-  });
-
-  const dietaryCount = guests.filter((g) => {
-    return activeInvitations.some(
-      (inv) =>
-        inv.personalResponses?.[g.id]?.dietaryRestrictions?.trim() ||
-        (inv.guests.length === 1 && inv.dietaryRestrictions?.trim()),
-    );
-  }).length;
+  const {
+    confirmedGuests,
+    pendingGuests,
+    declinedGuests,
+    confirmedPct,
+    pendingPct,
+    declinedPct,
+    totalInvites,
+    sentInvites,
+    openedInvites,
+    sentPct,
+    guestMessages,
+    dietaryCount,
+  } = useMemo(() => dashboardSummary(guests, invitations), [guests, invitations]);
 
   const weddingDateStr = weddingConfig.couple.weddingDate;
   let daysUntilWedding: number | null = null;

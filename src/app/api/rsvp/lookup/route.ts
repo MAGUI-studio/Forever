@@ -1,7 +1,7 @@
 import { resolveModules, redactModuleData } from "@/config/modules";
-import { requestWedding, assertModule } from "@/lib/guest-server";
+import { assertModule } from "@/lib/guest-server";
 import { z } from "zod";
-import { publicWeddingDatabase } from "@/lib/guest-server";
+import { publicWeddingAccess } from "@/lib/guest-server";
 import {
   body,
   failure,
@@ -18,10 +18,9 @@ export async function POST(request: Request) {
   try {
     sameOrigin(request);
     const { token } = z.object({ token: tokenSchema }).parse(await body(request));
-    const wedding = await requestWedding(request, true);
+    const { wedding, db } = await publicWeddingAccess(request);
     assertModule(wedding, "rsvp");
     const modules = resolveModules(wedding.modules, wedding.plan);
-    const db = await publicWeddingDatabase(request);
     checkLookupRateLimit(request);
     const resolved = await resolveInvitation(db, token);
     const [snap, settings] = await Promise.all([resolved.ref.get(), db.doc("settings/rsvp").get()]);

@@ -12,7 +12,7 @@ import { TooltipButton } from "@/components/ui/TooltipButton";
 import { useFeedbackToasts } from "@/components/ui/ForeverToaster";
 import { AdminLoading } from "./AdminLoading";
 import { useWedding } from "@/components/wedding/WeddingProvider";
-import { useEffect, useState, useId, type ReactNode } from "react";
+import { useEffect, useMemo, useState, useId, type ReactNode } from "react";
 import { AdminDialog } from "./AdminDialog";
 import {
   Armchair,
@@ -40,7 +40,9 @@ type Props = {
   section: Section;
   invitations: Invitation[];
   tables: EventTable[];
-  api: (path: string, method?: string, data?: unknown) => Promise<any>;
+  history: AuditEntry[];
+  team: ReceptionMember[];
+  api: (path: string, method?: string, data?: unknown) => Promise<unknown>;
   onRefresh: () => Promise<void>;
 };
 const titles = {
@@ -68,6 +70,8 @@ export function EventOperations({
   section,
   invitations,
   tables,
+  history,
+  team,
   api,
   onRefresh,
 }: Props) {
@@ -85,10 +89,7 @@ export function EventOperations({
 
   const [query, setQuery] = useTableSearch();
   const [busy, setBusy] = useState(false),
-    [error, setError] = useState(""),
-    [loading, setLoading] = useState(true);
-  const [history, setHistory] = useState<AuditEntry[]>([]),
-    [team, setTeam] = useState<ReceptionMember[]>([]);
+    [error, setError] = useState("");
   const [name, setName] = useState(""),
     [capacity, setCapacity] = useState(8),
     [email, setEmail] = useState("");
@@ -120,25 +121,12 @@ export function EventOperations({
       parseAsBoolean.withDefault(true).withOptions(tableUrlOptions),
     );
   useFeedbackToasts(error);
-  async function refresh() {
-    const data = await api("/api/admin/operations");
-    setHistory(data.history);
-    setTeam(data.team);
-    setLoading(false);
-  }
-  useEffect(() => {
-    void refresh().catch((e) => {
-      setError(e.message);
-      setLoading(false);
-    });
-  }, []);
   async function save(data: unknown) {
     setBusy(true);
     setError("");
     try {
       await api("/api/admin/operations", "POST", data);
       await onRefresh();
-      await refresh();
       return true;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Não foi possível salvar.");
@@ -147,19 +135,29 @@ export function EventOperations({
       setBusy(false);
     }
   }
-  const confirmed = invitations
-    .filter((i) => i.active)
-    .flatMap((invitation) =>
-      invitation.guests
-        .filter((g) => g.status === "confirmado")
-        .map((guest) => ({
-          invitation,
-          guest,
-          restriction:
-            invitation.personalResponses?.[guest.id]?.dietaryRestrictions ??
-            (invitation.guests.length === 1 ? invitation.dietaryRestrictions : ""),
-        })),
-    );
+  const confirmed = useMemo(
+    () =>
+      invitations
+        .filter((i) => i.active)
+        .flatMap((invitation) =>
+          invitation.guests
+            .filter((g) => g.status === "confirmado")
+            .map((guest) => ({
+              invitation,
+              guest,
+              restriction:
+                invitation.personalResponses?.[guest.id]?.dietaryRestrictions ??
+                (invitation.guests.length === 1 ? invitation.dietaryRestrictions : ""),
+            })),
+        ),
+    [invitations],
+  );
+  const tableNames = useMemo(() => {
+    const names = new Map<string, string>();
+    for (const table of tables) if (!names.has(table.id)) names.set(table.id, table.name);
+    return names;
+  }, [tables]);
+  const normalizedQuery = normalize(query);
   const filtered = confirmed.filter(
     ({ guest, invitation, restriction }) =>
       normalize(
@@ -169,24 +167,24 @@ export function EventOperations({
           " " +
           restriction +
           " " +
-          (tables.find((table) => table.id === guest.tableId)?.name ?? ""),
-      ).includes(normalize(query)) &&
+          (tableNames.get(guest.tableId ?? "") ?? ""),
+      ).includes(normalizedQuery) &&
       (tableFilter === "all" ||
         (tableFilter === "none" ? !guest.tableId : guest.tableId === tableFilter)),
   );
   const buffet = filtered.filter((row) => !onlyRestrictions || row.restriction?.trim());
-  const visibleTables = tables.filter((table) => normalize(table.name).includes(normalize(query)));
+  const visibleTables = tables.filter((table) => normalize(table.name).includes(normalizedQuery));
   const visibleTeam = team.filter(
     (member) =>
-      normalize(member.email).includes(normalize(query)) &&
+      normalize(member.email).includes(normalizedQuery) &&
       (statusFilter === "all" || (statusFilter === "active" ? member.active : !member.active)),
   );
   const visibleHistory = history.filter((entry) =>
     normalize([entry.action, entry.actor, entry.target, entry.details].join(" ")).includes(
-      normalize(query),
+      normalizedQuery,
     ),
   );
-  const pending = loading || pageLoading;
+  const pending = pageLoading;
   if (pending)
     return (
       <AdminLoading description={`Carregando ${titles[section].toLocaleLowerCase("pt-BR")}…`} />
@@ -350,7 +348,6 @@ export function EventOperations({
               onClick={() => {
                 setBusy(true);
                 void onRefresh()
-                  .then(refresh)
                   .catch((e) => setError(e.message))
                   .finally(() => setBusy(false));
               }}

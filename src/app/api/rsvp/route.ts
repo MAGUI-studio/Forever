@@ -1,8 +1,8 @@
 import { resolveModules, redactModuleData } from "@/config/modules";
-import { requestWedding, assertModule } from "@/lib/guest-server";
+import { assertModule } from "@/lib/guest-server";
 import { audit } from "@/lib/event-audit";
 import { z } from "zod";
-import { publicWeddingDatabase } from "@/lib/guest-server";
+import { publicWeddingAccess } from "@/lib/guest-server";
 import {
   body,
   failure,
@@ -39,10 +39,9 @@ export async function POST(request: Request) {
   try {
     sameOrigin(request);
     const data = schema.parse(await body(request));
-    const wedding = await requestWedding(request, true);
+    const { wedding, db } = await publicWeddingAccess(request);
     assertModule(wedding, "rsvp");
     const modules = resolveModules(wedding.modules, wedding.plan);
-    const db = await publicWeddingDatabase(request);
     if (
       !modules.dietaryRestrictions &&
       (data.dietaryRestrictions?.trim() ||

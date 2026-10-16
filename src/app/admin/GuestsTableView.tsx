@@ -35,6 +35,7 @@ import {
   Clock3,
   CircleDashed,
 } from "lucide-react";
+import { invitationStatusScore } from "@/lib/invitation-sort";
 import type { Invitation, Guest, EventTable } from "@/types/guests";
 
 interface GuestsTableViewProps {
@@ -136,6 +137,13 @@ export function GuestsTableView({
   }, [invitations, tabFilter]);
 
   const sortedInvitations = useMemo(() => {
+    const statusScores = new Map<Invitation, number>();
+    const sentTimes = new Map<Invitation, number>();
+    for (const invitation of filteredInvitations) {
+      if (sortField === "status") statusScores.set(invitation, invitationStatusScore(invitation));
+      else if (sortField === "sentAt")
+        sentTimes.set(invitation, invitation.sentAt ? new Date(invitation.sentAt).getTime() : 0);
+    }
     return [...filteredInvitations].sort((a, b) => {
       let comparison = 0;
       if (sortField === "label") {
@@ -143,20 +151,9 @@ export function GuestsTableView({
       } else if (sortField === "guestsCount") {
         comparison = a.guests.length - b.guests.length;
       } else if (sortField === "sentAt") {
-        const timeA = a.sentAt ? new Date(a.sentAt).getTime() : 0;
-        const timeB = b.sentAt ? new Date(b.sentAt).getTime() : 0;
-        comparison = timeA - timeB;
+        comparison = sentTimes.get(a)! - sentTimes.get(b)!;
       } else if (sortField === "status") {
-        const score = (inv: Invitation) => {
-          const total = inv.guests.length;
-          const conf = inv.guests.filter((g) => g.status === "confirmado").length;
-          if (conf === total) return 3;
-          if (conf > 0) return 2;
-          const pend = inv.guests.filter((g) => g.status === "pendente").length;
-          if (pend > 0) return 1;
-          return 0;
-        };
-        comparison = score(a) - score(b);
+        comparison = statusScores.get(a)! - statusScores.get(b)!;
       }
       return sortDirection === "asc" ? comparison : -comparison;
     });

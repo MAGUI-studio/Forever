@@ -5,7 +5,8 @@ import { scopedDatabase } from "@/lib/wedding-server";
 import { bindWeddingUser } from "@/lib/wedding-membership";
 import { services } from "@/lib/firebase/admin";
 import { platformIdentity } from "@/lib/platform-server";
-import { body, failure, HttpError, reply } from "@/lib/guest-server";
+import { body, failure, HttpError, reply, tokenId } from "@/lib/guest-server";
+import { mapConcurrent } from "@/lib/map-concurrent";
 import { slugSchema } from "@/lib/wedding-schema";
 import { foreverTemplateId } from "@/config/templates/registry";
 import { z } from "zod";
@@ -14,38 +15,55 @@ export async function GET(request: Request) {
   try {
     const { identity, superadmin } = await platformIdentity(request),
       db = services().db;
-    const list = await db.collection("weddings").get();
-    const weddings = [];
-    for (const document of list.docs) {
-      const member = superadmin
-        ? true
-        : (await document.ref.collection("members").doc(identity.uid).get()).data()?.active ===
-          true;
-      const reception = identity.email
-        ? (
-            await document.ref
-              .collection("receptionTeam")
-              .doc((await import("@/lib/guest-server")).tokenId(identity.email.toLowerCase()))
-              .get()
-          ).data()
-        : null;
-      if (
-        member ||
-        (reception?.active && (identity.email_verified || reception.uid === identity.uid))
-      ) {
+    const summary = new URL(request.url).searchParams.get("summary") === "1";
+    const collection = db.collection("weddings");
+    const list = await (
+      summary
+        ? collection.select(
+            "status",
+            "plan",
+            "modules",
+            "theme",
+            "config.couple.partner1",
+            "config.couple.partner2",
+          )
+        : collection
+    ).get();
+    const weddings = (
+      await mapConcurrent(list.docs, async (document) => {
         const data = document.data();
-        if (!superadmin && data.plan === null) continue;
-        if (!superadmin && !member && !resolveModules(data.modules, data.plan).team) continue;
-        weddings.push({
-          slug: document.id,
-          plan: data.plan === null ? null : data.plan === "essencial" ? "essencial" : "foreverPro",
-          status: data.status,
-          config: data.config,
-          theme: data.theme,
-          modules: resolveModules(data.modules, data.plan),
-        });
-      }
-    }
+        const member = superadmin
+          ? true
+          : (await document.ref.collection("members").doc(identity.uid).get()).data()?.active ===
+            true;
+        const reception =
+          !member && identity.email && resolveModules(data.modules, data.plan).team
+            ? (
+                await document.ref
+                  .collection("receptionTeam")
+                  .doc(tokenId(identity.email.toLowerCase()))
+                  .get()
+              ).data()
+            : null;
+        if (
+          member ||
+          (reception?.active && (identity.email_verified || reception.uid === identity.uid))
+        ) {
+          if (!superadmin && data.plan === null) return null;
+          if (!superadmin && !member && !resolveModules(data.modules, data.plan).team) return null;
+          return {
+            slug: document.id,
+            plan:
+              data.plan === null ? null : data.plan === "essencial" ? "essencial" : "foreverPro",
+            status: data.status,
+            config: data.config,
+            theme: data.theme,
+            modules: resolveModules(data.modules, data.plan),
+          };
+        }
+        return null;
+      })
+    ).filter((wedding) => wedding !== null);
     return reply({ superadmin, weddings });
   } catch (e) {
     return failure(e);

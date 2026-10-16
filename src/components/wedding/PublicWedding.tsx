@@ -2,6 +2,7 @@ import { isPlanExpired } from "@/config/plan-access";
 import { resolveModules, type WeddingModule } from "@/config/modules";
 import { findWedding } from "@/lib/wedding-server";
 import { notFound } from "next/navigation";
+import { rsvpPageConfig } from "@/lib/rsvp-page-config";
 import { WeddingProvider } from "./WeddingProvider";
 import { PageCurtainLoader } from "./PageCurtainLoader";
 export async function PublicWedding({
@@ -20,7 +21,7 @@ export async function PublicWedding({
   return (
     <WeddingProvider
       slug={slug}
-      config={wedding.config}
+      config={requiredModule === "rsvp" ? rsvpPageConfig(wedding.config) : wedding.config}
       theme={wedding.theme}
       modules={resolveModules(wedding.modules, wedding.plan)}
       templateId={wedding.templateId}

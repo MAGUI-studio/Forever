@@ -128,10 +128,13 @@ export async function requireAccess(request: Request) {
   throw new HttpError(403, "Esta conta não tem acesso ao painel.");
 }
 export async function requireAdmin(request: Request, module?: WeddingModule) {
+  return (await requireAdminAccess(request, module)).db;
+}
+export async function requireAdminAccess(request: Request, module?: WeddingModule) {
   const access = await requireAccess(request);
   if (access.role !== "admin") throw new HttpError(403, "Esta ação é exclusiva da administração.");
   if (module) assertModule(access.wedding, module);
-  return access.db;
+  return access;
 }
 
 export const SHORT_CODE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -381,9 +384,12 @@ export async function requestWedding(request: Request, publicOnly = false) {
     throw new HttpError(404, "Casamento indisponível.");
   return wedding;
 }
-export async function publicWeddingDatabase(request: Request) {
+export async function publicWeddingAccess(request: Request) {
   const wedding = await requestWedding(request, true);
-  return scopedDatabase(services().db, wedding.slug);
+  return { wedding, db: scopedDatabase(services().db, wedding.slug) };
+}
+export async function publicWeddingDatabase(request: Request) {
+  return (await publicWeddingAccess(request)).db;
 }
 
 export function assertModule(
