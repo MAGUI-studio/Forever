@@ -2,8 +2,9 @@ import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-import { initializeFirestore } from "firebase-admin/firestore";
+import { RestDatabase } from "./rest-database";
 import { serviceAccountAccessToken } from "./access-token";
+const databases = new Map<string, RestDatabase>();
 export function services() {
   let bindings: Record<string, unknown> = {};
   try {
@@ -26,10 +27,23 @@ export function services() {
   if (!app) {
     const credential = cert({ projectId, clientEmail, privateKey });
     if (typeof bindings.FIREBASE_PROJECT_ID === "string") {
-      credential.getAccessToken = () => serviceAccountAccessToken(clientEmail, privateKey);
+      let cached: { access_token: string; expires_in: number } | undefined;
+      let expiresAt = 0;
+      credential.getAccessToken = async () => {
+        if (!cached || Date.now() >= expiresAt) {
+          cached = await serviceAccountAccessToken(clientEmail, privateKey);
+          expiresAt = Date.now() + Math.max(0, cached.expires_in - 60) * 1000;
+        }
+        return { ...cached, expires_in: Math.max(1, Math.floor((expiresAt - Date.now()) / 1000)) };
+      };
     }
     app = initializeApp({ credential, projectId }, "wedding-server");
   }
-  // Workers use HTTP transport; avoid loading the Node gRPC client.
-  return { auth: getAuth(app), db: initializeFirestore(app, { preferRest: true }) };
+  let db = databases.get(app.name);
+  if (!db) {
+    const credential = app.options.credential!;
+    db = new RestDatabase(projectId, () => credential.getAccessToken());
+    databases.set(app.name, db);
+  }
+  return { auth: getAuth(app), db: db.asFirestore() };
 }

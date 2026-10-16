@@ -1,6 +1,6 @@
+import { runtimeEnv } from "@/lib/runtime-env";
 import {assertModule} from "@/lib/guest-server";
-import { getStorage } from "firebase-admin/storage";
-import { randomUUID } from "node:crypto";
+import { UTApi } from "uploadthing/server";
 import {
   requireAccess,
   HttpError,
@@ -8,7 +8,6 @@ import {
   failure,
   limitedBody,
 } from "@/lib/guest-server";
-import { services } from "@/lib/firebase/admin";
 export async function POST(request: Request) {
   try {
     const { role, wedding } = await requireAccess(request);assertModule(wedding,"siteEditor");
@@ -40,39 +39,18 @@ export async function POST(request: Request) {
       extension = "webp";
     if (!extension)
       throw new HttpError(400, "Use uma imagem JPG, PNG ou WebP.");
-    const bucketName = process.env.FIREBASE_STORAGE_BUCKET;
-    if (!bucketName)
+    const token = runtimeEnv("UPLOADTHING_TOKEN");
+    if (!token)
       throw new HttpError(
         503,
         "O armazenamento de imagens ainda não foi configurado.",
       );
-    services();
-    const app = (await import("firebase-admin/app"))
-      .getApps()
-      .find((a) => a.name === "wedding-server")!;
-    const token = randomUUID(),
-      name = "weddings/" + wedding.slug + "/" + randomUUID() + "." + extension;
-    await getStorage(app)
-      .bucket(bucketName)
-      .file(name)
-      .save(bytes, {
-        resumable: false,
-        metadata: {
-          contentType:
-            extension === "jpg" ? "image/jpeg" : "image/" + extension,
-          cacheControl: "public,max-age=31536000,immutable",
-          metadata: { firebaseStorageDownloadTokens: token },
-        },
-      });
-    return reply({
-      url:
-        "https://firebasestorage.googleapis.com/v0/b/" +
-        bucketName +
-        "/o/" +
-        encodeURIComponent(name) +
-        "?alt=media&token=" +
-        token,
-    });
+    const upload = await new UTApi({ token }).uploadFiles(new File(
+      [file], `${wedding.slug}.${extension}`,
+      { type: extension === "jpg" ? "image/jpeg" : "image/" + extension },
+    ));
+    if (upload.error || !upload.data) throw new HttpError(502, "Não foi possível enviar a imagem. Tente novamente em instantes.");
+    return reply({ url: upload.data.ufsUrl });
   } catch (e) {
     return failure(e);
   }

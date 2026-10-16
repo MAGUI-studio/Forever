@@ -27,8 +27,12 @@ export function failure(error: unknown) {
     return reply({ error: error.message, ...(error.redirect ? {redirect:error.redirect} : {}), ...(error.code ? {code:error.code} : {}) }, error.status);
   if (error instanceof z.ZodError || error instanceof SyntaxError)
     return reply({ error: "Confira os dados informados." }, 400);
+  console.error("SERVER_OPERATION_ERROR", JSON.stringify({
+    code: typeof error === "object" && error !== null && "code" in error ? String(error.code) : "unknown",
+    message: error instanceof Error ? error.message : "Server operation failed",
+  }));
   return reply(
-    { error: "Serviço indisponível. Tente novamente ou fale com os noivos." },
+    { error: "Não foi possível concluir a solicitação. Tente novamente em instantes ou entre em contato com o suporte do Forever." },
     503,
   );
 }

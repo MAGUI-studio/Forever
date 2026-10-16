@@ -1,3 +1,4 @@
+import { runtimeEnv } from "@/lib/runtime-env";
 import { handlePaymentSuccess } from "@/lib/stripe-fulfillment";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
@@ -7,7 +8,7 @@ import { services } from "@/lib/firebase/admin";
 export async function POST(request: Request) {
   const stripe = getStripe();
   const signature = request.headers.get("stripe-signature");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = runtimeEnv("STRIPE_WEBHOOK_SECRET");
 
   const rawBody = await request.text();
   let event: Stripe.Event;

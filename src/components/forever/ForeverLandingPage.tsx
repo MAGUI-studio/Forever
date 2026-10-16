@@ -957,6 +957,7 @@ export function ForeverLandingPage() {
       const unsubscribe = onAuthStateChanged(auth, async (account) => {
         if (!active) return;
         setUser(account);
+        setUserWedding(null);
         if (!account) {
           setUserWedding(null);
           return;
@@ -993,6 +994,7 @@ export function ForeverLandingPage() {
   }, []);
 
   const panelHref = userWedding?.destination || (userWedding?.slug ? `/${userWedding.slug}/painel` : "/login");
+  const accountActionLabel = !userWedding ? "Entrar" : userWedding.role === "customer" ? "Continuar contratação" : userWedding.role === "reception" ? "Acessar recepção" : "Acessar meu painel";
   const receptionHref = userWedding?.slug ? `/${userWedding.slug}/recepcao` : "/login";
 
   async function handleCheckout(plan: "essencial" | "foreverPro", action: "new" | "upgrade" = "new") {
@@ -1140,7 +1142,7 @@ export function ForeverLandingPage() {
                 href={panelHref}
                 className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-[#722F37] px-4 text-[13px] font-medium text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-md hover:shadow-[#722F3725]"
               >
-                <span>Acessar meu painel</span>
+                <span>{accountActionLabel}</span>
                 <ArrowRight size={13} className="transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             ) : (
@@ -1183,7 +1185,7 @@ export function ForeverLandingPage() {
               {user ? (
                 <>
                   <PrimaryButton href={panelHref}>
-                    Acessar meu painel
+                    {accountActionLabel}
                   </PrimaryButton>
                   <GhostButton href="#preco">
                     {userWedding?.plan ? "Ver meu plano" : "Ver planos"}
@@ -1617,7 +1619,7 @@ export function ForeverLandingPage() {
               {user ? (
                 <>
                   <PrimaryButton href={panelHref}>
-                    Ir para o meu painel
+                    {accountActionLabel}
                   </PrimaryButton>
                   <GhostButton href="#preco">
                     {userWedding?.plan ? "Ver meu plano" : "Ver planos"}
@@ -1729,7 +1731,7 @@ export function ForeverLandingPage() {
                     <>
                       <li>
                         <Link href={panelHref} className="text-[#6B6760] transition-colors hover:text-[#161616]">
-                          Acessar meu painel
+                          {accountActionLabel}
                         </Link>
                       </li>
                       <li>

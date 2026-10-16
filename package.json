@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack && opennextjs-cloudflare build --skipNextBuild --noMinify && node scripts/prepare-worker-startup.mjs",
+    "build": "npm run test:guests && npm run test:firestore && next build --webpack && opennextjs-cloudflare build --skipNextBuild",
     "start": "next start",
     "lint": "eslint",
     "test:guests": "node tests/guests.mjs",
+    "test:firestore": "node tests/firestore-rest.mjs",
     "stripe:listen": "node scripts/stripe-listen.mjs",
     "migrate:legacy": "node scripts/migrate-legacy-wedding.mjs"
   },

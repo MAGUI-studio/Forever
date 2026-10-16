@@ -1,3 +1,4 @@
+import { runtimeEnv } from "@/lib/runtime-env";
 import { requireAccess, failure, HttpError } from "@/lib/guest-server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -96,7 +97,7 @@ export async function POST(request: Request) {
     // Configure line items based on purchase type (upgrade or new plan)
     let lineItem;
     if (isUpgrade) {
-      const upgradePriceId = process.env.STRIPE_PRICE_UPGRADE;
+      const upgradePriceId = runtimeEnv("STRIPE_PRICE_UPGRADE");
       if (upgradePriceId) {
         const price = await stripe.prices.retrieve(upgradePriceId);
         if (!price.active || price.currency !== "brl" || price.type !== "one_time" || price.unit_amount !== UPGRADE_PRICING.priceInCents) {
@@ -119,7 +120,7 @@ export async function POST(request: Request) {
     } else {
       const planConfig = PLAN_PRICING[plan];
       const envPriceId = planConfig.envPriceKey
-        ? process.env[planConfig.envPriceKey]
+        ? runtimeEnv(planConfig.envPriceKey)
         : undefined;
 
       if (envPriceId) {

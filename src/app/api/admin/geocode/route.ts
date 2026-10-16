@@ -1,3 +1,4 @@
+import { runtimeEnv } from "@/lib/runtime-env";
 import {z} from "zod";
 import {requireAccess,assertModule,limitedBody,HttpError,reply,failure} from "@/lib/guest-server";
 const recent=new Map<string,number>();
@@ -10,7 +11,7 @@ export async function POST(request:Request){
     const data=schema.parse(JSON.parse(new TextDecoder().decode(await limitedBody(request,4096))));
     if(Date.now()-(recent.get(access.uid)??0)<2000)throw new HttpError(429,"Aguarde um instante antes de buscar novamente.");
     if(recent.size>1000)recent.clear();recent.set(access.uid,Date.now());
-    const url=new URL(process.env.PHOTON_URL||"https://photon.komoot.io/api/");
+    const url=new URL(runtimeEnv("PHOTON_URL")||"https://photon.komoot.io/api/");
     const a=data.addressDetails;
     // Neighborhood and complement are display details, not part of a house-number search.
     url.searchParams.set("q",(a?[a.street,a.number,a.city,a.state,data.postalCode,"Brasil"]:[data.address,data.cityState,data.postalCode,"Brasil"]).filter(Boolean).join(", "));url.searchParams.set("limit","5");
