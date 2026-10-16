@@ -1,0 +1,10 @@
+{
+  "name": "@magui/next-eslint-glob",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Braces-free globSync adapter for the Next.js ESLint root directory resolver",
+  "main": "index.cjs",
+  "dependencies": {
+    "tinyglobby": "0.2.17"
+  }
+}
