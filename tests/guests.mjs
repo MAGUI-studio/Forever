@@ -69,7 +69,7 @@ const services = () => ({
       if (token === "reception") return {uid:"reception-user",email:"staff@example.com",email_verified:true};
       if (token === "unverified") return {uid:"unverified",email:"staff@example.com",email_verified:false};
       if (token === "outsider") return { uid: "stranger" };
-      throw Object.assign(new Error("invalid"), { code: "auth/invalid-id-token" });
+      throw new Error("invalid");
     },
   },
 });
@@ -94,7 +94,6 @@ function load(filename) {
   const localRequire = (name) => {
     if (name.endsWith(".json")) return JSON.parse(fs.readFileSync(path.resolve(path.dirname(full),name),"utf8"));
     if (name === "server-only") return {};
-    if (name === "@opennextjs/cloudflare") return { getCloudflareContext: () => { throw new Error("No Cloudflare context in Node tests"); } };
     if (name === "@/lib/stripe") return {getStripe:()=>({prices:{retrieve:async()=>upgradeStripePrice},checkout:{sessions:{retrieve:async id=>{assert(stripeSessions.has(id));return stripeSessions.get(id);},expire:async id=>{stripeSessions.get(id).status="expired";return stripeSessions.get(id);},create:async(data,options)=>{if(options?.idempotencyKey && stripeIdempotency.has(options.idempotencyKey))return stripeIdempotency.get(options.idempotencyKey);checkoutSessions.push(data);const session={id:"cs_test_"+checkoutSessions.length,url:"https://checkout.stripe.com/test",status:"open",payment_status:"unpaid",metadata:data.metadata,amount_total:50000,currency:"brl"};stripeSessions.set(session.id,session);if(options?.idempotencyKey)stripeIdempotency.set(options.idempotencyKey,session);return session;}}}})};
     if (name === "@/lib/firebase/admin" || name === "./firebase/admin")
       return { services };

@@ -4,11 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npm run test:guests && npm run test:firestore && next build --webpack && opennextjs-cloudflare build --skipNextBuild",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test:guests": "node tests/guests.mjs",
-    "test:firestore": "node tests/firestore-rest.mjs",
     "stripe:listen": "node scripts/stripe-listen.mjs",
     "migrate:legacy": "node scripts/migrate-legacy-wedding.mjs"
   },
@@ -46,7 +45,6 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@opennextjs/cloudflare": "1.20.12",
     "@tailwindcss/postcss": "^4",
     "@types/canvas-confetti": "^1.9.0",
     "@types/leaflet": "^1.9.22",
@@ -57,8 +55,7 @@
     "eslint": "^9",
     "eslint-config-next": "^16.3.8",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "wrangler": "4.151.1"
+    "typescript": "^5"
   },
   "overrides": {
     "@grpc/grpc-js": "^1.14.6",

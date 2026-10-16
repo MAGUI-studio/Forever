@@ -1,6 +1,5 @@
 import { requireAccess, assertModule, body, reply, failure, HttpError } from "@/lib/guest-server";
 import { UTApi } from "uploadthing/server";
-import { runtimeEnv } from "@/lib/runtime-env";
 import { getUploadThingKey } from "@/config/gallery";
 import { z } from "zod";
 
@@ -36,7 +35,7 @@ export async function POST(request: Request) {
     }
 
     try {
-      const utapi = new UTApi({ token: runtimeEnv("UPLOADTHING_TOKEN") });
+      const utapi = new UTApi();
       const result = await utapi.deleteFiles(Array.from(keysToDelete));
       return reply({ success: true, deletedCount: result.deletedCount });
     } catch (err) {
