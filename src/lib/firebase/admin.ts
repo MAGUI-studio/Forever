@@ -1,7 +1,7 @@
 import "server-only";
 import { cert, getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-import { getFirestore } from "firebase-admin/firestore";
+import { initializeFirestore } from "firebase-admin/firestore";
 export function services() {
   const projectId = process.env.FIREBASE_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -14,5 +14,6 @@ export function services() {
       { credential: cert({ projectId, clientEmail, privateKey }) },
       "wedding-server",
     );
-  return { auth: getAuth(app), db: getFirestore(app) };
+  // Workers use HTTP transport; avoid loading the Node gRPC client.
+  return { auth: getAuth(app), db: initializeFirestore(app, { preferRest: true }) };
 }
