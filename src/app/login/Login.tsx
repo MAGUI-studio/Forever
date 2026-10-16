@@ -4,7 +4,7 @@ import { useFeedbackToasts } from "@/components/ui/ForeverToaster";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase/client";
-import { readApiResponse } from "@/lib/api-response";
+import { resolveAuthDestination } from "@/lib/auth-destination";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -26,7 +26,8 @@ import { StudioLoading } from "@/components/forever/StudioLoading";
 export function Login() {
   const router = useRouter();
   const initialPlanRequired = useSearchParams().get("reason") === "sem-plano";
-  const [planRequired, setPlanRequired] = useState(initialPlanRequired);
+  const planRequired = initialPlanRequired;
+  const [accessAttempt, setAccessAttempt] = useState(0);
   const [showPassword, setShowPassword] = useState(false),
     [email, setEmail] = useState(""),
     [password, setPassword] = useState(""),
@@ -38,45 +39,42 @@ export function Login() {
   useFeedbackToasts(error);
   useEffect(() => {
     let active = true;
+    let request = 0;
     try {
-      const unsubscribe = onAuthStateChanged(clientAuth(), (account) => {
-        if (!active) return;
-        setReady(true);
-        setAuthenticated(!!account);
-        setError("");
-        if (!account) {
-          setResolving(false);
-          return;
-        }
-        setResolving(true);
-        void account
-          .getIdToken()
-          .then((token) =>
-            fetch("/api/auth/destination", { headers: { Authorization: "Bearer " + token } }),
-          )
-          .then((response) => readApiResponse(response, { redirectOnPlanRequired: false }))
-          .then((data) => {
-            if (active) router.replace(data.destination);
-          })
-          .catch(async (e) => {
-            if (!active) return;
-            if (e.code === "PLAN_REQUIRED") {
-              setPlanRequired(true);
-              setPassword("");
-              await signOut(clientAuth());
-              if (active) {
-                setAuthenticated(false);
-                setResolving(false);
-                setBusy(false);
-              }
-              return;
-            }
-            setError(e.message);
+      const unsubscribe = onAuthStateChanged(
+        clientAuth(),
+        (account) => {
+          const currentRequest = ++request;
+          if (!active) return;
+          setReady(true);
+          setAuthenticated(!!account);
+          setError("");
+          if (!account) {
             setResolving(false);
-          });
-      });
+            return;
+          }
+          setResolving(true);
+          void resolveAuthDestination(account)
+            .then((data) => {
+              if (active && currentRequest === request) router.replace(data.destination);
+            })
+            .catch((e) => {
+              if (!active || currentRequest !== request) return;
+              setError(e.message);
+              setResolving(false);
+            });
+        },
+        (error) => {
+          if (!active) return;
+          request++;
+          setReady(true);
+          setResolving(false);
+          setError(error.message);
+        },
+      );
       return () => {
         active = false;
+        request++;
         unsubscribe();
       };
     } catch (e) {
@@ -86,7 +84,7 @@ export function Login() {
         setError((e as Error).message);
       });
     }
-  }, [router]);
+  }, [router, accessAttempt]);
   async function action(work: () => Promise<unknown>) {
     setBusy(true);
     setError("");
@@ -99,7 +97,41 @@ export function Login() {
     }
   }
 
-  if (!ready) return <StudioLoading />;
+  if (!ready || resolving || (authenticated && !error)) return <StudioLoading />;
+  if (authenticated)
+    return (
+      <main
+        style={foreverTheme}
+        className="min-h-svh bg-[var(--page-background,#F1F1F1)] text-[#161616]"
+      >
+        <AdminContainer centered>
+          <div className="mx-auto max-w-md space-y-5 rounded-2xl bg-white p-8">
+            <ForeverLogo className="w-44" />
+            <h1 className="font-serif text-3xl">Não foi possível abrir seu painel</h1>
+            <p role="alert" className="text-sm text-red-700">
+              {error}
+            </p>
+            <button
+              type="button"
+              className="guest-button"
+              onClick={() => {
+                setResolving(true);
+                setAccessAttempt((attempt) => attempt + 1);
+              }}
+            >
+              Tentar novamente
+            </button>
+            <button
+              type="button"
+              className="block text-sm text-[#722F37] underline"
+              onClick={() => void signOut(clientAuth())}
+            >
+              Sair e entrar com outra conta
+            </button>
+          </div>
+        </AdminContainer>
+      </main>
+    );
   return (
     <main
       style={foreverTheme}
@@ -230,9 +262,9 @@ export function Login() {
             </label>
             <button
               className="group guest-button admin-login-submit bg-[#722F37]! enabled:hover:bg-[#5B242B]!"
-              disabled={busy || resolving}
+              disabled={busy}
             >
-              {busy || resolving ? "Verificando acesso…" : "Entrar no painel"}
+              {busy ? "Entrando…" : "Entrar no painel"}
               <ArrowUpRight
                 size={17}
                 aria-hidden="true"
@@ -272,16 +304,6 @@ export function Login() {
           >
             {error}
           </p>
-        )}
-        {authenticated && (
-          <button
-            disabled={busy || resolving}
-            type="button"
-            onClick={() => void signOut(clientAuth())}
-            className="mt-4 text-center text-xs text-[#722F37] hover:underline"
-          >
-            Entrar com outra conta
-          </button>
         )}
       </AdminContainer>
     </main>

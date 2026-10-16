@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, Fragment, type ReactNode } from "react";
+import { useEffect, useState, Fragment, type ReactNode, type ComponentProps } from "react";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, ArrowUp, ArrowUpRight, Check, Heart, Loader2, Plus } from "lucide-react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase/client";
-import { readApiResponse } from "@/lib/api-response";
+import { resolveAuthDestination, type AuthDestination } from "@/lib/auth-destination";
 import { ForeverLogo } from "./ForeverLogo";
 import {
   BotanicalClassicBranch,
@@ -111,12 +111,38 @@ function Accent({ children }: { children: ReactNode }) {
   );
 }
 
+function ResolvedLink({
+  href,
+  children,
+  className,
+  ...props
+}: Omit<ComponentProps<typeof Link>, "href"> & {
+  href: ComponentProps<typeof Link>["href"] | null;
+}) {
+  if (!href)
+    return (
+      <span
+        role="link"
+        aria-disabled="true"
+        className={`${className ?? ""} cursor-wait opacity-70`}
+        title="Acesso ainda não verificado."
+      >
+        {children}
+      </span>
+    );
+  return (
+    <Link href={href} className={className} {...props}>
+      {children}
+    </Link>
+  );
+}
+
 function PrimaryButton({
   href,
   children,
   external = false,
 }: {
-  href: string;
+  href: string | null;
   children: ReactNode;
   external?: boolean;
 }) {
@@ -133,20 +159,20 @@ function PrimaryButton({
       </span>
     </>
   );
-  return external ? (
+  return external && href ? (
     <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
       {content}
     </a>
   ) : (
-    <Link href={href} className={className}>
+    <ResolvedLink href={href} className={className}>
       {content}
-    </Link>
+    </ResolvedLink>
   );
 }
 
-function GhostButton({ href, children }: { href: string; children: ReactNode }) {
+function GhostButton({ href, children }: { href: string | null; children: ReactNode }) {
   return (
-    <Link
+    <ResolvedLink
       href={href}
       className="group inline-flex h-12 items-center gap-2 px-2 text-sm font-medium text-[#161616] transition-colors hover:text-[#722F37]"
     >
@@ -155,7 +181,7 @@ function GhostButton({ href, children }: { href: string; children: ReactNode }) 
         size={15}
         className="transition-transform duration-300 group-hover:translate-x-1.5"
       />
-    </Link>
+    </ResolvedLink>
   );
 }
 
@@ -1030,61 +1056,60 @@ const faqs = [
   ],
 ];
 
-interface UserWedding {
-  destination: string;
-  slug: string;
-  role: string;
-  plan: "essencial" | "foreverPro";
-}
-
 export function ForeverLandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [checkoutLoading, setCheckoutLoading] = useState<"essencial" | "foreverPro" | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [userWedding, setUserWedding] = useState<UserWedding | null>(null);
+  const [userWedding, setUserWedding] = useState<AuthDestination | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  const [accessError, setAccessError] = useState("");
+  const [accessAttempt, setAccessAttempt] = useState(0);
   const modules = moduleKeys.filter((key) => key !== "organization");
 
   useEffect(() => {
     let active = true;
+    let request = 0;
     try {
-      const auth = clientAuth();
-      const unsubscribe = onAuthStateChanged(auth, async (account) => {
-        if (!active) return;
-        setUser(account);
-        if (!account) {
+      const unsubscribe = onAuthStateChanged(
+        clientAuth(),
+        (account) => {
+          const currentRequest = ++request;
+          if (!active) return;
+          setUser(account);
+          setAuthReady(true);
           setUserWedding(null);
-          return;
-        }
-
-        try {
-          const token = await account.getIdToken();
-          const res = await fetch("/api/auth/destination", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.ok) {
-            const data = await readApiResponse(res);
-            if (active && data) {
-              setUserWedding({
-                destination: data.destination,
-                slug: data.slug,
-                role: data.role,
-                plan: data.plan,
-              });
-            }
-          }
-        } catch {}
-      });
+          setAccessError("");
+          if (!account) return;
+          void resolveAuthDestination(account)
+            .then((data) => {
+              if (active && currentRequest === request) setUserWedding(data);
+            })
+            .catch((error) => {
+              if (active && currentRequest === request) setAccessError(error.message);
+            });
+        },
+        (error) => {
+          if (active) setAccessError(error.message);
+        },
+      );
 
       return () => {
         active = false;
+        request++;
         unsubscribe();
       };
-    } catch {}
-  }, []);
+    } catch (error) {
+      queueMicrotask(() => {
+        if (active) setAccessError((error as Error).message);
+      });
+      return () => {
+        active = false;
+      };
+    }
+  }, [accessAttempt]);
 
-  const panelHref =
-    userWedding?.destination || (userWedding?.slug ? `/${userWedding.slug}/painel` : "/login");
-  const receptionHref = userWedding?.slug ? `/${userWedding.slug}/recepcao` : "/login";
+  const panelHref = !authReady ? null : user ? (userWedding?.destination ?? null) : "/login";
+  const receptionHref = userWedding?.slug ? `/${userWedding.slug}/recepcao` : panelHref;
 
   async function handleCheckout(
     plan: "essencial" | "foreverPro",
@@ -1129,13 +1154,13 @@ export function ForeverLandingPage() {
 
     if (currentPlan === targetPlan) {
       return (
-        <Link
+        <ResolvedLink
           href={panelHref}
           className={`inline-flex ${heightClass} w-full items-center justify-center gap-2 rounded-full border-2 border-[#722F37] bg-[#722F3715] px-4 text-xs font-semibold text-[#722F37] transition-all hover:bg-[#722F3725]`}
         >
           <Check size={iconSize + 2} strokeWidth={2.5} className="text-[#722F37]" />
           <span>Seu plano atual (Ativo)</span>
-        </Link>
+        </ResolvedLink>
       );
     }
 
@@ -1246,7 +1271,7 @@ export function ForeverLandingPage() {
           </nav>
           <div className="flex items-center gap-5">
             {user ? (
-              <Link
+              <ResolvedLink
                 href={panelHref}
                 className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-[#722F37] px-4 text-[13px] font-medium text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-md hover:shadow-[#722F3725]"
               >
@@ -1255,15 +1280,15 @@ export function ForeverLandingPage() {
                   size={13}
                   className="transition-transform duration-300 group-hover:translate-x-1"
                 />
-              </Link>
+              </ResolvedLink>
             ) : (
               <>
-                <Link
-                  href="/login"
+                <ResolvedLink
+                  href={panelHref}
                   className="hidden text-[13px] text-[#161616] transition-colors hover:text-[#722F37] sm:block"
                 >
                   Entrar
-                </Link>
+                </ResolvedLink>
                 <a
                   href="#preco"
                   className="group inline-flex h-9 items-center gap-1.5 rounded-full bg-[#722F37] px-4 text-[13px] font-medium text-white shadow-sm transition-all duration-300 hover:bg-[#5b242b] hover:shadow-md hover:shadow-[#722F3725]"
@@ -1280,6 +1305,18 @@ export function ForeverLandingPage() {
         </div>
       </header>
 
+      {accessError && (
+        <div role="alert" className="mx-auto max-w-6xl px-6 py-4 text-sm text-red-700">
+          <p>{accessError}</p>
+          <button
+            type="button"
+            className="mt-2 underline"
+            onClick={() => setAccessAttempt((attempt) => attempt + 1)}
+          >
+            Tentar verificar o acesso novamente
+          </button>
+        </div>
+      )}
       <main>
         <section className="relative overflow-hidden px-6 pb-24 pt-20 sm:px-10 sm:pt-28">
           <BotanicalClassicOrnaments variant="botanical" tone="paper" />
@@ -1308,7 +1345,7 @@ export function ForeverLandingPage() {
               ) : (
                 <>
                   <PrimaryButton href="#preco">Criar meu site</PrimaryButton>
-                  <GhostButton href="/login">Já tenho conta</GhostButton>
+                  <GhostButton href={panelHref}>Já tenho conta</GhostButton>
                 </>
               )}
             </Reveal>
@@ -1819,7 +1856,7 @@ export function ForeverLandingPage() {
               ) : (
                 <>
                   <PrimaryButton href="#preco">Ver plano e começar</PrimaryButton>
-                  <GhostButton href="/login">Acessar meu painel</GhostButton>
+                  <GhostButton href={panelHref}>Acessar meu painel</GhostButton>
                 </>
               )}
             </div>
@@ -1930,20 +1967,20 @@ export function ForeverLandingPage() {
                   {user ? (
                     <>
                       <li>
-                        <Link
+                        <ResolvedLink
                           href={panelHref}
                           className="text-[#6B6760] transition-colors hover:text-[#161616]"
                         >
                           Acessar meu painel
-                        </Link>
+                        </ResolvedLink>
                       </li>
                       <li>
-                        <Link
+                        <ResolvedLink
                           href={receptionHref}
                           className="text-[#6B6760] transition-colors hover:text-[#161616]"
                         >
                           Área da recepção
-                        </Link>
+                        </ResolvedLink>
                       </li>
                       <li>
                         <a
@@ -1965,20 +2002,20 @@ export function ForeverLandingPage() {
                         </a>
                       </li>
                       <li>
-                        <Link
-                          href="/login"
+                        <ResolvedLink
+                          href={panelHref}
                           className="text-[#6B6760] transition-colors hover:text-[#161616]"
                         >
                           Acessar meu painel
-                        </Link>
+                        </ResolvedLink>
                       </li>
                       <li>
-                        <Link
-                          href="/login"
+                        <ResolvedLink
+                          href={panelHref}
                           className="text-[#6B6760] transition-colors hover:text-[#161616]"
                         >
                           Área da recepção
-                        </Link>
+                        </ResolvedLink>
                       </li>
                     </>
                   )}
