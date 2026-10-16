@@ -28,7 +28,7 @@ export function services() {
     if (typeof bindings.FIREBASE_PROJECT_ID === "string") {
       credential.getAccessToken = () => serviceAccountAccessToken(clientEmail, privateKey);
     }
-    app = initializeApp({ credential }, "wedding-server");
+    app = initializeApp({ credential, projectId }, "wedding-server");
   }
   // Workers use HTTP transport; avoid loading the Node gRPC client.
   return { auth: getAuth(app), db: initializeFirestore(app, { preferRest: true }) };
