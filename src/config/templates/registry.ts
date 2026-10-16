@@ -3,6 +3,7 @@ import type {DressCodeStyle} from "@/types/wedding";
 import {galleryCopyFields} from "./gallery-copy";
 import fields from "./copy-fields.json";
 import {romanceFields} from "./romance-copy";
+import {contentFields} from "./content-fields";
 import {proFields} from "./pro-copy";
 import type {WeddingModule} from "@/config/modules";
 export const templateIds=["botanical-classic","contemporary-romance","minimalist-modern","serene-breeze"] as const;
@@ -43,9 +44,9 @@ export const templateCatalog=[
 export function isTemplateAvailable(id:TemplateId){return templateCatalog.some(template=>template.id===id&&!("isComingSoon" in template&&template.isComingSoon));}
 export type CopySection="gallery"|"hero"|"countdown"|"story"|"transition"|"events"|"schedule"|"dressCode"|"gifts"|"rsvp"|"checkout"|"footer";
 export const copySections:Record<CopySection,{label:string;anchor:string;module?:WeddingModule}>={gallery:{label:"Galeria do casal",anchor:"galeria"},schedule:{label:"Programação do dia",anchor:"programacao"},hero:{label:"Capa",anchor:"inicio"},countdown:{label:"Contagem regressiva",anchor:"contagem-regressiva"},story:{label:"Nossa história",anchor:"historia"},transition:{label:"O nosso para sempre",anchor:".cinema-transition"},events:{label:"Cerimônia e festa",anchor:"eventos"},dressCode:{label:"Trajes",anchor:"dress-code"},gifts:{label:"Lista de presentes",anchor:"presentes",module:"gifts"},rsvp:{label:"Confirmação de presença",anchor:"rsvp",module:"rsvp"},checkout:{label:"Pagamento dos presentes",anchor:"pagamento-presente",module:"gifts"},footer:{label:"Rodapé",anchor:".cinema-footer"}};
-const allCopyFields=[...fields,...romanceFields,...galleryCopyFields,...proFields] as {key:string;section:CopySection;label:string;defaultValue:string;module?:WeddingModule}[];
+const allCopyFields=[...fields,...romanceFields,...galleryCopyFields,...proFields,...contentFields] as {key:string;section:CopySection;label:string;defaultValue:string;module?:WeddingModule}[];
 export const copyDefaults:Record<string,string>=Object.fromEntries(allCopyFields.map(field=>[field.key,field.defaultValue]));
-const editableRsvpKeys = new Set(["rsvp.text1", "rsvp.text4"]);
+const editableRsvpKeys = new Set(["rsvp.text1", "rsvp.text2", "rsvp.text3", "rsvp.text4"]);
 const unusedGiftKeys = new Set(["gifts.text1","gifts.text7","gifts.text8","gifts.text9","gifts.text10","gifts.text11","gifts.text12","gifts.text13","gifts.text15","gifts.text16","gifts.text18","gifts.text19"]);
 const fixedActionKeys = new Set(["footer.text3", "checkout.text19", "checkout.text20", "checkout.text21"]);
 export const fixedCopyKeys = new Set(allCopyFields.filter(field=>
@@ -53,7 +54,7 @@ export const fixedCopyKeys = new Set(allCopyFields.filter(field=>
   field.section === "checkout" ||
   (field.section === "rsvp" && !editableRsvpKeys.has(field.key)) ||
   field.label === "Texto do botão" || field.label === "Descrição acessível" ||
-  field.label === "Unidade do contador" || field.key === "countdown.text1" ||
+  field.label === "Unidade do contador" ||
   fixedActionKeys.has(field.key) || unusedGiftKeys.has(field.key)
 ).map(field=>field.key));
 export const copyFields=allCopyFields.filter(field=>!fixedCopyKeys.has(field.key)&&field.key!=="hero.text5"&&!["dressCode.text2","dressCode.text3","gifts.text3","gifts.text4","story.text6","story.text7","story.text8"].includes(field.key));
@@ -65,16 +66,17 @@ export const templateSections:Record<TemplateId,CopySection[]>={
  "botanical-classic":["hero","story","transition","events","gallery","dressCode","gifts","rsvp","footer"],
  "contemporary-romance":["hero","countdown","story","gallery","events","dressCode","gifts","schedule","rsvp","footer"],
 };
-export function templateCopyFields(id:TemplateId,dressCodeStyle?:DressCodeStyle){
+export function templateCopyFields(id:TemplateId,dressCodeStyle?:DressCodeStyle):typeof copyFields{
  const style=resolveDressCodeStyle({dressCodeStyle},id);
- const common=copyFields.filter(field=>field.section!=="dressCode").filter(field=>id==="minimalist-modern"||id==="serene-breeze"?field.key.startsWith("pro.")||["gifts","rsvp","footer"].includes(field.section):id==="contemporary-romance"?field.key.startsWith("romance.")||["rsvp.text1","rsvp.text4"].includes(field.key):!field.key.startsWith("romance.")&&!field.key.startsWith("pro."));
- const dress=copyFields.filter(field=>field.section==="dressCode"&&(style==="botanical"?field.key.startsWith("dressCode."):field.key==="pro.dress.eyebrow"));
- return [...common,...dress];
+ const common=copyFields.filter(field=>field.section!=="dressCode"&&!contentFields.some(extra=>extra.key===field.key)).filter(field=>id==="minimalist-modern"||id==="serene-breeze"?field.key.startsWith("pro.")||field.key==="countdown.text1"||["gifts","rsvp","footer"].includes(field.section):id==="contemporary-romance"?field.key.startsWith("romance.")||["rsvp.text1","rsvp.text2","rsvp.text3","rsvp.text4","countdown.text1"].includes(field.key):!field.key.startsWith("romance.")&&!field.key.startsWith("pro."));
+ const dress=copyFields.filter(field=>field.section==="dressCode"&&(style==="botanical"?field.key.startsWith("dressCode."):field.key.startsWith("pro.dress.")));
+ const extra=contentFields.filter(field=>field.section!=="dressCode"&&(field.key.startsWith("events.")||field.key==="gifts.emptyMessage"||field.key.startsWith(id==="contemporary-romance"?"romance.":id==="minimalist-modern"||id==="serene-breeze"?"pro.":"botanical.")));
+ return [...common,...dress,...extra].map(field=>id==="botanical-classic"&&field.section==="countdown"?{...field,section:"hero" as CopySection}:field);
 }
 export function templateCopyDefaults(id:TemplateId):Record<string,string>{return {...copyDefaults,...(id==="serene-breeze"?{"pro.hero.eyebrow":"Com a leveza de um encontro, para a vida inteira","pro.events.title":"Onde o amor encontra o horizonte","pro.gallery.title":"Marés de boas memórias"}:{}),...(id==="contemporary-romance"?{"rsvp.text1":"Você faz parte desse dia","rsvp.text4":"Estamos contando os dias para celebrar ao seu lado. Confirme sua presença com o código do seu convite."}:{})};}
 /** Keep authored text, replace inherited defaults, and fill missing destination fields. */
 export function switchTemplateCopy(copy:Record<string,string>|undefined,from:TemplateId,to:TemplateId){
  const source=templateCopyDefaults(from),destination=templateCopyDefaults(to),next={...copy};
- for(const field of templateCopyFields(to))if(!next[field.key]?.trim()||next[field.key]===source[field.key])next[field.key]=destination[field.key];
+ for(const field of templateCopyFields(to))if(next[field.key]===undefined||(from!==to&&next[field.key]===source[field.key]))next[field.key]=destination[field.key];
  return next;
 }

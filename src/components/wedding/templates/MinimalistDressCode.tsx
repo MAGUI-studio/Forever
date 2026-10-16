@@ -17,15 +17,15 @@ export function MinimalistDressCode() {
     <div className="minimal-dress-invitation-inner">
       <header className="minimal-dress-invitation-heading">
         <p className="pro-kicker">{copy("pro.dress.eyebrow")}</p>
-        <span className="minimal-dress-invitation-label">Dress code</span>
+        <span className="minimal-dress-invitation-label">{copy("pro.dress.label")}</span>
         <h2 id="minimal-dress-title">{dress.title}</h2>
         <p className="minimal-dress-invitation-description">{dress.description}</p>
       </header>
       <dl className="minimal-dress-invitation-guidance">
-        {dress.dos.length>0&&<div><dt><span aria-hidden="true">01</span> Para aproveitar o dia</dt><dd><ul>{dress.dos.map((text,index)=><li key={index}>{text}</li>)}</ul></dd></div>}
-        {dress.donts.length>0&&<div><dt><span aria-hidden="true">02</span> Com carinho, pedimos</dt><dd><ul>{dress.donts.map((text,index)=><li key={index}>{text}</li>)}</ul></dd></div>}
+        {dress.dos.length>0&&<div><dt><span aria-hidden="true">01</span> {copy("pro.dress.dosTitle")}</dt><dd><ul>{dress.dos.map((text,index)=><li key={index}>{text}</li>)}</ul></dd></div>}
+        {dress.donts.length>0&&<div><dt><span aria-hidden="true">02</span> {copy("pro.dress.dontsTitle")}</dt><dd><ul>{dress.donts.map((text,index)=><li key={index}>{text}</li>)}</ul></dd></div>}
       </dl>
-      {dress.palette.length>0&&<div className="minimal-dress-invitation-colors"><p className="pro-kicker">Cores para inspirar o seu look</p><ul>{dress.palette.map((color,index)=><li key={`${color.name}-${index}`}><span className="minimal-dress-color-shape" aria-hidden="true"><i style={{backgroundColor:color.hex}}/></span><span className="minimal-dress-color-name">{color.name}</span></li>)}</ul></div>}
+      {dress.palette.length>0&&<div className="minimal-dress-invitation-colors"><p className="pro-kicker">{copy("pro.dress.paletteTitle")}</p><ul>{dress.palette.map((color,index)=><li key={`${color.name}-${index}`}><span className="minimal-dress-color-shape" aria-hidden="true"><i style={{backgroundColor:color.hex}}/></span><span className="minimal-dress-color-name">{color.name}</span></li>)}</ul></div>}
     </div>
   </section>;
 }

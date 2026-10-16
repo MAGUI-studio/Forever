@@ -134,32 +134,20 @@ async function check(title, work) {
   console.log(`OK ${title}`);
 }
 (async () => {
-  await check("templates recebem exemplos completos sem alterar nomes, data ou sites personalizados",async()=>{
-    const {templateExampleConfig,EXAMPLE_PAYMENT_LINK}=load("src/config/template-examples.ts");
+  await check("templates não inventam dados em sites novos ou no carregamento do editor",async()=>{
+    const {initializeTemplateConfig}=load("src/config/template-examples.ts");
     const {emptyWeddingConfig}=load("src/config/forever.ts");
     const {weddingConfigSchema}=load("src/lib/wedding-schema.ts");
-    const {templateCopyFields}=load("src/config/templates/registry.ts");
     const base={...clone(emptyWeddingConfig),couple:{...clone(emptyWeddingConfig.couple),partner1:"Marina",partner2:"Lucas",weddingDate:"2099-07-20T12:00:00-03:00"}};
-    for(const template of ["botanical-classic","contemporary-romance"]){
-      const example=templateExampleConfig(base,template);
-      assert(weddingConfigSchema.safeParse(example).success);
-      assert.equal(example.couple.partner1,"Marina");assert.equal(example.couple.weddingDate,base.couple.weddingDate);
-      assert(example.couple.story.enabled && example.couple.story.text.length);
-      assert(example.ceremony.placeName && example.party.placeName && example.gallery.length && example.gifts.length && example.dressCode.dos.length);
-      assert(templateCopyFields(template).every(field=>example.copy[field.key]?.trim()));
-      for(const image of [...example.gallery.map(photo=>photo.url),...example.gifts.map(gift=>gift.image),...example.dressCode.gallery.map(item=>item.image)])assert(fs.existsSync(path.join("public",image)));
+    for(const template of ["botanical-classic","contemporary-romance","minimalist-modern"]){
+      const initial=initializeTemplateConfig(base,template);
+      assert(weddingConfigSchema.safeParse(initial).success);
+      for(const key of ["couple","ceremony","party","gallery","gifts","dressCode","pix","creditCard"])assert.deepEqual(initial[key],base[key]);
     }
-    assert.equal(base.gallery.length,0);
-    const original=clone(store.get("weddings/test-couple"));
-    const site=load("src/app/api/admin/site/route.ts");
-    try {
-      store.set("weddings/test-couple",{...original,status:"draft",siteRevision:0,config:base});
-      const data=await (await site.GET(request("GET"))).json();assert(data.examplesApplied);assert(data.config.gifts.length);
-      assert.equal(store.get("weddings/test-couple").config.gifts.length,0);
-      const publish=await site.PUT(request("PUT",{action:"publish",config:data.config,templateId:"botanical-classic",expectedRevision:0}));assert.equal(publish.status,400);assert((await publish.json()).error.includes("exemplo"));
-      assert.equal(data.config.giftPaymentLink,EXAMPLE_PAYMENT_LINK);
-      store.set("weddings/test-couple",{...original,status:"draft",siteRevision:1,config:base});
-      const customized=await (await site.GET(request("GET"))).json();assert.equal(customized.config.gifts.length,0);
+    const original=clone(store.get("weddings/test-couple")),site=load("src/app/api/admin/site/route.ts");
+    try{store.set("weddings/test-couple",{...original,status:"draft",siteRevision:0,config:base});
+      const response=await site.GET(request("GET"));assert.equal(response.status,200);
+      const data=await response.json();assert.deepEqual(data.config,base);assert.equal(data.examplesApplied,undefined);
     }finally{store.set("weddings/test-couple",original);}
   });
   await check("endereço automático usa primeiros nomes e permite alternativa após colisão",async()=>{
@@ -689,9 +677,9 @@ async function check(title, work) {
     const {templateIds,templateSections,templateCopyFields,switchTemplateCopy,siteCopy,defaultTemplateId}=load("src/config/templates/registry.ts");
     assert.equal(defaultTemplateId,"botanical-classic");assert(templateIds.includes("contemporary-romance"));
     assert(templateSections["contemporary-romance"].includes("schedule"));assert(!templateSections["botanical-classic"].includes("schedule"));assert(templateSections["contemporary-romance"].includes("countdown"));
-    assert(!templateCopyFields("contemporary-romance").some(field=>field.key.startsWith("dressCode.")));assert(!templateCopyFields("botanical-classic").some(field=>field.key.startsWith("romance.")));
+    assert(templateCopyFields("contemporary-romance").some(field=>field.key.startsWith("dressCode.")));assert(!templateCopyFields("botanical-classic").some(field=>field.key.startsWith("romance.")));
     const copy={"hero.text2":"Nosso texto","rsvp.text4":siteCopy(undefined,"rsvp.text4"),"romance.dress.note":""};
-    const next=switchTemplateCopy(copy,"botanical-classic","contemporary-romance");assert.equal(next["hero.text2"],"Nosso texto");assert(next["romance.dress.note"]);assert.equal(next["rsvp.text4"],siteCopy(undefined,"rsvp.text4","contemporary-romance"));assert.notEqual(next["rsvp.text4"],copy["rsvp.text4"]);
+    const next=switchTemplateCopy(copy,"botanical-classic","contemporary-romance");assert.equal(next["hero.text2"],"Nosso texto");assert.equal(next["romance.dress.note"],"");assert.equal(next["rsvp.text4"],siteCopy(undefined,"rsvp.text4","contemporary-romance"));assert.notEqual(next["rsvp.text4"],copy["rsvp.text4"]);
     const site=load("src/app/api/admin/site/route.ts"),{emptyWeddingConfig}=load("src/config/forever.ts");const original=clone(store.get("weddings/test-couple"));
     try{store.set("weddings/test-couple",{...original,siteRevision:0,config:clone(emptyWeddingConfig)});const config={...clone(emptyWeddingConfig),copy:{"rsvp.text4":"Minha mensagem"},couple:{...emptyWeddingConfig.couple,partner1:"Ana",partner2:"Pedro",weddingDate:"2027-10-10T12:00:00-03:00"},ceremony:{...emptyWeddingConfig.ceremony,placeName:"Salão"}};
     assert.equal((await site.PUT(request("PUT",{action:"publish",config,templateId:"contemporary-romance",expectedRevision:0}))).status,200);const saved=store.get("weddings/test-couple");assert.equal(saved.templateId,"contemporary-romance");assert.equal(saved.config.copy["rsvp.text4"],"Minha mensagem");assert(saved.config.copy["romance.schedule.title"]);assert.deepEqual(saved.config.gifts,config.gifts);
@@ -700,8 +688,8 @@ async function check(title, work) {
   await check("textos de ações e regras do RSVP permanecem fixos",async()=>{
     const {copyFields,copyDefaults,siteCopy}=load("src/config/templates/registry.ts");
     const {weddingConfigSchema}=load("src/lib/wedding-schema.ts"),{emptyWeddingConfig}=load("src/config/forever.ts");
-    assert.deepEqual(copyFields.filter(field=>field.section==="rsvp").map(field=>field.key),["rsvp.text1","rsvp.text4"]);
-    for(const key of ["footer.text3","hero.text6","gifts.text14","rsvp.text38","checkout.text21","countdown.text1","countdown.text4","countdown.text5","countdown.text6","countdown.text7"]){assert(!copyFields.some(field=>field.key===key));assert.equal(siteCopy({[key]:"Texto adulterado"},key),copyDefaults[key]);}
+    assert.deepEqual(copyFields.filter(field=>field.section==="rsvp").map(field=>field.key),["rsvp.text1","rsvp.text2","rsvp.text3","rsvp.text4"]);
+    for(const key of ["footer.text3","hero.text6","gifts.text14","rsvp.text38","checkout.text21","countdown.text4","countdown.text5","countdown.text6","countdown.text7"]){assert(!copyFields.some(field=>field.key===key));assert.equal(siteCopy({[key]:"Texto adulterado"},key),copyDefaults[key]);}
     const config=weddingConfigSchema.parse({...emptyWeddingConfig,copy:{"rsvp.text38":"Texto adulterado","rsvp.text1":"Boas-vindas"}});
     assert.equal(config.copy["rsvp.text38"],undefined);assert.equal(config.copy["rsvp.text1"],"Boas-vindas");
   });

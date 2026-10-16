@@ -23,7 +23,7 @@ export function DressCode() {
           <div className="pt-5 space-y-6">
             <p className="font-serif text-2xl sm:text-3xl text-[#3D2501]">{copy("dressCode.text7")}</p>
             <div className="grid grid-cols-2 gap-5 sm:gap-8 max-w-md mx-auto">
-              {[{ name: copy("dressCode.color1"), fill: "#FFFFFF", stroke: "#AFA493" }, { name: copy("dressCode.color2"), fill: "#80654E", stroke: "#3D2501" }].map(color => (
+              {[{ name: copy("dressCode.color1"), fill: /^#[a-f0-9]{6}$/i.test(copy("dressCode.color1Hex"))?copy("dressCode.color1Hex"):"transparent", stroke: "#AFA493" }, { name: copy("dressCode.color2"), fill: /^#[a-f0-9]{6}$/i.test(copy("dressCode.color2Hex"))?copy("dressCode.color2Hex"):"transparent", stroke: "#3D2501" }].map(color => (
                 <div key={color.name} className="space-y-3">
                   <div className="relative rounded-t-full rounded-b-3xl bg-[#E8E4DD]/60 px-3 pt-6 pb-4 ring-1 ring-[#3D2501]/10">
                     <svg aria-hidden="true" viewBox="0 0 160 150" className="w-full h-auto" fill={color.fill} stroke={color.stroke} strokeWidth="1.6" strokeLinejoin="round">

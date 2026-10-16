@@ -13,5 +13,6 @@ export function RomancePhoto({src,className="",preload=false,parallax=true,sizes
   const reduced=useReducedMotion();
   const {scrollYProgress}=useScroll({target:frame,offset:["start end","end start"]});
   const y=useTransform(scrollYProgress,[0,1],["-5%","5%"]);
+  if(!src)return null;
   return <motion.div ref={frame} className={`relative isolate overflow-hidden bg-[var(--forever-primary)]/10 ${className}`} initial={reduced||preload?false:{clipPath:"inset(8% 0 8% 0)"}} whileInView={{clipPath:"inset(0% 0 0% 0)"}} viewport={{once:true,amount:0.1}} transition={{duration:reduced?0:1.2,ease}}><motion.div className="absolute -inset-y-[8%] inset-x-0" style={reduced||!parallax?undefined:{y}}><Image src={src} alt="" fill preload={preload} sizes={sizes} className="object-cover"/></motion.div></motion.div>;
 }

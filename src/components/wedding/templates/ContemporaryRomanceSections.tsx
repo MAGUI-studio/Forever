@@ -75,7 +75,7 @@ export function ContemporaryRomanceGifts(){
  return <section id="presentes" className="relative isolate overflow-hidden px-6 py-16 sm:px-12 sm:py-24 lg:px-20">
   <ContemporaryRomanceOrnaments pattern="gifts"/>
   <div className="relative mx-auto max-w-7xl"><RomanceReveal className="mb-12 grid items-end gap-8 border-b border-[var(--forever-primary)]/20 pb-10 lg:mb-16 lg:grid-cols-[1.2fr_0.8fr]"><div><p className="mb-6 text-[10px] uppercase tracking-[0.25em] text-[var(--forever-accent)]">{copy("romance.gifts.eyebrow")}</p><h2 className="max-w-3xl font-serif text-5xl font-light leading-[1.02] tracking-[-0.035em] sm:text-7xl">{copy("romance.gifts.title")}</h2></div><p className="max-w-lg text-sm leading-8 text-[var(--forever-accent)]">{copy("romance.gifts.description")}</p></RomanceReveal>
-  {!config.gifts.length?<p role="status" className="py-12 text-center font-serif text-2xl text-[var(--forever-accent)]">A lista de presentes ainda está vazia. Em breve os noivos compartilharão suas escolhas por aqui.</p>:<>
+  {!config.gifts.length?<p role="status" className="py-12 text-center font-serif text-2xl text-[var(--forever-accent)]">{copy("gifts.emptyMessage")}</p>:<>
    <div className="mb-12 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-b border-[var(--forever-primary)]/20 pb-8">
     {/* Busca no estilo editorial do template */}
     <div className="relative flex-1 max-w-lg group">

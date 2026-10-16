@@ -77,7 +77,7 @@ export function GiftList(){
     <p data-cinema-copy className="text-sm sm:text-base text-[#80654E] font-light leading-[1.8] max-w-2xl mx-auto">{copy("gifts.text6")}</p>
    </div>
 
-   {!gifts.length?<p role="status" className="py-12 text-center font-serif text-xl text-[#80654E]">A lista de presentes ainda está vazia. Em breve os noivos poderão compartilhar suas escolhas por aqui.</p>:<>
+   {!gifts.length?<p role="status" className="py-12 text-center font-serif text-xl text-[#80654E]">{copy("gifts.emptyMessage")}</p>:<>
     <div className="gift-toolbar flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 max-w-4xl mx-auto">
       {/* Busca personalizada no estilo do template */}
       <div className="relative flex-1 group">

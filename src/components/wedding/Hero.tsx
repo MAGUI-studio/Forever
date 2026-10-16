@@ -27,7 +27,7 @@ export function Hero() {
   const heroImage = resolveTemplateImage(weddingConfig, "botanical-classic", "hero");
   return <section ref={section} id="inicio" className="relative w-full overflow-hidden bg-[#5D613C] px-6 sm:px-12 lg:px-20 pt-8 sm:pt-12 pb-24 sm:pb-36 text-[#F1F1F1]">
     <motion.div style={reducedMotion ? undefined : { y: imageY, scale: imageScale }} className="absolute inset-x-0 -inset-y-[20%] origin-center">
-      <Image unoptimized
+      {heroImage&&<Image unoptimized
         src={heroImage}
         alt=""
         fill
@@ -36,7 +36,7 @@ export function Hero() {
         placeholder="blur"
         blurDataURL="data:image/jpeg;base64,/9j/2wBDABcQERQRDhcUEhQaGBcbIjklIh8fIkYyNSk5UkhXVVFIUE5bZoNvW2F8Yk5QcptzfIeLkpSSWG2grJ+OqoOPko3/2wBDARgaGiIeIkMlJUONXlBejY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY3/wAARCAAOABgDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAME/8QAIRAAAgEEAgIDAAAAAAAAAAAAAQIDABESMQQhFDIiYYH/xAAXAQADAQAAAAAAAAAAAAAAAAABAgME/8QAGBEBAQEBAQAAAAAAAAAAAAAAAQAhERL/2gAMAwEAAhEDEQA/AMUaRzx4BMJCb99U8VoyoVt9kfeqnAUKsJGfJ7XxAAtoVpESB7ZP7a6teszlTzRkaPjXLSZMygADQpU+THEyJ8pDgfU2AP7SmDIJy//Z"
         className="object-cover object-center"
-      />
+      />}
     </motion.div>
     <div aria-hidden="true" className="absolute inset-0" style={{background:"linear-gradient(180deg, rgba(43,44,32,0.42) 0%, rgba(35,37,27,0.50) 55%, rgba(73,77,48,0.60) 100%)"}} />
 

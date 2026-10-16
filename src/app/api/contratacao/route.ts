@@ -1,4 +1,4 @@
-import { templateExampleConfig } from "@/config/template-examples";
+import { initializeTemplateConfig } from "@/config/template-examples";
 import { z } from "zod";
 import { platformIdentity } from "@/lib/platform-server";
 import { purchaseWedding } from "@/lib/purchase-account";
@@ -36,7 +36,7 @@ export async function POST(request:Request) {
       if((await transaction.get(ref)).exists)throw new HttpError(409,"Este endereço já está em uso. Escolha outro para o casamento de vocês.",undefined,"ADDRESS_TAKEN");
       await bindWeddingUser(transaction,identity.uid,identity.email!,slug);
       const now=new Date().toISOString();
-      transaction.set(ref,{slug,status:"draft",plan:null,theme:"botanical",templateId:"botanical-classic",purchaseOwnerUid:identity.uid,createdAt:now,updatedAt:now,config:templateExampleConfig({...emptyWeddingConfig,couple:{...emptyWeddingConfig.couple,partner1:data.partner1,partner2:data.partner2,weddingDate:data.weddingDate+"T12:00:00-03:00"}},"botanical-classic")});
+      transaction.set(ref,{slug,status:"draft",plan:null,theme:"botanical",templateId:"botanical-classic",purchaseOwnerUid:identity.uid,createdAt:now,updatedAt:now,config:initializeTemplateConfig({...emptyWeddingConfig,couple:{...emptyWeddingConfig.couple,partner1:data.partner1,partner2:data.partner2,weddingDate:data.weddingDate+"T12:00:00-03:00"}},"botanical-classic")});
       transaction.set(ref.collection("members").doc(identity.uid),{uid:identity.uid,email:identity.email,role:"admin",active:true});
       transaction.set(ref.collection("settings").doc("rsvp"),{enabled:true,deadline:""});
     });

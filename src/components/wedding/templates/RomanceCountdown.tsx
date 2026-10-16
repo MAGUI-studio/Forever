@@ -16,7 +16,7 @@ export function RomanceCountdown({date}:{date:string}){
  },[date]);
  const values=remaining===null?null:[Math.floor(remaining/86400000),Math.floor(remaining/3600000)%24,Math.floor(remaining/60000)%60,Math.floor(remaining/1000)%60];
  return <div id="contagem-regressiva" className="mx-auto mt-10 w-full max-w-[410px]">
-  {remaining===0?<p role="status" className="flex items-center justify-center gap-3 font-serif text-2xl italic text-white"><Heart size={18} strokeWidth={1}/>O nosso grande dia chegou</p>:<>
+  {remaining===0?<p role="status" className="flex items-center justify-center gap-3 font-serif text-2xl italic text-white"><Heart size={18} strokeWidth={1}/>{copy("romance.countdown.arrived")}</p>:<>
    <p className="mb-4 font-serif text-lg italic text-white/85">{copy("romance.countdown.intro")}</p>
    <div aria-label="Contagem regressiva para o casamento" aria-busy={remaining===null} className="grid grid-cols-4 gap-2 sm:gap-3">{["dias","horas","minutos","segundos"].map((label,index)=>{
     const value=values?String(values[index]).padStart(2,"0"):"--";
