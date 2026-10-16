@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack && opennextjs-cloudflare build --skipNextBuild",
+    "build": "next build --webpack && opennextjs-cloudflare build --skipNextBuild --noMinify && node scripts/prepare-worker-startup.mjs",
     "start": "next start",
     "lint": "eslint",
     "test:guests": "node tests/guests.mjs",
