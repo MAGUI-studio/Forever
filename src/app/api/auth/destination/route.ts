@@ -1,6 +1,16 @@
-import { isPlanExpired } from "@/config/plan-access";
-import {resolveModules} from "@/config/modules";
-import {services} from "@/lib/firebase/admin";
-import {platformIdentity} from "@/lib/platform-server";
-import {failure,HttpError,reply,tokenId} from "@/lib/guest-server";
-export async function GET(request:Request){try{const {identity,superadmin}=await platformIdentity(request),db=services().db;if(superadmin)return reply({destination:"/studio",role:"superadmin",plan:"foreverPro"});const weddings=await db.collection("weddings").get();const matches=[];for(const wedding of weddings.docs){const member=(await wedding.ref.collection("members").doc(identity.uid).get()).data();const team=identity.email?(await wedding.ref.collection("receptionTeam").doc(tokenId(identity.email.toLowerCase())).get()).data():null;const role=member?.active&&member.role==="admin"?"admin":team?.active&&(identity.email_verified||team.uid===identity.uid)?"reception":null;if(role==="reception"&&!resolveModules(wedding.data().modules, wedding.data().plan).team)continue;if(role)matches.push({slug:wedding.id,status:wedding.data().status,role,plan:wedding.data().plan,config:wedding.data().config});}if(!matches.length)return reply({destination:"/contratar",role:"customer",plan:null});if(matches.length>1)throw new HttpError(409,"Esta conta possui mais de um vínculo. Solicite a correção à MAGUI.studio.");const wedding=matches[0];if(wedding.plan===null)throw new HttpError(403,"Seu casamento está sem plano. Assine novamente para recuperar o acesso.",undefined,"PLAN_REQUIRED");if(isPlanExpired(wedding))return reply({destination:"/"+wedding.slug+"/acesso-expirado",slug:wedding.slug,role:wedding.role,plan:wedding.plan});if(["suspended","archived"].includes(wedding.status))throw new HttpError(403,"O acesso a este casamento está suspenso ou arquivado.");return reply({destination:"/"+wedding.slug+"/"+(wedding.role==="reception"?"recepcao":"painel"),slug:wedding.slug,role:wedding.role,plan:wedding.plan==="essencial"?"essencial":"foreverPro"});}catch(e){return failure(e);}}
+// Load server dependencies within the request so import failures can be logged.
+export async function GET(request: Request) {
+  try {
+    const handler = await import("./handler");
+    return await handler.GET(request);
+  } catch (error) {
+    console.error("AUTH_DESTINATION_MODULE_ERROR", JSON.stringify({
+      name: error instanceof Error ? error.name : "UnknownError",
+      message: error instanceof Error ? error.message : "Module initialization failed",
+    }));
+    return Response.json(
+      { error: "Não foi possível iniciar o serviço de login.", code: "AUTH_DESTINATION_MODULE_ERROR" },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+}
