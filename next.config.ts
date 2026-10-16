@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   // OpenNext selects jose's workerd export, while Next.js traces its Node export.
   // Include both possible npm locations so the Worker has the browser build too.
   outputFileTracingIncludes: {
