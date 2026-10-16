@@ -17,9 +17,9 @@ import {
   AlertCircle,
   X,
   Sparkles,
-  Check,
 } from "lucide-react";
 import { AdminButton } from "./AdminButton";
+import { UploadProgress } from "./UploadProgress";
 import { ConfirmModal } from "./ConfirmModal";
 
 export const MAX_SINGLE_IMAGE_SIZE_BYTES = 1024 * 1024;
@@ -462,27 +462,12 @@ export function SingleImageUploader({
       )}
 
       {isBusy && (
-        <div className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between text-xs text-[var(--forever-primary,#722F37)]">
-            <span className="flex items-center gap-1.5 font-medium">
-              <Loader2 size={12} className="animate-spin" />
-              {isUploading
-                ? "Enviando foto para a nuvem…"
-                : isAutoSaving
-                  ? "Salvando alterações no site…"
-                  : "Atualizando foto…"}
-            </span>
-            <span className="font-semibold">
-              {isUploading ? `${progress}%` : <Check size={13} />}
-            </span>
-          </div>
-          <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--forever-sand,#EFECE6)]">
-            <div
-              className="h-full rounded-full bg-[var(--forever-primary,#722F37)] transition-all duration-300"
-              style={{ width: isUploading ? `${progress}%` : "100%" }}
-            />
-          </div>
-        </div>
+        <UploadProgress
+          isUploading={isUploading}
+          isAutoSaving={isAutoSaving}
+          progress={progress}
+          variant="single"
+        />
       )}
 
       <ConfirmModal

@@ -50,25 +50,42 @@ export const expandedParser = createParser<Record<string, boolean>>({
 export function resolveExpanded(value: Record<string, boolean>, ids: string[]) {
   const result: Record<string, boolean> = {};
   if (value.all) for (const id of ids) result[id] = true;
+  const sorted = [...ids].sort();
   for (const [prefix, open] of Object.entries(value)) {
     if (prefix === "all") continue;
-    const matches = ids.filter((id) => id.startsWith(prefix));
-    if (matches.length === 1) result[matches[0]] = open;
+    let low = 0,
+      high = sorted.length;
+    while (low < high) {
+      const middle = (low + high) >>> 1;
+      if (sorted[middle] < prefix) low = middle + 1;
+      else high = middle;
+    }
+    const id = sorted[low];
+    if (id?.startsWith(prefix) && !sorted[low + 1]?.startsWith(prefix)) result[id] = open;
   }
   return result;
 }
 export function compactExpanded(value: Record<string, boolean>, ids: string[]) {
-  const prefix = (id: string) => {
-    let length = 6;
-    while (
-      length < id.length &&
-      ids.some((other) => other !== id && other.startsWith(id.slice(0, length)))
-    )
-      length++;
-    return id.slice(0, length);
-  };
   const open = ids.filter((id) => value[id]);
   if (!open.length) return {};
+  const sorted = [...new Set(ids)].sort();
+  const prefixes = new Map<string, string>();
+  const sharedLength = (left: string, right = "") => {
+    let length = 0;
+    while (length < left.length && length < right.length && left[length] === right[length])
+      length++;
+    return length;
+  };
+  for (let index = 0; index < sorted.length; index++) {
+    const id = sorted[index];
+    const length = Math.max(
+      6,
+      sharedLength(id, sorted[index - 1]) + 1,
+      sharedLength(id, sorted[index + 1]) + 1,
+    );
+    prefixes.set(id, id.slice(0, length));
+  }
+  const prefix = (id: string) => prefixes.get(id)!;
   const direct = Object.fromEntries(open.map((id) => [prefix(id), true]));
   const inverse = {
     all: true,

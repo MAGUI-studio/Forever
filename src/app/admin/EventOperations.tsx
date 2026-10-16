@@ -152,37 +152,61 @@ export function EventOperations({
         ),
     [invitations],
   );
+  const tableOccupancy = useMemo(() => {
+    const counts = new Map<string | undefined, number>();
+    for (const { guest } of confirmed)
+      counts.set(guest.tableId, (counts.get(guest.tableId) ?? 0) + 1);
+    return counts;
+  }, [confirmed]);
   const tableNames = useMemo(() => {
     const names = new Map<string, string>();
     for (const table of tables) if (!names.has(table.id)) names.set(table.id, table.name);
     return names;
   }, [tables]);
   const normalizedQuery = normalize(query);
-  const filtered = confirmed.filter(
-    ({ guest, invitation, restriction }) =>
-      normalize(
-        guest.name +
-          " " +
-          invitation.label +
-          " " +
-          restriction +
-          " " +
-          (tableNames.get(guest.tableId ?? "") ?? ""),
-      ).includes(normalizedQuery) &&
-      (tableFilter === "all" ||
-        (tableFilter === "none" ? !guest.tableId : guest.tableId === tableFilter)),
+  const filtered = useMemo(
+    () =>
+      confirmed.filter(
+        ({ guest, invitation, restriction }) =>
+          normalize(
+            guest.name +
+              " " +
+              invitation.label +
+              " " +
+              restriction +
+              " " +
+              (tableNames.get(guest.tableId ?? "") ?? ""),
+          ).includes(normalizedQuery) &&
+          (tableFilter === "all" ||
+            (tableFilter === "none" ? !guest.tableId : guest.tableId === tableFilter)),
+      ),
+    [confirmed, tableNames, normalizedQuery, tableFilter],
   );
-  const buffet = filtered.filter((row) => !onlyRestrictions || row.restriction?.trim());
-  const visibleTables = tables.filter((table) => normalize(table.name).includes(normalizedQuery));
-  const visibleTeam = team.filter(
-    (member) =>
-      normalize(member.email).includes(normalizedQuery) &&
-      (statusFilter === "all" || (statusFilter === "active" ? member.active : !member.active)),
+  const buffet = useMemo(
+    () => filtered.filter((row) => !onlyRestrictions || row.restriction?.trim()),
+    [filtered, onlyRestrictions],
   );
-  const visibleHistory = history.filter((entry) =>
-    normalize([entry.action, entry.actor, entry.target, entry.details].join(" ")).includes(
-      normalizedQuery,
-    ),
+  const visibleTables = useMemo(
+    () => tables.filter((table) => normalize(table.name).includes(normalizedQuery)),
+    [tables, normalizedQuery],
+  );
+  const visibleTeam = useMemo(
+    () =>
+      team.filter(
+        (member) =>
+          normalize(member.email).includes(normalizedQuery) &&
+          (statusFilter === "all" || (statusFilter === "active" ? member.active : !member.active)),
+      ),
+    [team, normalizedQuery, statusFilter],
+  );
+  const visibleHistory = useMemo(
+    () =>
+      history.filter((entry) =>
+        normalize([entry.action, entry.actor, entry.target, entry.details].join(" ")).includes(
+          normalizedQuery,
+        ),
+      ),
+    [history, normalizedQuery],
   );
   const pending = pageLoading;
   if (pending)
@@ -393,7 +417,7 @@ export function EventOperations({
               empty="Nenhuma mesa encontrada."
             >
               {visibleTables.map((table) => {
-                const count = confirmed.filter((row) => row.guest.tableId === table.id).length;
+                const count = tableOccupancy.get(table.id) ?? 0;
                 return (
                   <tr key={table.id} className="hover:bg-neutral-50/40">
                     <td className="px-5 text-sm font-medium uppercase text-neutral-900">

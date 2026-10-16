@@ -103,9 +103,16 @@ export function resolveModules(
   if (plan === "essencial") {
     for (const key of foreverProExclusiveModules) result[key] = false;
   }
-  for (let i = 0; i < moduleKeys.length; i++)
-    for (const key of moduleKeys)
-      if (moduleCatalog[key].requires.some((parent) => !result[parent])) result[key] = false;
+  for (let i = 0; i < moduleKeys.length; i++) {
+    let changed = false;
+    for (const key of moduleKeys) {
+      if (result[key] && moduleCatalog[key].requires.some((parent) => !result[parent])) {
+        result[key] = false;
+        changed = true;
+      }
+    }
+    if (!changed) break;
+  }
   return result;
 }
 export const sectionModule: Record<string, WeddingModule | undefined> = {
@@ -121,18 +128,21 @@ export const sectionModule: Record<string, WeddingModule | undefined> = {
   preview: "siteEditor",
 };
 export function redactModuleData<T>(value: T, modules: WeddingModules): T {
-  if (Array.isArray(value)) return value.map((item) => redactModuleData(item, modules)) as T;
-  if (value && typeof value === "object") {
-    const hidden = new Set<string>();
-    if (!modules.dietaryRestrictions) hidden.add("dietaryRestrictions");
-    if (!modules.messages) hidden.add("message");
-    if (!modules.invitationTracking)
-      for (const key of ["sentAt", "openedAt", "personalOpenedAt"]) hidden.add(key);
-    return Object.fromEntries(
-      Object.entries(value)
-        .filter(([key]) => !hidden.has(key))
-        .map(([key, item]) => [key, redactModuleData(item, modules)]),
-    ) as T;
+  const hidden = new Set<string>();
+  if (!modules.dietaryRestrictions) hidden.add("dietaryRestrictions");
+  if (!modules.messages) hidden.add("message");
+  if (!modules.invitationTracking)
+    for (const key of ["sentAt", "openedAt", "personalOpenedAt"]) hidden.add(key);
+  function redact(item: unknown): unknown {
+    if (Array.isArray(item)) return item.map(redact);
+    if (item && typeof item === "object") {
+      const entries: [string, unknown][] = [];
+      for (const [key, child] of Object.entries(item)) {
+        if (!hidden.has(key)) entries.push([key, redact(child)]);
+      }
+      return Object.fromEntries(entries);
+    }
+    return item;
   }
-  return value;
+  return redact(value) as T;
 }

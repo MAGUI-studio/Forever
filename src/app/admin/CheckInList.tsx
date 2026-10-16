@@ -101,7 +101,7 @@ export function CheckInList({
       ),
     [active],
   );
-  const arrived = confirmed.filter((guest) => guest.checkedIn).length;
+  const arrived = useMemo(() => confirmed.filter((guest) => guest.checkedIn).length, [confirmed]);
   const normalizedQuery = normalize(query);
   const groups = useMemo(
     () =>
@@ -127,16 +127,20 @@ export function CheckInList({
     group: groups.filter(({ invitation }) => isGroup(invitation)).length,
     individual: groups.filter(({ invitation }) => !isGroup(invitation)).length,
   };
-  const visible = groups
-    .filter(
-      ({ invitation }) =>
-        kind === "all" || (kind === "group" ? isGroup(invitation) : !isGroup(invitation)),
-    )
-    .sort(
-      (a, b) =>
-        a.invitation.label.localeCompare(b.invitation.label, "pt-BR") * (descending ? -1 : 1),
-    );
-  const visibleGuests = visible.flatMap((item) => item.guests);
+  const visible = useMemo(
+    () =>
+      groups
+        .filter(
+          ({ invitation }) =>
+            kind === "all" || (kind === "group" ? isGroup(invitation) : !isGroup(invitation)),
+        )
+        .sort(
+          (a, b) =>
+            a.invitation.label.localeCompare(b.invitation.label, "pt-BR") * (descending ? -1 : 1),
+        ),
+    [groups, kind, descending],
+  );
+  const visibleGuests = useMemo(() => visible.flatMap((item) => item.guests), [visible]);
   const allExpanded =
     visible.length > 0 && visible.every(({ invitation }) => expanded[invitation.id]);
   const toggle = (id: string) => setExpanded((current) => ({ ...current, [id]: !current[id] }));

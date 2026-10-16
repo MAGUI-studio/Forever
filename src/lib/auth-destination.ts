@@ -9,7 +9,17 @@ export type AuthDestination = {
   plan: WeddingPlan | null;
 };
 
-export async function resolveAuthDestination(account: User): Promise<AuthDestination> {
+const pendingDestinations = new WeakMap<User, Promise<AuthDestination>>();
+export function resolveAuthDestination(account: User): Promise<AuthDestination> {
+  const pending = pendingDestinations.get(account);
+  if (pending) return pending;
+  const request = readAuthDestination(account).finally(() => {
+    if (pendingDestinations.get(account) === request) pendingDestinations.delete(account);
+  });
+  pendingDestinations.set(account, request);
+  return request;
+}
+async function readAuthDestination(account: User): Promise<AuthDestination> {
   try {
     const token = await account.getIdToken();
     const response = await fetch("/api/auth/destination", {

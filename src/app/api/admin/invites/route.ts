@@ -202,14 +202,11 @@ export async function DELETE(request: Request) {
       if (!snap.exists || snap.data()?.revision !== data.revision)
         throw new HttpError(409, "O convite mudou. Atualize a lista.");
       const current = snap.data()!;
-      if (current.code) {
-        t.delete(db.collection("codes").doc(current.code));
-      }
-      if (current.guestCodes) {
-        for (const gCode of Object.values(current.guestCodes as Record<string, string>)) {
-          t.delete(db.collection("codes").doc(gCode));
-        }
-      }
+      const codes = new Set<string>([
+        ...(current.code ? [current.code] : []),
+        ...Object.values((current.guestCodes ?? {}) as Record<string, string>),
+      ]);
+      for (const code of codes) t.delete(db.collection("codes").doc(code));
       audit(t, db, actor, "Convite excluído", snap.data()?.label ?? "Convite");
       t.delete(ref);
     });

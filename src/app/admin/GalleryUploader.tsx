@@ -25,9 +25,9 @@ import {
   RefreshCw,
   Sparkles,
   Camera,
-  Check,
 } from "lucide-react";
 import { AdminButton } from "./AdminButton";
+import { UploadProgress } from "./UploadProgress";
 import { ConfirmModal } from "./ConfirmModal";
 
 interface GalleryUploaderProps {
@@ -471,27 +471,12 @@ export function GalleryUploader({
           </div>
 
           {isBusy && (
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center justify-between text-xs text-[var(--forever-primary,#722F37)]">
-                <span className="flex items-center gap-1.5 font-medium">
-                  <Loader2 size={13} className="animate-spin" />
-                  {isUploading
-                    ? "Enviando fotos para a nuvem…"
-                    : isAutoSaving
-                      ? "Salvando alterações automaticamente no site…"
-                      : "Atualizando galeria…"}
-                </span>
-                <span className="font-semibold">
-                  {isUploading ? `${progress}%` : <Check size={14} />}
-                </span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--forever-sand,#EFECE6)]">
-                <div
-                  className="h-full rounded-full bg-[var(--forever-primary,#722F37)] transition-all duration-300"
-                  style={{ width: isUploading ? `${progress}%` : "100%" }}
-                />
-              </div>
-            </div>
+            <UploadProgress
+              isUploading={isUploading}
+              isAutoSaving={isAutoSaving}
+              progress={progress}
+              variant="gallery"
+            />
           )}
 
           <div className="mt-4 flex flex-wrap items-center justify-end gap-3">

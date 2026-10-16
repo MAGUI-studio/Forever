@@ -23,42 +23,44 @@ export async function POST(request: Request) {
     const modules = resolveModules(wedding.modules, wedding.plan);
     checkLookupRateLimit(request);
     const resolved = await resolveInvitation(db, token);
-    const [snap, settings] = await Promise.all([resolved.ref.get(), db.doc("settings/rsvp").get()]);
-    const data = snap.data();
-    if (!data || !data.active)
-      throw new HttpError(404, "Convite não encontrado. Confira o código ou fale com os noivos.");
-    const allowed = resolveAuthorizedGuests(
-      token,
-      data as { token: string; guests: import("@/types/guests").Guest[] },
-      resolved.guestId,
-    );
     const personal = Boolean(resolved.guestId) || token.includes(".");
+    const [invitation, settings] = await Promise.all([
+      db.runTransaction(async (t) => {
+        const snap = await t.get(resolved.ref);
+        const data = snap.data();
+        if (!data || !data.active)
+          throw new HttpError(
+            404,
+            "Convite não encontrado. Confira o código ou fale com os noivos.",
+          );
+        const allowed = resolveAuthorizedGuests(
+          token,
+          data as { token: string; guests: import("@/types/guests").Guest[] },
+          resolved.guestId,
+        );
+        if (
+          modules.invitationTracking &&
+          (!data.openedAt || (personal && !data.personalOpenedAt?.[allowed[0].id]))
+        ) {
+          const now = new Date().toISOString();
+          t.update(resolved.ref, {
+            openedAt: data.openedAt ?? now,
+            ...(personal
+              ? {
+                  personalOpenedAt: {
+                    ...(data.personalOpenedAt ?? {}),
+                    [allowed[0].id]: data.personalOpenedAt?.[allowed[0].id] ?? now,
+                  },
+                }
+              : {}),
+          });
+        }
+        return { data, allowed };
+      }),
+      db.doc("settings/rsvp").get(),
+    ]);
+    const { data, allowed } = invitation;
     const notes = personal ? data.personalResponses?.[allowed[0].id] : data;
-
-    const invitationRef = resolved.ref;
-    await db.runTransaction(async (t) => {
-      const latest = await t.get(invitationRef),
-        current = latest.data();
-      if (!current?.active) throw new HttpError(404, "Convite não encontrado.");
-      resolveAuthorizedGuests(
-        token,
-        current as { token: string; guests: import("@/types/guests").Guest[] },
-        resolved.guestId,
-      );
-      const now = new Date().toISOString();
-      if (modules.invitationTracking)
-        t.update(invitationRef, {
-          openedAt: current.openedAt ?? now,
-          ...(personal
-            ? {
-                personalOpenedAt: {
-                  ...(current.personalOpenedAt ?? {}),
-                  [allowed[0].id]: current.personalOpenedAt?.[allowed[0].id] ?? now,
-                },
-              }
-            : {}),
-        });
-    });
     const config = settings.data() ?? { enabled: true, deadline: "" };
     return reply(
       redactModuleData(

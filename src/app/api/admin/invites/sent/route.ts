@@ -13,14 +13,14 @@ export async function POST(request: Request) {
       if (!snapshot.exists) throw new HttpError(404, "Convite removido. Atualize a lista.");
       const timestamp = data.sent ? (snapshot.data()?.sentAt ?? new Date().toISOString()) : null;
 
-      if (snapshot.data()?.sentAt !== timestamp)
-        audit(
-          transaction,
-          db,
-          actor,
-          data.sent ? "Convite marcado como enviado" : "Envio desmarcado",
-          snapshot.data()?.label ?? "Convite",
-        );
+      if (snapshot.data()?.sentAt === timestamp) return timestamp;
+      audit(
+        transaction,
+        db,
+        actor,
+        data.sent ? "Convite marcado como enviado" : "Envio desmarcado",
+        snapshot.data()?.label ?? "Convite",
+      );
       transaction.update(ref, { sentAt: timestamp });
       return timestamp;
     });

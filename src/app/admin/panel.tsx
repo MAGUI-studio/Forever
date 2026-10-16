@@ -1,4 +1,5 @@
 "use client";
+import { invitationSearchIndex, searchInvitations } from "@/lib/invitation-search";
 import { RequiredMark, RequiredFieldsNotice } from "@/components/ui/RequiredFields";
 import { PRO_SUPPORT_URL } from "@/config/plan-access";
 import {
@@ -483,29 +484,12 @@ export function AdminPanel({
     [invites],
   );
   const normalizedQuery = normalized(query);
+  const searchIndex = useMemo(() => invitationSearchIndex(invites), [invites]);
   const visible = useMemo(
-    () =>
-      invites.filter(
-        (i) =>
-          (normalized(i.label).includes(normalizedQuery) ||
-            i.guests.some((g) => normalized(g.name).includes(normalizedQuery))) &&
-          (filter === "todos" ||
-            (filter === "abertos"
-              ? !!i.openedAt
-              : filter === "nao-respondidos"
-                ? i.active && i.guests.some((g) => g.status === "pendente")
-                : filter === "respondidos"
-                  ? i.guests.every((g) => g.status !== "pendente")
-                  : filter === "enviados"
-                    ? !!i.sentAt
-                    : filter === "nao-enviados"
-                      ? !i.sentAt
-                      : filter === "inativos"
-                        ? !i.active
-                        : i.active && i.guests.some((g) => g.status === filter))),
-      ),
-    [invites, normalizedQuery, filter],
+    () => searchInvitations(searchIndex, normalizedQuery, filter),
+    [searchIndex, normalizedQuery, filter],
   );
+
   if (
     view === "dashboard" &&
     (!ready || (!!user && ((loading && !authorized) || (authorized && loadedSection !== section))))
