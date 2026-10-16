@@ -1,4 +1,5 @@
 "use client";
+import {RequiredMark,RequiredFieldsNotice} from "@/components/ui/RequiredFields";
 import { notify, useFeedbackToasts } from "@/components/ui/ForeverToaster";
 import {useSiteCopy} from "./useSiteCopy";
 import {useWedding} from "./WeddingProvider";
@@ -205,10 +206,10 @@ export function RSVPSection() {
         </div>
         <div className={(romance?"rsvp-card rounded-3xl border border-[var(--forever-primary,#722F37)]/15 bg-white/80 p-7 sm:p-10 shadow-[0_20px_50px_rgba(50,21,28,0.06)] backdrop-blur-md [&_.guest-input]:rounded-xl! [&_.guest-button]:rounded-full! [&_.guest-button]:text-white! [&_.rsvp-person]:rounded-2xl! [&_.rsvp-person]:border-[var(--forever-primary,#722F37)]/15! [&_.rsvp-person]:bg-white/60!":"rsvp-card rounded-[var(--wedding-radius)] border border-[#e3dccf] bg-[#fffdfa] p-7 sm:p-10 shadow-[0_15px_60px_#3d250107]") + (invite ? " mx-auto max-w-2xl" : " mx-auto max-w-lg")}>
           {!invite && (
-            <form onSubmit={lookup} className="space-y-6">
+            <form onSubmit={lookup} className="space-y-6"><RequiredFieldsNotice/>
               <div className="text-center space-y-1.5">
                 <label className="block text-xs font-mono uppercase tracking-[0.2em] text-[var(--forever-primary,#722F37)] font-semibold">
-                  {copy("rsvp.text6")}
+                  {copy("rsvp.text6")}<RequiredMark/>
                 </label>
                 <p className="text-xs text-[var(--forever-accent,#82656C)]">
                   Digite os 6 dígitos do código que você recebeu
@@ -269,9 +270,9 @@ export function RSVPSection() {
               <CheckCircleIcon size={22} className="inline mr-2" aria-hidden="true" />{copy("rsvp.text9")}</p>
           )}
           {invite && (
-            <form onSubmit={submit} className="rsvp-response space-y-6">
+            <form onSubmit={submit} className="rsvp-response space-y-6"><RequiredFieldsNotice/>
               <div>
-                <button type="button" className={romance ? "rsvp-change text-[var(--forever-primary,#722F37)] font-medium hover:opacity-80" : "rsvp-change"} disabled={busy} onClick={() => {setInvite(null);setCode("");setSaved(false);setError("");if (window.location.hash) window.history.replaceState(null,"",window.location.pathname + window.location.search);}}>{copy("rsvp.text10")}</button><p className={romance ? "rsvp-card-eyebrow text-[var(--forever-accent,#82656C)]" : "rsvp-card-eyebrow"}><UsersIcon size={16} aria-hidden="true" />{copy("rsvp.text11")}</p><h3 className={romance ? "font-serif text-3xl sm:text-4xl text-[var(--forever-primary,#722F37)] font-light tracking-[-0.02em]" : "font-serif text-3xl"}>{invite.label}</h3>
+                <button type="button" className={romance ? "rsvp-change text-[var(--forever-primary,#722F37)] font-medium hover:opacity-80" : "rsvp-change"} disabled={busy} onClick={() => {setInvite(null);setCode("");setSaved(false);setError("");if (window.location.hash) window.history.replaceState(null,"",window.location.pathname + window.location.search);}}>{copy("rsvp.text10")}</button><p className={romance ? "rsvp-card-eyebrow text-[var(--forever-accent,#82656C)]" : "rsvp-card-eyebrow"}><UsersIcon size={16} aria-hidden="true" />{copy("rsvp.text11")}</p><h3 className={romance ? "font-sans font-normal text-[var(--forever-primary,#722F37)]" : "font-sans font-normal"}>{invite.label}</h3>
                 {settings.deadline && (
                   <p className={romance ? "mt-2 text-sm text-[var(--forever-accent,#82656C)]" : "mt-2 text-sm"}>{copy("rsvp.text12")}{" "}
                     {new Date(settings.deadline).toLocaleString("pt-BR", {
@@ -285,11 +286,11 @@ export function RSVPSection() {
                 <fieldset disabled={busy} className="space-y-5">
                   {invite.guests.map((g) => (
                     <details key={g.id} className={romance ? "rsvp-guest-accordion border-b border-[var(--forever-primary,#722F37)]/15 py-1" : "rsvp-guest-accordion"} open={invite.guests.length === 1 ? true : undefined}>
-                      <summary className={romance ? "cursor-pointer list-none text-[var(--forever-primary,#722F37)] font-serif text-xl sm:text-2xl" : undefined}><span>{g.name}</span><span className="rsvp-guest-summary-status"><AttendanceBadge status={g.status} label={g.status === "confirmado" ? copy("rsvp.text32") : g.status === "recusado" ? copy("rsvp.text33") : copy("rsvp.text34")} /><CaretDownIcon className="rsvp-accordion-caret" size={18} aria-hidden="true" /></span></summary>
+                      <summary className={romance ? "cursor-pointer list-none text-[var(--forever-primary,#722F37)] font-sans font-normal text-xl" : undefined}><span>{g.name}</span><span className="rsvp-guest-summary-status"><AttendanceBadge status={g.status} label={g.status === "confirmado" ? copy("rsvp.text32") : g.status === "recusado" ? copy("rsvp.text33") : copy("rsvp.text34")} /><CaretDownIcon className="rsvp-accordion-caret" size={18} aria-hidden="true" /></span></summary>
                       <div className={romance ? "rsvp-guest-accordion-fields pt-3 pb-6 [&_label>span]:text-[var(--forever-accent,#82656C)]" : "rsvp-guest-accordion-fields"}>
                         <label className="flex flex-col gap-3">
-                          <span>{copy("rsvp.text15")}</span>
-                          <WeddingSelect label={copy("rsvp.text35") + g.name} disabled={busy} placeholder={copy("rsvp.text16")} value={g.status === "pendente" ? "" : g.status} onValueChange={value => updateGuest(g.id, {status: value as Attendance})} options={[{value:"confirmado",label:copy("rsvp.text36")},{value:"recusado",label:copy("rsvp.text37")}]} />
+                          <span>{copy("rsvp.text15")}<RequiredMark/></span>
+                          <WeddingSelect required label={copy("rsvp.text35") + g.name} disabled={busy} placeholder={copy("rsvp.text16")} value={g.status === "pendente" ? "" : g.status} onValueChange={value => updateGuest(g.id, {status: value as Attendance})} options={[{value:"confirmado",label:copy("rsvp.text36")},{value:"recusado",label:copy("rsvp.text37")}]} />
                         </label>
                         {modules.dietaryRestrictions&&<label className="flex flex-col gap-3">
                           <span>{copy("rsvp.text17")}</span>

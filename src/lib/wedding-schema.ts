@@ -1,3 +1,4 @@
+import { EXAMPLE_PAYMENT_LINK } from "@/config/template-examples";
 import {isTemplateAvailable,templateIds,copyDefaults,fixedCopyKeys} from "@/config/templates/registry";
 import {MAX_GALLERY_PHOTOS} from "@/config/gallery";
 import {dressCodeStyleIds} from "@/config/dress-code";
@@ -49,12 +50,12 @@ export const weddingConfigSchema = z
     galleryStyle: z.enum(["polaroid", "relicario", "varal", "filme", "mural", "editorial"]).transform(v => v === "editorial" ? "varal" : v).optional(),
     couple: z
       .object({
-        partner1: z.string().trim().min(1).max(80),
-        partner2: z.string().trim().min(1).max(80),
+        partner1: z.string().trim().min(1,"Informe o nome da primeira pessoa.").max(80),
+        partner2: z.string().trim().min(1,"Informe o nome da segunda pessoa.").max(80),
         headline: text.optional(),
         weddingDate: z
           .string()
-          .refine((v) => !v || Number.isFinite(Date.parse(v)), "Data inválida"),
+          .refine((v) => !v || Number.isFinite(Date.parse(v)), "Informe uma data e um horário válidos para o casamento."),
         locationSummary: text,
         hashtag: text,
         coverImage: url,
@@ -169,15 +170,15 @@ export const weddingUpdateSchema = z
   })
   .strict()
   .superRefine((value, ctx) => {
+    if(value.status==="published"&&value.config.gifts.length>0&&value.config.giftPaymentLink===EXAMPLE_PAYMENT_LINK)ctx.addIssue({code:"custom",path:["config","giftPaymentLink"],message:"Substitua o link de pagamento de exemplo pelo seu link ou remova os presentes de exemplo."});
     if(value.status==="published"&&value.config.sameVenue===false&&!value.config.party.placeName.trim())ctx.addIssue({code:"custom",path:["config","party","placeName"],message:"Informe o local da festa antes de publicar."});
-    if(value.config.gifts.some(gift=>!gift.title.trim()||!gift.price||gift.price<=0))ctx.addIssue({code:"custom",path:["config","gifts"],message:"Preencha o nome e um valor sugerido maior que zero para cada presente."});
+    value.config.gifts.forEach((gift,index)=>{
+      if(!gift.title.trim())ctx.addIssue({code:"custom",path:["config","gifts",index,"title"],message:`Presente ${index+1}: informe o nome.`});
+      if(!gift.price||gift.price<=0)ctx.addIssue({code:"custom",path:["config","gifts",index,"price"],message:`Presente ${index+1}: informe um valor sugerido maior que zero.`});
+    });
     if(value.config.gifts.length>0&&!/^https:\/\/[^\s]+$/i.test(value.config.giftPaymentLink??""))ctx.addIssue({code:"custom",path:["config","giftPaymentLink"],message:"Adicione o link único de pagamento para salvar a lista de presentes."});
-    if (
-      value.status === "published" &&
-      (!value.config.couple.weddingDate || !value.config.ceremony.placeName)
-    )
-      ctx.addIssue({
-        code: "custom",
-        message: "Defina a data e o local antes de publicar.",
-      });
+    if (value.status === "published") {
+      if (!value.config.couple.weddingDate) ctx.addIssue({code:"custom",path:["config","couple","weddingDate"],message:"Informe a data e o horário do casamento."});
+      if (!value.config.ceremony.placeName.trim()) ctx.addIssue({code:"custom",path:["config","ceremony","placeName"],message:"Informe o nome do local da cerimônia."});
+    }
   });

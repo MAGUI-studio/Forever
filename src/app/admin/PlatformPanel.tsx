@@ -1,4 +1,8 @@
 "use client";
+import { ForeverDatePicker } from "@/components/ui/ForeverDatePicker";
+import { passwordRequirements } from "@/lib/password-requirements";
+import { RequiredMark } from "@/components/ui/RequiredFields";
+import { weddingAddress } from "@/lib/wedding-address";
 import { WeddingSelect } from "@/components/ui/WeddingSelect";
 import type { WeddingPlan } from "@/config/forever";
 import { notify, useFeedbackToasts } from "@/components/ui/ForeverToaster";
@@ -48,8 +52,10 @@ export function PlatformPanel() {
   const [slug, setSlug] = useState(""),
     [partner1, setPartner1] = useState(""),
     [partner2, setPartner2] = useState(""),
+    [weddingDate, setWeddingDate] = useState(""),
     [ownerEmail, setOwnerEmail] = useState(""),
-    [ownerPassword, setOwnerPassword] = useState("");
+    [ownerPassword, setOwnerPassword] = useState(""),
+    [confirmPassword,setConfirmPassword] = useState("");
   useEffect(() => {
     try {
       return onAuthStateChanged(clientAuth(), (account) => {
@@ -104,7 +110,7 @@ export function PlatformPanel() {
     }
   }
   function close() {
-    setOwnerPassword("");
+    setOwnerPassword("");setConfirmPassword("");
     void setAction(null, { history: "replace" });
   }
   const filtered=weddings.filter(wedding=>(wedding.config.couple.partner1+" "+wedding.config.couple.partner2+" "+wedding.slug).toLowerCase().includes(query.toLowerCase())&&(planFilter==="all"||(planFilter==="none"?wedding.plan===null:wedding.plan===planFilter)));
@@ -134,7 +140,8 @@ export function PlatformPanel() {
             e.preventDefault();
             void work(async () => {
               await api("POST", {
-                slug,
+                slug: slug || weddingAddress(partner1,partner2),
+                weddingDate,
                 plan: newPlan,
                 partner1,
                 partner2,
@@ -147,7 +154,7 @@ export function PlatformPanel() {
           }}
         >
           {[
-            { label: "Slug", value: slug, set: setSlug },
+            { label: "Endereço do casamento", value: slug || weddingAddress(partner1,partner2), set: (value:string)=>setSlug(value.toLowerCase().trim()) },
             { label: "Primeira pessoa", value: partner1, set: setPartner1 },
             { label: "Segunda pessoa", value: partner2, set: setPartner2 },
             {
@@ -168,9 +175,10 @@ export function PlatformPanel() {
               />
             </label>
           ))}
+          <div className="text-sm">Data do casamento<RequiredMark/><ForeverDatePicker required value={weddingDate} onChange={setWeddingDate} disabled={busy} min={new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())}/></div>
           <label className="text-sm">Plano<WeddingSelect tone="studio" label="Plano inicial do casamento" disabled={busy} value={newPlan} onValueChange={value=>setNewPlan(value as WeddingPlan)} options={[{value:"essencial",label:"Forever Essencial · até 50 convidados"},{value:"foreverPro",label:"Forever PRO · convidados ilimitados"}]} /></label>
           <label className="text-sm">
-            Senha inicial (necessária para uma nova conta)
+            Senha inicial (obrigatória para uma nova conta)<RequiredMark/>
             <input
               disabled={busy}
               className={field}
@@ -181,12 +189,14 @@ export function PlatformPanel() {
               onChange={(e) => setOwnerPassword(e.target.value)}
             />
           </label>
+          <p className="text-xs text-neutral-500">Para uma nova conta: use pelo menos 8 caracteres, maiúscula, minúscula, número e símbolo. Para uma conta existente, deixe a senha vazia.</p>
+          {ownerPassword&&<label className="text-sm">Confirme a senha<RequiredMark/><input required disabled={busy} type="password" autoComplete="new-password" className={field} value={confirmPassword} onChange={event=>setConfirmPassword(event.target.value)}/></label>}
           {error && (
             <p role="alert" className="text-sm text-red-700">
               {error}
             </p>
           )}
-          <StudioButton type="submit" disabled={busy}>
+          <StudioButton type="submit" disabled={busy || !partner1.trim() || !partner2.trim() || !ownerEmail.trim() || !weddingDate || (!!ownerPassword && (ownerPassword!==confirmPassword || !passwordRequirements.every(rule=>rule.test(ownerPassword))))}>
             {busy ? "Criando…" : "Criar casamento"}
           </StudioButton>
         </form>

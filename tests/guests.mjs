@@ -625,10 +625,15 @@ async function check(title, work) {
   });
   await check("somente MAGUI cria casamentos, e cada responsável acessa só o próprio",async()=>{
     const platform=load("src/app/api/platform/weddings/route.ts");
-    const payload={slug:"new-couple",partner1:"Ana",partner2:"Pedro",ownerEmail:"newstaff@example.com"};
+    const payload={slug:"new-couple",partner1:"Ana",partner2:"Pedro",weddingDate:"2099-05-29",ownerEmail:"newstaff@example.com"};
     assert.equal((await platform.POST(request("POST",payload))).status,403);
     process.env.MAGUI_ADMIN_UIDS="bride";
+    assert.equal((await platform.POST(request("POST",{...payload,weddingDate:undefined}))).status,400);
+    assert.equal((await platform.POST(request("POST",{...payload,weddingDate:"2099-02-30"}))).status,400);
+    assert.equal((await platform.POST(request("POST",{...payload,weddingDate:"2000-01-01"}))).status,400);
     assert.equal((await platform.POST(request("POST",payload))).status,201);
+    assert.equal(store.get("weddings/new-couple").config.couple.weddingDate,"2099-05-29T12:00:00-03:00");
+    assert.deepEqual(store.get("weddings/new-couple/settings/rsvp"),{enabled:true,deadline:""});
     assert.equal(store.get("weddings/new-couple").templateId,"contemporary-romance");
     assert.equal((await platform.POST(request("POST",payload))).status,409);
     process.env.MAGUI_ADMIN_UIDS="";

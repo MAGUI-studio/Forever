@@ -50,6 +50,8 @@ export function Countdown({ targetDateISO }: CountdownProps) {
 
 
 
+  if (!Number.isFinite(Date.parse(targetDateISO))) return null;
+
   if (timeLeft.isPast) {
     return (
       <div id="contagem-regressiva" className="inline-flex items-center gap-3 py-2 text-white font-serif text-xl sm:text-2xl tracking-widest uppercase">

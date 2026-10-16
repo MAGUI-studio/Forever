@@ -1,4 +1,5 @@
 "use client";
+import {RequiredMark,RequiredFieldsNotice} from "@/components/ui/RequiredFields";
 import { PRO_SUPPORT_URL } from "@/config/plan-access";
 import { useTableSearch, useQueryState, guestFilterParser, tableUrlOptions } from "./table-url-state";
 
@@ -683,7 +684,7 @@ export function AdminPanel({
                   setPassword("");
                 });
               }}
-            >
+            ><RequiredFieldsNotice/>
               <div className="admin-login-intro">
                 <span className="admin-lock">
                   <LockKeyhole size={21} strokeWidth={1.2} aria-hidden="true" />
@@ -702,7 +703,7 @@ export function AdminPanel({
               <label className="block">
                 <span className="admin-field-label">
                   <Mail size={14} aria-hidden="true" /> E-mail
-                </span>
+                <RequiredMark/></span>
                 <input
                   className="guest-input mt-2"
                   placeholder="seu@email.com"
@@ -716,7 +717,7 @@ export function AdminPanel({
               <label className="block">
                 <span className="admin-field-label">
                   <KeyRound size={14} aria-hidden="true" /> Senha
-                </span>
+                <RequiredMark/></span>
                 <input
                   className="guest-input mt-2"
                   placeholder="Sua senha de acesso"

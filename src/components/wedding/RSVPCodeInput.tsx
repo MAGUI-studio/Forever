@@ -138,6 +138,7 @@ export function RSVPCodeInput({
               ref={(el) => {
                 inputsRef.current[idx] = el;
               }}
+              required
               type="text"
               inputMode="text"
               autoCapitalize="characters"
@@ -177,6 +178,7 @@ export function RSVPCodeInput({
               ref={(el) => {
                 inputsRef.current[idx] = el;
               }}
+              required
               type="text"
               inputMode="text"
               autoCapitalize="characters"

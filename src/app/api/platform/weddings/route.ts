@@ -1,4 +1,4 @@
-import { initializeTemplateConfig } from "@/config/template-examples";
+import { initialWeddingConfig, weddingRegistrationFields } from "@/lib/wedding-registration";
 import { resolveModules } from "@/config/modules";
 import { audit } from "@/lib/event-audit";
 import { scopedDatabase } from "@/lib/wedding-server";
@@ -7,9 +7,9 @@ import { services } from "@/lib/firebase/admin";
 import { platformIdentity } from "@/lib/platform-server";
 import { body, failure, HttpError, reply } from "@/lib/guest-server";
 import { slugSchema } from "@/lib/wedding-schema";
-import { emptyWeddingConfig } from "@/config/forever";
 import { foreverTemplateId } from "@/config/templates/registry";
 import { z } from "zod";
+import { passwordRequirements } from "@/lib/password-requirements";
 export async function GET(request: Request) {
   try {
     const { identity, superadmin } = await platformIdentity(request),
@@ -60,10 +60,9 @@ export async function GET(request: Request) {
 const createSchema = z
   .object({
     slug: slugSchema,
-    partner1: z.string().trim().min(1).max(80),
-    partner2: z.string().trim().min(1).max(80),
+    ...weddingRegistrationFields,
     ownerEmail: z.string().trim().email().max(254),
-    ownerPassword: z.string().min(8).max(128).optional(),
+    ownerPassword: z.string().max(128).refine(value=>passwordRequirements.every(rule=>rule.test(value)),"A senha precisa de pelo menos 8 caracteres, uma letra maiúscula, uma minúscula, um número e um símbolo.").optional(),
     plan: z.enum(["essencial", "foreverPro"]).optional(),
   })
   .strict();
@@ -102,17 +101,12 @@ export async function POST(request: Request) {
         theme: "botanical",
         templateId: foreverTemplateId,
         plan: data.plan ?? "foreverPro",
-        config: initializeTemplateConfig({
-          ...emptyWeddingConfig,
-          couple: {
-            ...emptyWeddingConfig.couple,
-            partner1: data.partner1,
-            partner2: data.partner2,
-          },
-        }, foreverTemplateId),
+        config: initialWeddingConfig({partner1:data.partner1,partner2:data.partner2,weddingDate:data.weddingDate}),
+        purchaseOwnerUid: owner.uid,
         createdAt: now,
         updatedAt: now,
       });
+      t.set(ref.collection("settings").doc("rsvp"), {enabled:true,deadline:""});
       t.set(ref.collection("members").doc(owner.uid), {
         uid: owner.uid,
         email: data.ownerEmail.toLowerCase(),

@@ -1,4 +1,5 @@
 "use client";
+import {RequiredMark,RequiredFieldsNotice} from "@/components/ui/RequiredFields";
 import { useFeedbackToasts } from "@/components/ui/ForeverToaster";
 import {useEffect,useState} from "react";
 import {onAuthStateChanged,signInWithEmailAndPassword,signOut} from "firebase/auth";
@@ -63,7 +64,7 @@ export function Login(){
                   setPassword("");
                 });
               }}
-            >
+            ><RequiredFieldsNotice/>
               {planRequired && <div role="status" className="mb-5 rounded-xl border border-neutral-200 bg-neutral-50 p-4"><p className="text-sm font-medium text-neutral-900">Seu casamento está sem plano</p><p className="mt-2 text-xs leading-relaxed text-neutral-600">Assine novamente para recuperar o acesso ao painel e ao site. Seus dados continuam preservados.</p><Link href="/contratar" className="group mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-lg bg-[#722F37] px-4 py-2 text-xs font-medium text-white">Escolher um plano<ArrowUpRight size={15} aria-hidden="true" className="transition-transform duration-300 ease-out group-hover:translate-x-1 group-hover:-translate-y-1 group-focus-visible:translate-x-1 group-focus-visible:-translate-y-1 motion-reduce:transform-none motion-reduce:transition-none" /></Link></div>}
               <div className="admin-login-intro">
                 <span className="admin-lock border-[#722F3720]! bg-[#722F3708]!">
@@ -83,7 +84,7 @@ export function Login(){
               <label className="block">
                 <span className="admin-field-label">
                   <Mail size={14} aria-hidden="true" /> E-mail
-                </span>
+                <RequiredMark/></span>
                 <input
                   className="guest-input focus-visible:outline-[#722F37]! mt-2"
                   placeholder="seu@email.com"
@@ -97,7 +98,7 @@ export function Login(){
               <label className="block">
                 <span className="admin-field-label">
                   <KeyRound size={14} aria-hidden="true" /> Senha
-                </span>
+                <RequiredMark/></span>
                 <div className="relative mt-2">
                 <input
                   className="guest-input focus-visible:outline-[#722F37]! pr-12!"

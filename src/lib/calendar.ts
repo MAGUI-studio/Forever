@@ -22,6 +22,7 @@ export function generateGoogleCalendarUrl({
   durationHours = 6,
 }: CalendarEventParams): string {
   const start = new Date(startDateISO);
+  if (!Number.isFinite(start.getTime())) return "";
   const end = new Date(start.getTime() + durationHours * 60 * 60 * 1000);
 
   const dates = `${formatGoogleDate(start)}/${formatGoogleDate(end)}`;
@@ -44,6 +45,7 @@ export function generateIcsFileContent({
   durationHours = 6,
 }: CalendarEventParams): string {
   const start = new Date(startDateISO);
+  if (!Number.isFinite(start.getTime())) return "";
   const end = new Date(start.getTime() + durationHours * 60 * 60 * 1000);
 
   const startFormatted = formatGoogleDate(start);
@@ -69,6 +71,7 @@ export function generateIcsFileContent({
 
 export function downloadIcsFile(params: CalendarEventParams, filename = "casamento.ics") {
   const icsContent = generateIcsFileContent(params);
+  if (!icsContent) return;
   const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");

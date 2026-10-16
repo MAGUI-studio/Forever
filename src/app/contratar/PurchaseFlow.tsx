@@ -1,4 +1,5 @@
 "use client";
+import {RequiredMark,RequiredFieldsNotice} from "@/components/ui/RequiredFields";
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -102,16 +103,16 @@ export function PurchaseFlow({confirmation=false}:{confirmation?:boolean}) {
   {error && <p role="alert" className="mt-5 rounded-xl bg-rose-50 p-4 text-sm text-rose-800">{error}</p>}
   {!ready && <p role="status" className="mt-6 text-sm text-neutral-500">Verificando sua conta…</p>}
   {ready && !user && <PurchaseAccountForm mode={mode} onModeChange={next=>{setMode(next);setError("");}} busy={busy} onSubmit={authenticate} />}
-  {user && !confirmation && <form onSubmit={checkout} className="mt-6 space-y-5">
+  {user && !confirmation && <form onSubmit={checkout} className="mt-6 space-y-5"><RequiredFieldsNotice/>
    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-500"><span>Conta: {user.email}</span><button type="button" disabled={busy} onClick={()=>void signOut(clientAuth())} className="underline underline-offset-4">Usar outra conta</button></div>
    {loading ? <p role="status" className="text-sm text-neutral-500">Buscando seu casamento…</p> : <>
     {existing ? <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4"><p className="text-sm font-medium">{existing.partner1} &amp; {existing.partner2}</p><p className="mt-2 text-xs leading-relaxed text-neutral-500">Finalize a contratação para liberar o mesmo casamento. Convites, configurações e confirmações continuam preservados.</p></div> : <div className="grid gap-4 sm:grid-cols-2">
-     <label className="text-xs">Nome da primeira pessoa<input required maxLength={80} value={partner1} onChange={e=>{if(weddingAddress(e.target.value,partner2)!==automaticAddress){setSlug("");setShowAddress(false);}setPartner1(e.target.value);setError("");}} className={input} /></label>
-     <label className="text-xs">Nome da segunda pessoa<input required maxLength={80} value={partner2} onChange={e=>{if(weddingAddress(partner1,e.target.value)!==automaticAddress){setSlug("");setShowAddress(false);}setPartner2(e.target.value);setError("");}} className={input} /></label>
-     <div className="text-xs sm:col-span-2"><span className="font-medium text-neutral-700">Data do casamento</span><ForeverDatePicker label="Data do casamento" required value={date} onChange={value=>{setDate(value);setError("");}} min={new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())} disabled={busy} /></div>
+     <label className="text-xs">Nome da primeira pessoa<RequiredMark/><input required maxLength={80} value={partner1} onChange={e=>{if(weddingAddress(e.target.value,partner2)!==automaticAddress){setSlug("");setShowAddress(false);}setPartner1(e.target.value);setError("");}} className={input} /></label>
+     <label className="text-xs">Nome da segunda pessoa<RequiredMark/><input required maxLength={80} value={partner2} onChange={e=>{if(weddingAddress(partner1,e.target.value)!==automaticAddress){setSlug("");setShowAddress(false);}setPartner2(e.target.value);setError("");}} className={input} /></label>
+     <div className="text-xs sm:col-span-2"><span className="font-medium text-neutral-700">Data do casamento<RequiredMark/></span><ForeverDatePicker label="Data do casamento" required value={date} onChange={value=>{setDate(value);setError("");}} min={new Intl.DateTimeFormat("en-CA",{timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date())} disabled={busy} /></div>
      {needsAddress && <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-4 sm:col-span-2">
       <p className="text-xs leading-relaxed text-neutral-600">{automaticAddress ? `O endereço ${automaticAddress} não está disponível. Escolham uma alternativa para o site de vocês.` : "Escolham um endereço para o site de vocês."}</p>
-      <label htmlFor="wedding-address" className="mt-4 block text-xs font-medium text-neutral-700">Endereço do casamento</label>
+      <label htmlFor="wedding-address" className="mt-4 block text-xs font-medium text-neutral-700">Endereço do casamento<RequiredMark/></label>
       <input id="wedding-address" required pattern="[a-z0-9]+(-[a-z0-9]+)*" minLength={3} maxLength={80} placeholder="mari-e-lucas" value={slug} onChange={e=>{setSlug(e.target.value.toLowerCase().trim());setError("");}} aria-describedby="address-feedback" aria-invalid={addressCheck.value === candidate && (addressCheck.status === "taken" || addressCheck.status === "invalid")} className={input} />
       <p id="address-feedback" role="status" className="mt-2 text-xs text-neutral-500">{!slug ? "Use letras sem acentos, números e hífens." : addressCheck.value !== candidate || addressCheck.status === "checking" ? "Verificando disponibilidade…" : addressCheck.status === "available" ? "Disponível! Esse será o endereço do seu site." : addressCheck.status === "taken" ? "Esse endereço também está em uso. Tente outro." : addressCheck.status === "invalid" ? "Use de 3 a 80 caracteres: letras sem acentos, números e hífens. Não use nomes reservados." : "Não foi possível verificar agora."}</p>
      </div>}
