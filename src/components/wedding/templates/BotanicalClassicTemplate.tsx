@@ -6,18 +6,18 @@ import { RSVPSection } from "../RSVPSection";
 import { Footer } from "../Footer";
 import { CinematicExperience } from "../CinematicExperience";
 import { useWedding } from "../WeddingProvider";
-import {BotanicalClassicGallery} from "./BotanicalClassicGallery";
-import {galleryEnabled} from "@/config/gallery";
+import { BotanicalClassicGallery } from "./BotanicalClassicGallery";
+import { galleryEnabled } from "@/config/gallery";
 export function BotanicalClassicTemplate() {
-  const { config,modules } = useWedding();
+  const { config, modules } = useWedding();
   return (
     <main className="relative w-full overflow-x-hidden bg-[var(--forever-paper,#F1F1F1)]">
       <CinematicExperience>
         <StoryEnvelope />
-        {galleryEnabled(config)&&<BotanicalClassicGallery/>}
+        {galleryEnabled(config) && <BotanicalClassicGallery />}
         <DressCode />
-        {modules.gifts&&<GiftList />}
-        {modules.rsvp&&<RSVPSection />}
+        {modules.gifts && <GiftList />}
+        {modules.rsvp && <RSVPSection />}
         <Footer />
       </CinematicExperience>
     </main>

@@ -1,7 +1,7 @@
 "use client";
 
-import {Gallery} from "../Gallery";
+import { Gallery } from "../Gallery";
 
-export function BotanicalClassicGallery(){
+export function BotanicalClassicGallery() {
   return <Gallery forceTemplate="botanical-classic" />;
 }

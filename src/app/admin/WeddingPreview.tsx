@@ -1,12 +1,9 @@
 "use client";
-import {resolveModules} from "@/config/modules";
+import { resolveModules } from "@/config/modules";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase/client";
-import {
-  WeddingProvider,
-  useWedding,
-} from "@/components/wedding/WeddingProvider";
+import { WeddingProvider, useWedding } from "@/components/wedding/WeddingProvider";
 import { WeddingSite } from "@/components/wedding/WeddingSite";
 import { readApiResponse } from "@/lib/api-response";
 import type { WeddingDocument } from "@/types/forever";
@@ -30,7 +27,7 @@ export function WeddingPreview() {
             },
           }),
         );
-        if (data.role !== "admin"||!resolveModules(data.wedding.modules).siteEditor)
+        if (data.role !== "admin" || !resolveModules(data.wedding.modules).siteEditor)
           throw Error("Acesso exclusivo da administração.");
         setWedding(data.wedding);
       } catch (e) {
@@ -53,7 +50,8 @@ export function WeddingPreview() {
           slug={slug}
           config={wedding.config}
           templateId={wedding.templateId}
-          theme={wedding.theme} modules={wedding.modules}
+          theme={wedding.theme}
+          modules={wedding.modules}
         >
           <WeddingSite />
         </WeddingProvider>

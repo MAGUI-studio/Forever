@@ -70,7 +70,7 @@ export function weddingPath(slug: string, path = "") {
   return "/" + slug + (path ? "/" + path.replace(/^\/+/, "") : "");
 }
 export const emptyWeddingConfig: WeddingConfig = {
-  sections: {gallery:true},
+  sections: { gallery: true },
   customImages: {},
   couple: {
     partner1: "Primeira pessoa",

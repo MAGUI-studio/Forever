@@ -16,7 +16,10 @@ export type Invitation = {
   guestCodes?: Record<string, string>;
   personalCodes?: Record<string, string>;
   personalTokens?: Record<string, string>;
-  personalResponses?: Record<string, {message: string; dietaryRestrictions: string; respondedAt: string}>;
+  personalResponses?: Record<
+    string,
+    { message: string; dietaryRestrictions: string; respondedAt: string }
+  >;
   label: string;
   token: string;
   active: boolean;
@@ -32,6 +35,13 @@ export type Invitation = {
 };
 export type RSVPSettings = { deadline: string; enabled: boolean };
 
-export type EventTable = {id:string; name:string; capacity:number};
-export type AuditEntry = {id:string; at:string; actor:string; action:string; target:string; details:string};
-export type ReceptionMember = {id:string; email:string; active:boolean};
+export type EventTable = { id: string; name: string; capacity: number };
+export type AuditEntry = {
+  id: string;
+  at: string;
+  actor: string;
+  action: string;
+  target: string;
+  details: string;
+};
+export type ReceptionMember = { id: string; email: string; active: boolean };

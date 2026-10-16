@@ -3,26 +3,35 @@ import { invitationUrl } from "@/config/site";
 import type { WeddingConfig } from "@/types/wedding";
 import type { TemplateId } from "@/config/templates/registry";
 
-/** Generated locally; invitation codes are never sent to a PDF or QR service. */
 export async function createInvitationPdf(
   invitation: { label: string; token: string },
   weddingConfig: WeddingConfig,
   slug: string,
-  templateId: TemplateId = "botanical-classic"
+  templateId: TemplateId = "botanical-classic",
 ) {
   const [{ jsPDF }, { default: QRCode }, { svg2pdf }, fonts] = await Promise.all([
     import("jspdf"),
     import("qrcode"),
     import("svg2pdf.js"),
-    Promise.all(["regular", "italic", "light", "light-italic"].map(async style => {
-      const response = await fetch("/fonts/cormorant-garamond-" + style + ".ttf");
-      if (!response.ok) throw new Error("Não foi possível carregar a fonte do convite.");
-      const bytes = new Uint8Array(await response.arrayBuffer());
-      let binary = ""; for (let offset = 0; offset < bytes.length; offset += 8192) binary += String.fromCharCode(...bytes.subarray(offset, offset + 8192));
-      return btoa(binary);
-    }))
+    Promise.all(
+      ["regular", "italic", "light", "light-italic"].map(async (style) => {
+        const response = await fetch("/fonts/cormorant-garamond-" + style + ".ttf");
+        if (!response.ok) throw new Error("Não foi possível carregar a fonte do convite.");
+        const bytes = new Uint8Array(await response.arrayBuffer());
+        let binary = "";
+        for (let offset = 0; offset < bytes.length; offset += 8192)
+          binary += String.fromCharCode(...bytes.subarray(offset, offset + 8192));
+        return btoa(binary);
+      }),
+    ),
   ]);
-  const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a5", compress: true, putOnlyUsedFonts: true });
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a5",
+    compress: true,
+    putOnlyUsedFonts: true,
+  });
   for (const [index, style] of ["normal", "italic"].entries()) {
     const file = "CormorantGaramond-" + style + ".ttf";
     pdf.addFileToVFS(file, fonts[index]);
@@ -33,7 +42,8 @@ export async function createInvitationPdf(
     pdf.addFileToVFS(file, fonts[index + 2]);
     pdf.addFont(file, "CormorantGaramondLight", style);
   }
-  const width = 148, center = width / 2;
+  const width = 148,
+    center = width / 2;
   const isRomance = templateId === "contemporary-romance";
   const primary = isRomance ? "#722F37" : "#5D613C";
   const ink = isRomance ? "#302329" : "#3D2501";
@@ -47,7 +57,7 @@ export async function createInvitationPdf(
     title: "Convite de casamento - " + invitation.label,
     subject: couple.partner1 + " e " + couple.partner2,
     author: couple.partner1 + " e " + couple.partner2,
-    creator: "Site do casamento"
+    creator: "Site do casamento",
   });
 
   pdf.setFillColor(paperBg);
@@ -61,7 +71,14 @@ export async function createInvitationPdf(
   const artwork = new DOMParser().parseFromString(artworkString, "image/svg+xml").documentElement;
   await svg2pdf(artwork, pdf, { x: 0, y: 0, width: 148, height: 210 });
 
-  function text(value: string, y: number, size: number, color = ink, font = "CormorantGaramond", style = "normal") {
+  function text(
+    value: string,
+    y: number,
+    size: number,
+    color = ink,
+    font = "CormorantGaramond",
+    style = "normal",
+  ) {
     pdf.setFont(font, style);
     pdf.setFontSize(size);
     pdf.setTextColor(color);
@@ -69,15 +86,16 @@ export async function createInvitationPdf(
   }
 
   text(
-    (couple.headline || (isRomance ? "O amor em cada detalhe." : "Vamos celebrar nossa história.")).split("\n")[0].slice(0, 90),
+    (couple.headline || (isRomance ? "O amor em cada detalhe." : "Vamos celebrar nossa história."))
+      .split("\n")[0]
+      .slice(0, 90),
     25,
     11,
     accent,
     "CormorantGaramond",
-    "italic"
+    "italic",
   );
 
-  // Match the hero: Cormorant Garamond Light, with an italic ampersand.
   pdf.setFont("CormorantGaramondLight", "normal");
   pdf.setFontSize(32);
   const firstWidth = pdf.getTextWidth(couple.partner1);
@@ -110,7 +128,7 @@ export async function createInvitationPdf(
     12,
     accent,
     "CormorantGaramond",
-    "italic"
+    "italic",
   );
   text("Convidam você para celebrar esse momento tão especial", 85, 11, accent);
 
@@ -124,13 +142,16 @@ export async function createInvitationPdf(
     family = pdf.splitTextToSize(invitation.label, 104) as string[];
   }
   pdf.setTextColor(primary);
-  pdf.text(family, center, family.length > 1 ? 96 : 99, { align: "center", lineHeightFactor: 1.15 });
+  pdf.text(family, center, family.length > 1 ? 96 : 99, {
+    align: "center",
+    lineHeightFactor: 1.15,
+  });
 
   const date = new Intl.DateTimeFormat("pt-BR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
-    timeZone: "America/Sao_Paulo"
+    timeZone: "America/Sao_Paulo",
   }).format(new Date(couple.weddingDate));
 
   text(date + " | " + ceremony.time, 110, 13, primary);
@@ -147,7 +168,7 @@ export async function createInvitationPdf(
     errorCorrectionLevel: "M",
     margin: 4,
     width: 640,
-    color: { dark: ink, light: paperBg }
+    color: { dark: ink, light: paperBg },
   });
   pdf.addImage(qr, "PNG", 56, 142, 36, 36);
 
@@ -166,7 +187,7 @@ export async function downloadInvitationPdf(
   invitation: { label: string; token: string },
   weddingConfig: WeddingConfig,
   slug: string,
-  templateId: TemplateId = "botanical-classic"
+  templateId: TemplateId = "botanical-classic",
 ) {
   const pdf = await createInvitationPdf(invitation, weddingConfig, slug, templateId);
   const coupleNames = [weddingConfig.couple?.partner1, weddingConfig.couple?.partner2]
@@ -175,10 +196,11 @@ export async function downloadInvitationPdf(
     .replace(/[\\/:*?"<>|]/g, "")
     .replace(/\s+/g, " ")
     .trim();
-  const guestLabel = invitation.label
-    .replace(/[\\/:*?"<>|]/g, "")
-    .replace(/\s+/g, " ")
-    .trim() || "Convidado";
+  const guestLabel =
+    invitation.label
+      .replace(/[\\/:*?"<>|]/g, "")
+      .replace(/\s+/g, " ")
+      .trim() || "Convidado";
 
   const fileName = coupleNames
     ? `Convite de Casamento - ${coupleNames} - ${guestLabel}.pdf`

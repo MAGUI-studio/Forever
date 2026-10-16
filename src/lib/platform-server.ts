@@ -1,12 +1,10 @@
-import {isPlatformAdmin} from "./platform-access";
+import { isPlatformAdmin } from "./platform-access";
 import "server-only";
 import { services } from "./firebase/admin";
 import { HttpError, sameOrigin } from "./guest-server";
 export async function platformIdentity(request: Request) {
   sameOrigin(request);
-  const token = request.headers
-    .get("authorization")
-    ?.match(/^Bearer (.+)$/)?.[1];
+  const token = request.headers.get("authorization")?.match(/^Bearer (.+)$/)?.[1];
   if (!token) throw new HttpError(401, "Faça login para continuar.");
   let identity;
   try {
@@ -14,6 +12,6 @@ export async function platformIdentity(request: Request) {
   } catch {
     throw new HttpError(401, "Sua sessão expirou.");
   }
-  const superadmin=await isPlatformAdmin(identity.uid, identity);
+  const superadmin = await isPlatformAdmin(identity.uid, identity);
   return { identity, superadmin };
 }

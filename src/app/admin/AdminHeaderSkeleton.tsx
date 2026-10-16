@@ -1,3 +1,29 @@
-import {SkeletonBlock} from "./skeleton";
-/** Matches the responsive admin header without exposing unverified modules. */
-export function AdminHeaderSkeleton(){return <div className="admin-nav flex-nowrap! gap-3! lg:gap-6!" role="status" aria-label="Carregando navegação" aria-busy="true"><div className="min-w-0 shrink-0"><SkeletonBlock className="h-[29px] w-48 max-[480px]:h-6 max-[480px]:w-36"/><SkeletonBlock className="mt-[7px] h-2 w-32"/></div><div className="hidden min-h-11 flex-1 items-center justify-center gap-3 lg:flex"><SkeletonBlock className="h-11 w-40"/><SkeletonBlock className="h-11 w-36"/><SkeletonBlock className="h-11 w-28"/></div><div className="hidden shrink-0 items-center gap-4 lg:flex"><SkeletonBlock className="h-5 w-16"/><SkeletonBlock className="size-[34px] rounded-full!"/><SkeletonBlock className="h-4 w-36"/></div><SkeletonBlock className="ml-auto size-11 shrink-0 lg:hidden"/><span className="sr-only">Carregando navegação…</span></div>;}
+import { SkeletonBlock } from "./skeleton";
+
+export function AdminHeaderSkeleton() {
+  return (
+    <div
+      className="admin-nav flex-nowrap! gap-3! lg:gap-6!"
+      role="status"
+      aria-label="Carregando navegação"
+      aria-busy="true"
+    >
+      <div className="min-w-0 shrink-0">
+        <SkeletonBlock className="h-[29px] w-48 max-[480px]:h-6 max-[480px]:w-36" />
+        <SkeletonBlock className="mt-[7px] h-2 w-32" />
+      </div>
+      <div className="hidden min-h-11 flex-1 items-center justify-center gap-3 lg:flex">
+        <SkeletonBlock className="h-11 w-40" />
+        <SkeletonBlock className="h-11 w-36" />
+        <SkeletonBlock className="h-11 w-28" />
+      </div>
+      <div className="hidden shrink-0 items-center gap-4 lg:flex">
+        <SkeletonBlock className="h-5 w-16" />
+        <SkeletonBlock className="size-[34px] rounded-full!" />
+        <SkeletonBlock className="h-4 w-36" />
+      </div>
+      <SkeletonBlock className="ml-auto size-11 shrink-0 lg:hidden" />
+      <span className="sr-only">Carregando navegação…</span>
+    </div>
+  );
+}

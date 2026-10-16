@@ -192,6 +192,16 @@ Exportações contêm dados de convidados e códigos de acesso. As orientações
 
 ## <a id="validacao"></a>🧪 Validação
 
+`npm run format` remove comentários dispensáveis e formata o código com Prettier.
+Diretivas de ferramentas, anotações de tipos e avisos de licença são preservados;
+dependências, arquivos gerados e instruções de ferramentas não são alterados.
+
+```bash
+npm run format
+npm run format:check
+npm run strip-comments
+```
+
 ```bash
 npm run lint
 npx tsc --noEmit

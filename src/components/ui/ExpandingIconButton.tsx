@@ -27,15 +27,10 @@ export function ExpandingIconButtonGroup({
       value={{
         expanded,
         expand: (id) =>
-          setExpanded((current) =>
-            current.has(id) ? current : new Set([...current, id]),
-          ),
+          setExpanded((current) => (current.has(id) ? current : new Set([...current, id]))),
       }}
     >
-      <Element
-        className={className}
-        onPointerLeave={() => setExpanded(new Set())}
-      >
+      <Element className={className} onPointerLeave={() => setExpanded(new Set())}>
         {children}
       </Element>
     </ExpansionContext.Provider>

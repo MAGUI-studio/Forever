@@ -4,12 +4,11 @@ import { createRequire } from "node:module";
 import vm from "node:vm";
 import { cert, initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
-import {getAuth} from "firebase-admin/auth";
+import { getAuth } from "firebase-admin/auth";
 import ts from "typescript";
 if (fs.existsSync(".env")) process.loadEnvFile(".env");
 const slug =
-  process.argv.find((value) => value.startsWith("--slug="))?.slice(7) ??
-  "giovanna-e-edson";
+  process.argv.find((value) => value.startsWith("--slug="))?.slice(7) ?? "giovanna-e-edson";
 if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw Error("Invalid slug");
 const apply = process.argv.includes("--apply");
 const uids = (process.env.FIREBASE_ADMIN_UIDS ?? "")
@@ -17,9 +16,7 @@ const uids = (process.env.FIREBASE_ADMIN_UIDS ?? "")
   .map((v) => v.trim())
   .filter(Boolean);
 if (!uids.length)
-  throw Error(
-    "Set FIREBASE_ADMIN_UIDS to the existing wedding owners before migration.",
-  );
+  throw Error("Set FIREBASE_ADMIN_UIDS to the existing wedding owners before migration.");
 const file = path.resolve("scripts/legacy-wedding-config.ts"),
   module = { exports: {} };
 const code = ts.transpileModule(fs.readFileSync(file, "utf8"), {
@@ -41,14 +38,15 @@ const app = initializeApp({
     privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
   }),
 });
-const ownerEmail=process.argv.find(value=>value.startsWith("--owner-email="))?.slice(14);
-if(ownerEmail){const owner=await getAuth(app).getUserByEmail(ownerEmail);if(!uids.includes(owner.uid))uids.push(owner.uid);}
+const ownerEmail = process.argv.find((value) => value.startsWith("--owner-email="))?.slice(14);
+if (ownerEmail) {
+  const owner = await getAuth(app).getUserByEmail(ownerEmail);
+  if (!uids.includes(owner.uid)) uids.push(owner.uid);
+}
 const db = getFirestore(app),
   target = db.doc("weddings/" + slug);
 const groups = ["invitations", "receptionTeam", "auditLog"];
-const snapshots = await Promise.all(
-  groups.map((name) => db.collection(name).get()),
-);
+const snapshots = await Promise.all(groups.map((name) => db.collection(name).get()));
 const settings = await Promise.all(
   ["rsvp", "tables"].map((name) => db.doc("settings/" + name).get()),
 );
@@ -74,8 +72,7 @@ console.log(
 );
 if (apply) {
   await db.runTransaction(async (t) => {
-    if ((await t.get(target)).exists)
-      throw Error("Destination exists. Nothing was overwritten.");
+    if ((await t.get(target)).exists) throw Error("Destination exists. Nothing was overwritten.");
     const now = new Date().toISOString();
     t.set(target, {
       slug,
@@ -92,10 +89,7 @@ if (apply) {
     );
     settings.forEach((snapshot, index) => {
       if (snapshot.exists)
-        t.set(
-          target.collection("settings").doc(["rsvp", "tables"][index]),
-          snapshot.data(),
-        );
+        t.set(target.collection("settings").doc(["rsvp", "tables"][index]), snapshot.data());
     });
     uids.forEach((uid) =>
       t.set(target.collection("members").doc(uid), {

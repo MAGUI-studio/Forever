@@ -1,12 +1,22 @@
-import type {WeddingConfig} from "@/types/wedding";
-import {templateCopyDefaults,templateCopyFields,type TemplateId} from "./templates/registry";
+import type { WeddingConfig } from "@/types/wedding";
+import { templateCopyDefaults, templateCopyFields, type TemplateId } from "./templates/registry";
 
-// Retained only to reject payment links from legacy example data.
-export const EXAMPLE_PAYMENT_LINK="https://example.com/sua-lista-de-presentes";
+export const EXAMPLE_PAYMENT_LINK = "https://example.com/sua-lista-de-presentes";
 
-/** Initialize editable design copy without inventing wedding facts or content. */
-export function initializeTemplateConfig(base:WeddingConfig,templateId:TemplateId):WeddingConfig {
- const next=structuredClone(base),defaults=templateCopyDefaults(templateId);
- next.copy={...Object.fromEntries(templateCopyFields(templateId,next.dressCodeStyle).map(field=>[field.key,defaults[field.key]])),...next.copy};
- return next;
+export function initializeTemplateConfig(
+  base: WeddingConfig,
+  templateId: TemplateId,
+): WeddingConfig {
+  const next = structuredClone(base),
+    defaults = templateCopyDefaults(templateId);
+  next.copy = {
+    ...Object.fromEntries(
+      templateCopyFields(templateId, next.dressCodeStyle).map((field) => [
+        field.key,
+        defaults[field.key],
+      ]),
+    ),
+    ...next.copy,
+  };
+  return next;
 }

@@ -1,6 +1,5 @@
 import type { CSSProperties } from "react";
 
-/** Forever's brand colors are independent of each wedding template. */
 export const foreverTheme = {
   "--forever-primary": "#722F37",
   "--forever-primary-hover": "#5B252C",

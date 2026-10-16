@@ -1,18 +1,22 @@
 "use client";
-import {useSiteCopy} from "./useSiteCopy";
-
+import { useSiteCopy } from "./useSiteCopy";
 
 import { WeddingOrnaments } from "./WeddingOrnaments";
-import {useWedding} from "./WeddingProvider";
+import { useWedding } from "./WeddingProvider";
 import { ArrowUp } from "lucide-react";
 
 export function Footer() {
-  const copy=useSiteCopy();
-  const {config:weddingConfig}=useWedding();
+  const copy = useSiteCopy();
+  const { config: weddingConfig } = useWedding();
   const { couple } = weddingConfig;
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+    window.scrollTo({
+      top: 0,
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "instant"
+        : "smooth",
+    });
   };
 
   return (
@@ -25,12 +29,16 @@ export function Footer() {
           </span>
           <h2 className="mx-auto flex max-w-6xl flex-wrap items-baseline justify-center gap-x-3 gap-y-2 font-serif text-5xl sm:gap-x-5 sm:text-7xl lg:text-9xl font-light tracking-tight leading-[1.1] text-[#1A1715]">
             <span className="min-w-0 break-words [overflow-wrap:anywhere]">{couple.partner1}</span>
-            <span className="font-serif italic font-light text-[#8C6D46]">{copy("footer.text1")}</span>
+            <span className="font-serif italic font-light text-[#8C6D46]">
+              {copy("footer.text1")}
+            </span>
             <span className="min-w-0 break-words [overflow-wrap:anywhere]">{couple.partner2}</span>
           </h2>
         </div>
 
-        <p className="text-[#73685B] text-sm sm:text-base font-light leading-relaxed">{copy("footer.text2")}</p>
+        <p className="text-[#73685B] text-sm sm:text-base font-light leading-relaxed">
+          {copy("footer.text2")}
+        </p>
 
         <div className="pt-2">
           <button
@@ -43,7 +51,16 @@ export function Footer() {
         </div>
 
         <p className="text-[11px] font-mono uppercase tracking-widest text-[#8C8276] pt-8">
-          {couple.locationSummary.toUpperCase()}{copy("footer.text4")}{new Date(couple.weddingDate).toLocaleDateString("pt-BR",{day:"numeric",month:"long",year:"numeric",timeZone:"America/Sao_Paulo"}).toUpperCase()}
+          {couple.locationSummary.toUpperCase()}
+          {copy("footer.text4")}
+          {new Date(couple.weddingDate)
+            .toLocaleDateString("pt-BR", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+              timeZone: "America/Sao_Paulo",
+            })
+            .toUpperCase()}
         </p>
       </div>
     </footer>

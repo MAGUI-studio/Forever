@@ -1,7 +1,12 @@
 import { EXAMPLE_PAYMENT_LINK } from "@/config/template-examples";
-import {isTemplateAvailable,templateIds,copyDefaults,fixedCopyKeys} from "@/config/templates/registry";
-import {MAX_GALLERY_PHOTOS} from "@/config/gallery";
-import {dressCodeStyleIds} from "@/config/dress-code";
+import {
+  isTemplateAvailable,
+  templateIds,
+  copyDefaults,
+  fixedCopyKeys,
+} from "@/config/templates/registry";
+import { MAX_GALLERY_PHOTOS } from "@/config/gallery";
+import { dressCodeStyleIds } from "@/config/dress-code";
 import { z } from "zod";
 import { validWeddingSlug } from "@/config/forever";
 const text = z.string().trim().max(500);
@@ -21,22 +26,60 @@ const location = z
     address: text,
     cityState: text,
     googleMapsUrl: url,
-    websiteUrl:url.optional(),
-  wazeUrl: url.optional(),
+    websiteUrl: url.optional(),
+    wazeUrl: url.optional(),
     uberUrl: url.optional(),
     image: url.optional(),
     tips: text.optional(),
-    postalCode: z.string().regex(/^(\d{8})?$/).optional(),
-    addressDetails: z.object({street:text,number:z.string().trim().max(20),complement:text,neighborhood:text,city:text,state:z.string().regex(/^([A-Z]{2})?$/)}).strict().optional(),
-    coordinates: z.object({latitude:z.number().finite().min(-90).max(90),longitude:z.number().finite().min(-180).max(180)}).strict().nullable().optional(),
+    postalCode: z
+      .string()
+      .regex(/^(\d{8})?$/)
+      .optional(),
+    addressDetails: z
+      .object({
+        street: text,
+        number: z.string().trim().max(20),
+        complement: text,
+        neighborhood: text,
+        city: text,
+        state: z.string().regex(/^([A-Z]{2})?$/),
+      })
+      .strict()
+      .optional(),
+    coordinates: z
+      .object({
+        latitude: z.number().finite().min(-90).max(90),
+        longitude: z.number().finite().min(-180).max(180),
+      })
+      .strict()
+      .nullable()
+      .optional(),
   })
   .strict();
 export const weddingConfigSchema = z
   .object({
-    giftPaymentLink: z.string().max(2048).refine(value=>!value||/^https:\/\/[^\s]+$/i.test(value),"Use um link de pagamento HTTPS.").optional(),
-    copy:z.record(z.string().max(5000)).refine(value=>Object.keys(value).every(key=>key in copyDefaults),"Texto desconhecido no template.").transform(value=>Object.fromEntries(Object.entries(value).filter(([key])=>!fixedCopyKeys.has(key)&&key!=="hero.text5"))).optional(),
+    giftPaymentLink: z
+      .string()
+      .max(2048)
+      .refine(
+        (value) => !value || /^https:\/\/[^\s]+$/i.test(value),
+        "Use um link de pagamento HTTPS.",
+      )
+      .optional(),
+    copy: z
+      .record(z.string().max(5000))
+      .refine(
+        (value) => Object.keys(value).every((key) => key in copyDefaults),
+        "Texto desconhecido no template.",
+      )
+      .transform((value) =>
+        Object.fromEntries(
+          Object.entries(value).filter(([key]) => !fixedCopyKeys.has(key) && key !== "hero.text5"),
+        ),
+      )
+      .optional(),
     customImages: z.record(url).optional(),
-    dressCodeStyle:z.enum(dressCodeStyleIds).optional(),
+    dressCodeStyle: z.enum(dressCodeStyleIds).optional(),
     sections: z
       .object({
         gallery: z.boolean().optional(),
@@ -45,25 +88,31 @@ export const weddingConfigSchema = z
         rsvp: z.boolean().optional(),
       })
       .strict()
-      .transform(value=>({gallery:value.gallery??true}))
+      .transform((value) => ({ gallery: value.gallery ?? true }))
       .optional(),
-    galleryStyle: z.enum(["polaroid", "relicario", "varal", "filme", "mural", "editorial"]).transform(v => v === "editorial" ? "varal" : v).optional(),
+    galleryStyle: z
+      .enum(["polaroid", "relicario", "varal", "filme", "mural", "editorial"])
+      .transform((v) => (v === "editorial" ? "varal" : v))
+      .optional(),
     couple: z
       .object({
-        partner1: z.string().trim().min(1,"Informe o nome da primeira pessoa.").max(80),
-        partner2: z.string().trim().min(1,"Informe o nome da segunda pessoa.").max(80),
+        partner1: z.string().trim().min(1, "Informe o nome da primeira pessoa.").max(80),
+        partner2: z.string().trim().min(1, "Informe o nome da segunda pessoa.").max(80),
         headline: text.optional(),
         weddingDate: z
           .string()
-          .refine((v) => !v || Number.isFinite(Date.parse(v)), "Informe uma data e um horário válidos para o casamento."),
+          .refine(
+            (v) => !v || Number.isFinite(Date.parse(v)),
+            "Informe uma data e um horário válidos para o casamento.",
+          ),
         locationSummary: text,
         hashtag: text,
         coverImage: url,
         story: z
           .object({
-            sinceYear:z.number().int().min(1900).max(2200).optional(),
-          moments:z.array(text).max(20).optional(),
-          enabled: z.boolean(),
+            sinceYear: z.number().int().min(1900).max(2200).optional(),
+            moments: z.array(text).max(20).optional(),
+            enabled: z.boolean(),
             title: text,
             text: z.array(z.string().max(5000)).max(20),
             image: url.optional(),
@@ -83,7 +132,7 @@ export const weddingConfigSchema = z
           })
           .strict(),
       )
-      .max(MAX_GALLERY_PHOTOS,`A galeria permite no máximo ${MAX_GALLERY_PHOTOS} fotos.`),
+      .max(MAX_GALLERY_PHOTOS, `A galeria permite no máximo ${MAX_GALLERY_PHOTOS} fotos.`),
     sameVenue: z.boolean().optional(),
     ceremony: location,
     party: location,
@@ -94,13 +143,9 @@ export const weddingConfigSchema = z
         dos: z.array(text).max(30),
         donts: z.array(text).max(30),
         palette: z
-          .array(
-            z.object({ name: text, hex: z.string().regex(/^#[a-f0-9]{6}$/i) }),
-          )
+          .array(z.object({ name: text, hex: z.string().regex(/^#[a-f0-9]{6}$/i) }))
           .max(12),
-        gallery: z
-          .array(z.object({ title: text, description: text, image: url }))
-          .max(20),
+        gallery: z.array(z.object({ title: text, description: text, image: url })).max(20),
       })
       .strict(),
     gifts: z
@@ -162,23 +207,73 @@ export const slugSchema = z
   );
 export const weddingUpdateSchema = z
   .object({
-    templateId:z.enum(templateIds).refine(isTemplateAvailable,"Este template está em breve e ainda não pode ser selecionado.").optional(),
-    expectedUpdatedAt:z.string().optional(),
+    templateId: z
+      .enum(templateIds)
+      .refine(isTemplateAvailable, "Este template está em breve e ainda não pode ser selecionado.")
+      .optional(),
+    expectedUpdatedAt: z.string().optional(),
     config: weddingConfigSchema,
     theme: z.enum(["botanical", "rose", "ocean"]),
     status: z.enum(["draft", "published", "suspended", "archived"]),
   })
   .strict()
   .superRefine((value, ctx) => {
-    if(value.status==="published"&&value.config.gifts.length>0&&value.config.giftPaymentLink===EXAMPLE_PAYMENT_LINK)ctx.addIssue({code:"custom",path:["config","giftPaymentLink"],message:"Substitua o link de pagamento de exemplo pelo seu link ou remova os presentes de exemplo."});
-    if(value.status==="published"&&value.config.sameVenue===false&&!value.config.party.placeName.trim())ctx.addIssue({code:"custom",path:["config","party","placeName"],message:"Informe o local da festa antes de publicar."});
-    value.config.gifts.forEach((gift,index)=>{
-      if(!gift.title.trim())ctx.addIssue({code:"custom",path:["config","gifts",index,"title"],message:`Presente ${index+1}: informe o nome.`});
-      if(!gift.price||gift.price<=0)ctx.addIssue({code:"custom",path:["config","gifts",index,"price"],message:`Presente ${index+1}: informe um valor sugerido maior que zero.`});
+    if (
+      value.status === "published" &&
+      value.config.gifts.length > 0 &&
+      value.config.giftPaymentLink === EXAMPLE_PAYMENT_LINK
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["config", "giftPaymentLink"],
+        message:
+          "Substitua o link de pagamento de exemplo pelo seu link ou remova os presentes de exemplo.",
+      });
+    if (
+      value.status === "published" &&
+      value.config.sameVenue === false &&
+      !value.config.party.placeName.trim()
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["config", "party", "placeName"],
+        message: "Informe o local da festa antes de publicar.",
+      });
+    value.config.gifts.forEach((gift, index) => {
+      if (!gift.title.trim())
+        ctx.addIssue({
+          code: "custom",
+          path: ["config", "gifts", index, "title"],
+          message: `Presente ${index + 1}: informe o nome.`,
+        });
+      if (!gift.price || gift.price <= 0)
+        ctx.addIssue({
+          code: "custom",
+          path: ["config", "gifts", index, "price"],
+          message: `Presente ${index + 1}: informe um valor sugerido maior que zero.`,
+        });
     });
-    if(value.config.gifts.length>0&&!/^https:\/\/[^\s]+$/i.test(value.config.giftPaymentLink??""))ctx.addIssue({code:"custom",path:["config","giftPaymentLink"],message:"Adicione o link único de pagamento para salvar a lista de presentes."});
+    if (
+      value.config.gifts.length > 0 &&
+      !/^https:\/\/[^\s]+$/i.test(value.config.giftPaymentLink ?? "")
+    )
+      ctx.addIssue({
+        code: "custom",
+        path: ["config", "giftPaymentLink"],
+        message: "Adicione o link único de pagamento para salvar a lista de presentes.",
+      });
     if (value.status === "published") {
-      if (!value.config.couple.weddingDate) ctx.addIssue({code:"custom",path:["config","couple","weddingDate"],message:"Informe a data e o horário do casamento."});
-      if (!value.config.ceremony.placeName.trim()) ctx.addIssue({code:"custom",path:["config","ceremony","placeName"],message:"Informe o nome do local da cerimônia."});
+      if (!value.config.couple.weddingDate)
+        ctx.addIssue({
+          code: "custom",
+          path: ["config", "couple", "weddingDate"],
+          message: "Informe a data e o horário do casamento.",
+        });
+      if (!value.config.ceremony.placeName.trim())
+        ctx.addIssue({
+          code: "custom",
+          path: ["config", "ceremony", "placeName"],
+          message: "Informe o nome do local da cerimônia.",
+        });
     }
   });

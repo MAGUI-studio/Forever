@@ -64,7 +64,11 @@ export default async function Page({
   if (name === "convidados") {
     const query = await searchParams;
     if (query.action === "new-invitation") redirect(`/${slug}/convidados/novo`);
-    if (query.action === "edit-invitation" && typeof query.invitation === "string" && /^[a-f0-9]{64}$/.test(query.invitation)) {
+    if (
+      query.action === "edit-invitation" &&
+      typeof query.invitation === "string" &&
+      /^[a-f0-9]{64}$/.test(query.invitation)
+    ) {
       redirect(`/${slug}/convidados/${query.invitation}/editar`);
     }
   }

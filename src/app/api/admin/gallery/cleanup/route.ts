@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       return reply({ success: true, deletedCount: result.deletedCount });
     } catch (err) {
       console.error("Erro ao deletar arquivos do UploadThing:", err);
-      // Even if cloud deletion has transient issues, reply with error or success
+
       return reply({
         success: false,
         warning: "Falha ao remover alguns arquivos do storage remoto.",

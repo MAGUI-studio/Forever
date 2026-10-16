@@ -1,1 +1,1 @@
-export {default,metadata} from "@/app/admin/layout";
+export { default, metadata } from "@/app/admin/layout";

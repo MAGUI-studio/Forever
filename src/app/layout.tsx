@@ -1,5 +1,5 @@
 import { ForeverToaster } from "@/components/ui/ForeverToaster";
-import {rootMetadata} from "@/lib/seo";
+import { rootMetadata } from "@/lib/seo";
 import { Cormorant_Garamond, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
@@ -19,18 +19,11 @@ const jakarta = Plus_Jakarta_Sans({
   display: "swap",
 });
 
-export const metadata=rootMetadata;
+export const metadata = rootMetadata;
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="pt-BR"
-      className={`${cormorant.variable} ${jakarta.variable} scroll-smooth`}
-    >
+    <html lang="pt-BR" className={`${cormorant.variable} ${jakarta.variable} scroll-smooth`}>
       <body className="font-sans antialiased bg-[var(--forever-paper,#F1F1F1)] text-[var(--forever-ink,#3D2501)] selection:bg-[var(--forever-sand,#C7B79D)] selection:text-[var(--forever-ink,#3D2501)] w-full overflow-x-hidden">
         <div className="w-full max-w-440 mx-auto relative bg-[var(--forever-paper,#F1F1F1)]">
           {children}

@@ -13,7 +13,8 @@ export async function POST(request: Request) {
   let event: Stripe.Event;
 
   try {
-    if (!webhookSecret || !signature) return NextResponse.json({error:"Assinatura do webhook ausente."},{status:400});
+    if (!webhookSecret || !signature)
+      return NextResponse.json({ error: "Assinatura do webhook ausente." }, { status: 400 });
     event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Assinatura inválida";
@@ -27,8 +28,6 @@ export async function POST(request: Request) {
       case "checkout.session.async_payment_succeeded": {
         const session = event.data.object as Stripe.Checkout.Session;
 
-        // Best Practice: Only fulfill when payment_status is not 'unpaid'
-        // Delayed notification payment methods (e.g. Boleto/Pix) might arrive with unpaid status first
         if (session.payment_status === "unpaid") {
           console.log(`[Stripe Webhook] Sessão ${session.id} aguardando pagamento assíncrono.`);
           break;
@@ -46,7 +45,6 @@ export async function POST(request: Request) {
       }
 
       default:
-        // Ignore other unhandled events
         break;
     }
 
@@ -62,16 +60,17 @@ async function handlePaymentFailure(session: Stripe.Checkout.Session) {
   const { db } = services();
   const now = new Date().toISOString();
 
-  const ref=db.doc(`orders/${session.id}`);
-  await db.runTransaction(async transaction=>{
-  if((await transaction.get(ref)).data()?.fulfilledAt)return;
-  transaction.set(ref,
-    {
-      sessionId: session.id,
-      paymentStatus: "failed",
-      failedAt: now,
-    },
-    { merge: true },
-  );
+  const ref = db.doc(`orders/${session.id}`);
+  await db.runTransaction(async (transaction) => {
+    if ((await transaction.get(ref)).data()?.fulfilledAt) return;
+    transaction.set(
+      ref,
+      {
+        sessionId: session.id,
+        paymentStatus: "failed",
+        failedAt: now,
+      },
+      { merge: true },
+    );
   });
 }

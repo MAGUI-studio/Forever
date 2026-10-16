@@ -4,7 +4,6 @@ import { defaultTemplateId } from "@/config/templates/registry";
 import { templateVisuals } from "./templates/visual-registry";
 import type { TemplateOrnamentsProps } from "./templates/ornament-types";
 
-/** Public pages, admin pages, dialogs and loaders share the selected template artwork. */
 export function WeddingOrnaments(props: TemplateOrnamentsProps) {
   const wedding = useOptionalWedding();
   const Ornaments = templateVisuals[wedding?.templateId ?? defaultTemplateId].Ornaments;
@@ -18,7 +17,7 @@ export function WeddingBranch() {
 }
 
 export function WeddingLoadingIcon() {
-  const wedding=useOptionalWedding();
-  const Icon=templateVisuals[wedding?.templateId??defaultTemplateId].LoadingIcon;
-  return <Icon/>;
+  const wedding = useOptionalWedding();
+  const Icon = templateVisuals[wedding?.templateId ?? defaultTemplateId].LoadingIcon;
+  return <Icon />;
 }

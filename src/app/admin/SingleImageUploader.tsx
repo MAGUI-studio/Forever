@@ -22,7 +22,7 @@ import {
 import { AdminButton } from "./AdminButton";
 import { ConfirmModal } from "./ConfirmModal";
 
-export const MAX_SINGLE_IMAGE_SIZE_BYTES = 1024 * 1024; // 1MB
+export const MAX_SINGLE_IMAGE_SIZE_BYTES = 1024 * 1024;
 export const ALLOWED_SINGLE_IMAGE_MIMES = ["image/png", "image/webp"] as const;
 export const ALLOWED_SINGLE_IMAGE_EXTS = [".png", ".webp"] as const;
 
@@ -59,7 +59,6 @@ export function SingleImageUploader({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Clean staged preview object URL on unmount
   useEffect(() => {
     return () => {
       if (stagedFile) {
@@ -86,7 +85,6 @@ export function SingleImageUploader({
       const uploaded = res[0];
       const newUrl = uploaded.url || (uploaded as any).ufsUrl;
 
-      // 1. Purge previous custom file if stored on UploadThing
       const oldUrl = currentUrl;
       if (oldUrl && isUploadThingUrl(oldUrl) && oldUrl !== newUrl && user) {
         try {
@@ -108,7 +106,6 @@ export function SingleImageUploader({
         }
       }
 
-      // 2. Automatically save immediately to Firestore
       try {
         setIsAutoSaving(true);
         if (onImageSave) {
@@ -133,8 +130,7 @@ export function SingleImageUploader({
     },
     onUploadError: (err) => {
       setError(
-        err.message ||
-          "Não foi possível enviar a foto. Verifique o formato e tente novamente.",
+        err.message || "Não foi possível enviar a foto. Verifique o formato e tente novamente.",
       );
       setProgress(0);
     },
@@ -253,14 +249,11 @@ export function SingleImageUploader({
 
   return (
     <div className="space-y-4">
-      {/* Label and Reset Action */}
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
             <Camera size={16} className="text-[var(--forever-primary,#722F37)]" />
-            <h3 className="text-xs font-semibold text-[var(--forever-primary,#722F37)]">
-              {label}
-            </h3>
+            <h3 className="text-xs font-semibold text-[var(--forever-primary,#722F37)]">{label}</h3>
           </div>
           {description && (
             <p className="mt-1 text-[11px] leading-relaxed text-[var(--forever-accent,#77736c)]">
@@ -282,15 +275,19 @@ export function SingleImageUploader({
         )}
       </div>
 
-      {/* Subtle Auto-save Reassurance */}
       <div className="relative isolate overflow-hidden rounded-2xl border border-[#CFDCE5] bg-[#F0F5F8] px-4 py-3 text-xs text-[#405E74]">
-        <Info aria-hidden="true" size={76} strokeWidth={1.25} className="pointer-events-none absolute -right-2 top-1/2 -z-10 -translate-y-1/2 -rotate-12 text-[#54758F]/10" />
+        <Info
+          aria-hidden="true"
+          size={76}
+          strokeWidth={1.25}
+          className="pointer-events-none absolute -right-2 top-1/2 -z-10 -translate-y-1/2 -rotate-12 text-[#54758F]/10"
+        />
         <p className="relative leading-relaxed">
-          <span className="font-semibold">Salvamento automático:</span> ao enviar uma nova foto, ela é salva automaticamente no site.
+          <span className="font-semibold">Salvamento automático:</span> ao enviar uma nova foto, ela
+          é salva automaticamente no site.
         </p>
       </div>
 
-      {/* Error & Success Alerts */}
       {error && (
         <div
           role="alert"
@@ -313,7 +310,10 @@ export function SingleImageUploader({
           role="status"
           className="flex items-start gap-2 rounded-xl border border-[#722f3730] bg-[#fbf4f5] p-2.5 text-xs text-[var(--forever-primary,#722F37)]"
         >
-          <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-[var(--forever-primary,#722F37)]" />
+          <CheckCircle2
+            size={15}
+            className="mt-0.5 shrink-0 text-[var(--forever-primary,#722F37)]"
+          />
           <div className="flex-1 leading-relaxed">{success}</div>
           <button
             type="button"
@@ -325,17 +325,10 @@ export function SingleImageUploader({
         </div>
       )}
 
-      {/* Current Image Thumbnail & Status */}
       {displayUrl && !stagedFile && (
         <div className="flex items-center gap-3 rounded-xl border border-[#722f3718] bg-white p-2.5">
           <div className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-[#722f3710]">
-            <Image
-              src={displayUrl}
-              alt={label}
-              fill
-              unoptimized
-              className="object-cover"
-            />
+            <Image src={displayUrl} alt={label} fill unoptimized className="object-cover" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-xs font-medium text-[var(--forever-ink,#161616)]">
@@ -357,7 +350,6 @@ export function SingleImageUploader({
         </div>
       )}
 
-      {/* Staged File Ready to Upload */}
       {stagedFile && (
         <div className="rounded-xl border border-[var(--forever-primary,#722F37)]/30 bg-[#fbf4f5] p-3">
           <div className="flex items-center gap-3">
@@ -421,7 +413,6 @@ export function SingleImageUploader({
         </div>
       )}
 
-      {/* Upload Dropzone (When not staging a file) */}
       {!stagedFile && (
         <div
           onDragEnter={handleDrag}
@@ -470,7 +461,6 @@ export function SingleImageUploader({
         </div>
       )}
 
-      {/* Busy Progress Bar */}
       {isBusy && (
         <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between text-xs text-[var(--forever-primary,#722F37)]">
@@ -479,10 +469,12 @@ export function SingleImageUploader({
               {isUploading
                 ? "Enviando foto para a nuvem…"
                 : isAutoSaving
-                ? "Salvando alterações no site…"
-                : "Atualizando foto…"}
+                  ? "Salvando alterações no site…"
+                  : "Atualizando foto…"}
             </span>
-            <span className="font-semibold">{isUploading ? `${progress}%` : <Check size={13} />}</span>
+            <span className="font-semibold">
+              {isUploading ? `${progress}%` : <Check size={13} />}
+            </span>
           </div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--forever-sand,#EFECE6)]">
             <div
@@ -493,7 +485,6 @@ export function SingleImageUploader({
         </div>
       )}
 
-      {/* Reset Confirmation Modal */}
       <ConfirmModal
         open={showResetModal}
         onOpenChange={setShowResetModal}

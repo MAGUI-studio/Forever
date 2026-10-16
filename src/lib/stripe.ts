@@ -6,9 +6,7 @@ let stripeSingleton: Stripe | null = null;
 export function getStripe(): Stripe {
   const apiKey = process.env.STRIPE_SECRET_KEY;
   if (!apiKey) {
-    throw new Error(
-      "STRIPE_SECRET_KEY não foi configurada nas variáveis de ambiente.",
-    );
+    throw new Error("STRIPE_SECRET_KEY não foi configurada nas variáveis de ambiente.");
   }
 
   if (!stripeSingleton) {

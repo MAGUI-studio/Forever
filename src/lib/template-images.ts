@@ -4,8 +4,17 @@ import { romanceAssets } from "@/config/templates/romance-assets";
 import type { TemplateId } from "@/config/templates/registry";
 
 export const templateImageDefaults: Record<TemplateId, Record<string, string>> = {
-  "minimalist-modern": {hero:"/templates/minimalist-modern/hero.webp",story:"/templates/minimalist-modern/story.webp",dress:"/templates/minimalist-modern/dress.webp",venue:""},
-  "serene-breeze": {hero:"/detalhes/praia.jpg",story:"/casal/festa-de-casamento.png",venue:"/detalhes/paisagem.jpg"},
+  "minimalist-modern": {
+    hero: "/templates/minimalist-modern/hero.webp",
+    story: "/templates/minimalist-modern/story.webp",
+    dress: "/templates/minimalist-modern/dress.webp",
+    venue: "",
+  },
+  "serene-breeze": {
+    hero: "/detalhes/praia.jpg",
+    story: "/casal/festa-de-casamento.png",
+    venue: "/detalhes/paisagem.jpg",
+  },
   "botanical-classic": {
     hero: "/templates/botanical-classic/hero.webp",
     venue: "/templates/botanical-classic/venue.webp",
@@ -23,10 +32,12 @@ export const templateImageDefaults: Record<TemplateId, Record<string, string>> =
 };
 
 export const defaultAssetUrls = new Set([
-  ...["hero","story","detail","venue","schedule"].map(key=>`/templates/contemporary-romance/${key}.webp`),
+  ...["hero", "story", "detail", "venue", "schedule"].map(
+    (key) => `/templates/contemporary-romance/${key}.webp`,
+  ),
   "/casal/aliancas-que-selam-nossa-promessa.png",
   "/casal/cerimonia-religiosa.png",
-  ...Object.values(templateImageDefaults).flatMap(slots => Object.values(slots)),
+  ...Object.values(templateImageDefaults).flatMap((slots) => Object.values(slots)),
   "/casal/festa-de-casamento.png",
   "/detalhes/aliancas-florais.jpg",
   "/detalhes/mesa.jpg",
@@ -40,10 +51,6 @@ export const defaultAssetUrls = new Set([
   romanceAssets.footer,
 ]);
 
-/**
- * Returns whether a given image URL represents a user-uploaded / custom asset
- * (e.g. UploadThing URL or external HTTPS image) rather than a built-in template graphic.
- */
 export function isCustomImageUrl(url: string | undefined | null): boolean {
   if (!url || typeof url !== "string") return false;
   const trimmed = url.trim();
@@ -53,37 +60,34 @@ export function isCustomImageUrl(url: string | undefined | null): boolean {
   return !defaultAssetUrls.has(trimmed);
 }
 
-/**
- * Retrieves the custom image URL configured for a specific template slot, or empty string
- * if the user has not uploaded/customized this slot (meaning the template default should display).
- */
 export function getCustomImageUrl(
   config: WeddingConfig | undefined,
   templateId: TemplateId,
-  key: string
+  key: string,
 ): string {
   if (!config) return "";
-  // The shared dress-code form is the source of truth, including explicit removal.
+
   if (key === "dress" && config.dressCode?.gallery.length) return config.dressCode.gallery[0].image;
 
   if (templateId === "minimalist-modern" || templateId === "serene-breeze") {
-    const images=config.customImages;
-    // An explicit empty slot means the photo was removed in the form.
-    for (const slot of [`${templateId}.${key}`,key]) {
-      if (images && Object.prototype.hasOwnProperty.call(images,slot)) return images[slot];
+    const images = config.customImages;
+
+    for (const slot of [`${templateId}.${key}`, key]) {
+      if (images && Object.prototype.hasOwnProperty.call(images, slot)) return images[slot];
     }
   }
 
-  // 1. Check customImages dictionary
   const namespacedKey = `${templateId}.${key}`;
-  if (config.customImages?.[namespacedKey] && isCustomImageUrl(config.customImages[namespacedKey])) {
+  if (
+    config.customImages?.[namespacedKey] &&
+    isCustomImageUrl(config.customImages[namespacedKey])
+  ) {
     return config.customImages[namespacedKey];
   }
   if (config.customImages?.[key] && isCustomImageUrl(config.customImages[key])) {
     return config.customImages[key];
   }
 
-  // 2. Fallbacks for existing standard fields, but ONLY if they are real custom uploads (not default template paths)
   if (key === "hero") {
     if (isCustomImageUrl(config.couple?.coverImage)) {
       return config.couple.coverImage;
@@ -109,26 +113,29 @@ export function getCustomImageUrl(
   return "";
 }
 
-/**
- * Resolves the final image URL to render for a given template and section:
- * uses the user's custom photo if available, otherwise falls back to the template's default asset.
- */
 export function resolveTemplateImage(
   config: WeddingConfig | undefined,
   templateId: TemplateId,
-  key: string
+  key: string,
 ): string {
   const custom = getCustomImageUrl(config, templateId, key);
   if (custom) return custom;
-  // Never restore a decorative image after an explicit removal in the editor.
-  if(config?.customImages && [`${templateId}.${key}`,key].some(slot=>Object.prototype.hasOwnProperty.call(config.customImages,slot)&&config.customImages![slot]===""))return "";
-  if(key==="dress"&&config?.dressCode?.gallery.length)return "";
-  if(templateId==="minimalist-modern")return templateImageDefaults[templateId][key]??"";
+
+  if (
+    config?.customImages &&
+    [`${templateId}.${key}`, key].some(
+      (slot) =>
+        Object.prototype.hasOwnProperty.call(config.customImages, slot) &&
+        config.customImages![slot] === "",
+    )
+  )
+    return "";
+  if (key === "dress" && config?.dressCode?.gallery.length) return "";
+  if (templateId === "minimalist-modern") return templateImageDefaults[templateId][key] ?? "";
   if (key === "dress" || templateId === "serene-breeze") return "";
   return templateImageDefaults[templateId]?.[key] ?? "";
 }
 
-/** Preserves customized template photos, falling back to previous assets if omitted. */
 export function preserveTemplateImages<T extends WeddingConfig>(next: T, current: WeddingConfig) {
   return {
     ...next,
@@ -147,8 +154,8 @@ export function preserveTemplateImages<T extends WeddingConfig>(next: T, current
             },
           }
         : current.couple.story
-        ? { story: current.couple.story }
-        : {}),
+          ? { story: current.couple.story }
+          : {}),
     },
     ceremony: {
       ...next.ceremony,

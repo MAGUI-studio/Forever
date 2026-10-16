@@ -21,7 +21,6 @@ export function RSVPCodeInput({
 }: RSVPCodeInputProps) {
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Parse current string into array of 6 characters
   const clean = value.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
   const digits = Array.from({ length: 6 }, (_, i) => clean[i] || "");
 
@@ -44,27 +43,20 @@ export function RSVPCodeInput({
     nextDigits[index] = raw[0];
     const newClean = nextDigits.join("");
     const formatted =
-      newClean.length >= 3
-        ? newClean.slice(0, 3) + "-" + newClean.slice(3)
-        : newClean;
+      newClean.length >= 3 ? newClean.slice(0, 3) + "-" + newClean.slice(3) : newClean;
 
     onChange(formatted);
 
-    // Auto-advance to next input
     if (index < 5) {
       inputsRef.current[index + 1]?.focus();
     }
 
-    // Auto-submit when all 6 digits are filled
     if (newClean.length === 6) {
       onSubmit(newClean.slice(0, 3) + "-" + newClean.slice(3));
     }
   }
 
-  function handleKeyDown(
-    index: number,
-    event: React.KeyboardEvent<HTMLInputElement>
-  ) {
+  function handleKeyDown(index: number, event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "Backspace") {
       event.preventDefault();
       const nextDigits = [...digits];
@@ -76,9 +68,7 @@ export function RSVPCodeInput({
       }
       const newClean = nextDigits.join("");
       const formatted =
-        newClean.length >= 3
-          ? newClean.slice(0, 3) + "-" + newClean.slice(3)
-          : newClean;
+        newClean.length >= 3 ? newClean.slice(0, 3) + "-" + newClean.slice(3) : newClean;
       onChange(formatted);
     } else if (event.key === "ArrowLeft" && index > 0) {
       event.preventDefault();
@@ -103,9 +93,7 @@ export function RSVPCodeInput({
     if (!cleanPasted) return;
 
     const formatted =
-      cleanPasted.length >= 3
-        ? cleanPasted.slice(0, 3) + "-" + cleanPasted.slice(3)
-        : cleanPasted;
+      cleanPasted.length >= 3 ? cleanPasted.slice(0, 3) + "-" + cleanPasted.slice(3) : cleanPasted;
 
     onChange(formatted);
 
@@ -130,7 +118,6 @@ export function RSVPCodeInput({
         aria-label="Código de convite de 6 caracteres"
         className="flex items-center justify-center gap-1.5 sm:gap-3"
       >
-        {/* First group of 3 */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           {[0, 1, 2].map((idx) => (
             <input
@@ -155,14 +142,13 @@ export function RSVPCodeInput({
                 hasError
                   ? "border-rose-400 bg-rose-50/60 text-rose-900 focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
                   : digits[idx]
-                  ? "border-[var(--forever-primary,#722F37)] bg-white text-[var(--forever-ink,#302329)] shadow-xs focus:border-[var(--forever-primary,#722F37)] focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
-                  : "border-[var(--forever-primary,#722F37)]/25 bg-white/70 text-[var(--forever-ink,#302329)] hover:border-[var(--forever-primary,#722F37)]/50 focus:border-[var(--forever-primary,#722F37)] focus:bg-white focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
+                    ? "border-[var(--forever-primary,#722F37)] bg-white text-[var(--forever-ink,#302329)] shadow-xs focus:border-[var(--forever-primary,#722F37)] focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
+                    : "border-[var(--forever-primary,#722F37)]/25 bg-white/70 text-[var(--forever-ink,#302329)] hover:border-[var(--forever-primary,#722F37)]/50 focus:border-[var(--forever-primary,#722F37)] focus:bg-white focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
               } outline-none disabled:opacity-50 disabled:cursor-not-allowed`}
             />
           ))}
         </div>
 
-        {/* Separator hyphen */}
         <span
           aria-hidden="true"
           className="px-0.5 text-lg sm:text-2xl font-medium text-[var(--forever-primary,#722F37)]/40 select-none"
@@ -170,7 +156,6 @@ export function RSVPCodeInput({
           —
         </span>
 
-        {/* Second group of 3 */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           {[3, 4, 5].map((idx) => (
             <input
@@ -195,8 +180,8 @@ export function RSVPCodeInput({
                 hasError
                   ? "border-rose-400 bg-rose-50/60 text-rose-900 focus:border-rose-500 focus:ring-2 focus:ring-rose-200"
                   : digits[idx]
-                  ? "border-[var(--forever-primary,#722F37)] bg-white text-[var(--forever-ink,#302329)] shadow-xs focus:border-[var(--forever-primary,#722F37)] focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
-                  : "border-[var(--forever-primary,#722F37)]/25 bg-white/70 text-[var(--forever-ink,#302329)] hover:border-[var(--forever-primary,#722F37)]/50 focus:border-[var(--forever-primary,#722F37)] focus:bg-white focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
+                    ? "border-[var(--forever-primary,#722F37)] bg-white text-[var(--forever-ink,#302329)] shadow-xs focus:border-[var(--forever-primary,#722F37)] focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
+                    : "border-[var(--forever-primary,#722F37)]/25 bg-white/70 text-[var(--forever-ink,#302329)] hover:border-[var(--forever-primary,#722F37)]/50 focus:border-[var(--forever-primary,#722F37)] focus:bg-white focus:ring-2 focus:ring-[var(--forever-primary,#722F37)]/20"
               } outline-none disabled:opacity-50 disabled:cursor-not-allowed`}
             />
           ))}

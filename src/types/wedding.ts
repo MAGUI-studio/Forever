@@ -7,8 +7,8 @@ export interface CoupleInfo {
   hashtag: string;
   coverImage: string;
   story?: {
-    sinceYear?:number;
-    moments?:string[];
+    sinceYear?: number;
+    moments?: string[];
     enabled: boolean;
     title: string;
     text: string[];
@@ -31,13 +31,20 @@ export interface EventLocation {
   address: string;
   cityState: string;
   googleMapsUrl: string;
-  websiteUrl?:string;
+  websiteUrl?: string;
   wazeUrl?: string;
   uberUrl?: string;
   image?: string;
   tips?: string;
   postalCode?: string;
-    addressDetails?: {street:string;number:string;complement:string;neighborhood:string;city:string;state:string};
+  addressDetails?: {
+    street: string;
+    number: string;
+    complement: string;
+    neighborhood: string;
+    city: string;
+    state: string;
+  };
   coordinates?: { latitude: number; longitude: number } | null;
 }
 
@@ -98,9 +105,9 @@ export type GalleryStyle = "polaroid" | "relicario" | "varal" | "filme" | "mural
 
 export interface WeddingConfig {
   giftPaymentLink?: string;
-  copy?:Record<string,string>;
+  copy?: Record<string, string>;
   customImages?: Record<string, string>;
-  sections?: {gallery?:boolean};
+  sections?: { gallery?: boolean };
   galleryStyle?: GalleryStyle;
   couple: CoupleInfo;
   gallery: GalleryPhoto[];

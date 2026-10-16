@@ -61,7 +61,7 @@ try {
         }
       }
       console.log(
-        `  Updated invite ${doc.id} (${data.label}): main code=${code}, ${Object.keys(guestCodes).length} guests`
+        `  Updated invite ${doc.id} (${data.label}): main code=${code}, ${Object.keys(guestCodes).length} guests`,
       );
     }
   }

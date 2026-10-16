@@ -1,8 +1,8 @@
-import type {WeddingConfig} from "./wedding";
-import type {WeddingPlan} from "@/config/forever";
+import type { WeddingConfig } from "./wedding";
+import type { WeddingPlan } from "@/config/forever";
 export type WeddingStatus = "draft" | "published" | "suspended" | "archived";
 export type WeddingTheme = "botanical" | "rose" | "ocean";
-export type {WeddingPlan};
+export type { WeddingPlan };
 export interface WeddingDocument {
   plan?: WeddingPlan | null;
   siteRevision?: number;

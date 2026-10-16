@@ -72,7 +72,6 @@ export function GalleryUploader({
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
 
-  // Revoke preview object URLs when unmounted or changed
   useEffect(() => {
     return () => {
       staged.forEach((item) => URL.revokeObjectURL(item.previewUrl));
@@ -94,7 +93,6 @@ export function GalleryUploader({
     onClientUploadComplete: async (res) => {
       if (!res || res.length === 0) return;
 
-      // 1. Purge previous UploadThing files from cloud storage
       const oldUploadThingUrls = currentPhotos
         .map((p) => p.url)
         .filter((url) => isUploadThingUrl(url));
@@ -126,7 +124,6 @@ export function GalleryUploader({
         aspect: "square",
       }));
 
-      // 2. Automatically save immediately to Firestore
       try {
         setIsAutoSaving(true);
         if (onPhotosSave) {
@@ -134,9 +131,7 @@ export function GalleryUploader({
         } else {
           onPhotosChange(newPhotos);
         }
-        setSuccess(
-          `${newPhotos.length} fotos enviadas e salvas com sucesso no site!`,
-        );
+        setSuccess(`${newPhotos.length} fotos enviadas e salvas com sucesso no site!`);
       } catch (saveErr) {
         onPhotosChange(newPhotos);
         setError(
@@ -150,8 +145,7 @@ export function GalleryUploader({
     },
     onUploadError: (err) => {
       setError(
-        err.message ||
-          "Não foi possível enviar as fotos. Verifique a conexão e tente novamente.",
+        err.message || "Não foi possível enviar as fotos. Verifique a conexão e tente novamente.",
       );
       setProgress(0);
     },
@@ -286,7 +280,6 @@ export function GalleryUploader({
 
   return (
     <div className="space-y-6">
-      {/* Header and Auto-Save Reassurance Banner */}
       <div>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -308,19 +301,24 @@ export function GalleryUploader({
           )}
         </div>
         <p className="mt-1 text-xs leading-relaxed text-[var(--forever-accent,#77736c)]">
-          Envie as {MAX_GALLERY_PHOTOS} fotos oficiais do casamento para ilustrar a galeria dos noivos.
+          Envie as {MAX_GALLERY_PHOTOS} fotos oficiais do casamento para ilustrar a galeria dos
+          noivos.
         </p>
       </div>
 
-      {/* Auto-Save Reassurance Card */}
       <div className="relative isolate overflow-hidden rounded-2xl border border-[#CFDCE5] bg-[#F0F5F8] px-4 py-3 text-xs text-[#405E74]">
-        <Info aria-hidden="true" size={76} strokeWidth={1.25} className="pointer-events-none absolute -right-2 top-1/2 -z-10 -translate-y-1/2 -rotate-12 text-[#54758F]/10" />
+        <Info
+          aria-hidden="true"
+          size={76}
+          strokeWidth={1.25}
+          className="pointer-events-none absolute -right-2 top-1/2 -z-10 -translate-y-1/2 -rotate-12 text-[#54758F]/10"
+        />
         <div className="leading-relaxed">
-          <span className="font-semibold">Salvamento automático:</span> assim que você enviar as fotos, suas alterações serão salvas automaticamente no site.
+          <span className="font-semibold">Salvamento automático:</span> assim que você enviar as
+          fotos, suas alterações serão salvas automaticamente no site.
         </div>
       </div>
 
-      {/* Feedback Messages */}
       {error && (
         <div
           role="alert"
@@ -343,7 +341,10 @@ export function GalleryUploader({
           role="status"
           className="flex items-start gap-2.5 rounded-xl border border-[#722f3730] bg-[#fbf4f5] p-3.5 text-xs text-[var(--forever-primary,#722F37)]"
         >
-          <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-[var(--forever-primary,#722F37)]" />
+          <CheckCircle2
+            size={16}
+            className="mt-0.5 shrink-0 text-[var(--forever-primary,#722F37)]"
+          />
           <div className="flex-1 leading-relaxed">{success}</div>
           <button
             type="button"
@@ -355,7 +356,6 @@ export function GalleryUploader({
         </div>
       )}
 
-      {/* Custom Romantic File Dropzone (NOT standard HTML) */}
       <div
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -397,7 +397,6 @@ export function GalleryUploader({
           Selecione as imagens em alta resolução do casal
         </p>
 
-        {/* Requirements Badges */}
         <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2">
           <span className="inline-flex items-center gap-1 rounded-full bg-[var(--forever-sand,#EFECE6)] px-2.5 py-1 text-[11px] font-medium text-[var(--forever-accent,#77736c)]">
             Apenas PNG ou WebP
@@ -411,7 +410,6 @@ export function GalleryUploader({
         </div>
       </div>
 
-      {/* Staged Files Preview (Before Upload) */}
       {staged.length > 0 && (
         <div className="space-y-4">
           <div className="mb-3 flex items-center justify-between gap-3">
@@ -444,12 +442,10 @@ export function GalleryUploader({
                   className="size-full object-cover"
                 />
 
-                {/* Badge number */}
                 <span className="absolute left-1.5 top-1.5 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-semibold text-white backdrop-blur-xs">
                   Foto {index + 1}
                 </span>
 
-                {/* Badge format + size */}
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 text-[10px] text-white">
                   <p className="truncate font-medium">{item.file.name}</p>
                   <p className="text-[9px] text-neutral-300">
@@ -457,7 +453,6 @@ export function GalleryUploader({
                   </p>
                 </div>
 
-                {/* Remove individual button */}
                 {!isBusy && (
                   <button
                     type="button"
@@ -475,7 +470,6 @@ export function GalleryUploader({
             ))}
           </div>
 
-          {/* Upload and Auto-Save Progress Bar */}
           {isBusy && (
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between text-xs text-[var(--forever-primary,#722F37)]">
@@ -484,10 +478,12 @@ export function GalleryUploader({
                   {isUploading
                     ? "Enviando fotos para a nuvem…"
                     : isAutoSaving
-                    ? "Salvando alterações automaticamente no site…"
-                    : "Atualizando galeria…"}
+                      ? "Salvando alterações automaticamente no site…"
+                      : "Atualizando galeria…"}
                 </span>
-                <span className="font-semibold">{isUploading ? `${progress}%` : <Check size={14} />}</span>
+                <span className="font-semibold">
+                  {isUploading ? `${progress}%` : <Check size={14} />}
+                </span>
               </div>
               <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--forever-sand,#EFECE6)]">
                 <div
@@ -498,7 +494,6 @@ export function GalleryUploader({
             </div>
           )}
 
-          {/* Action Button */}
           <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
             <AdminButton
               disabled={isBusy || staged.length === 0}
@@ -521,7 +516,6 @@ export function GalleryUploader({
         </div>
       )}
 
-      {/* Currently Active Photos in the Site */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -564,7 +558,6 @@ export function GalleryUploader({
         </div>
       </div>
 
-      {/* Reset Confirmation Modal */}
       <ConfirmModal
         open={showResetModal}
         onOpenChange={setShowResetModal}

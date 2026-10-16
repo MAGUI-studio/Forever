@@ -1,4 +1,4 @@
-import {resolveModules,redactModuleData} from "@/config/modules";
+import { resolveModules, redactModuleData } from "@/config/modules";
 import { getWeddingGuestLimit } from "@/config/forever";
 import { audit } from "@/lib/event-audit";
 import { randomBytes } from "node:crypto";
@@ -19,54 +19,69 @@ import {
 export const runtime = "nodejs";
 export async function GET(request: Request) {
   try {
-    const db = await requireAdmin(request,"guestList");
-    const {wedding}=await requireAccess(request);
-    const snap = await db
-      .collection("invitations")
-      .orderBy("updatedAt", "desc")
-      .get();
-    return reply(redactModuleData({
-      invitations: snap.docs.map((d) => {
-        const item = d.data();
-        const code = item.code ?? deterministicShortCode(d.id);
-        const guestCodes = item.guestCodes ?? {};
-        const personalCodes = Object.fromEntries(
-          (item.guests ?? []).map((g: {id: string}) => [
-            g.id,
-            guestCodes[g.id] ?? (item.kind === "individual" || (item.guests ?? []).length === 1 ? code : deterministicShortCode(d.id + ":" + g.id))
-          ])
-        );
-        return {
-          sentAt: null,
-          ...item,
-          id: d.id,
-          code,
-          personalCodes,
-          personalTokens: Object.fromEntries((item.guests ?? []).map((g: {id: string}) => [g.id, personalToken(d.id, item.token, g.id)])),
-        };
-      }),
-    },resolveModules(wedding.modules, wedding.plan)));
+    const db = await requireAdmin(request, "guestList");
+    const { wedding } = await requireAccess(request);
+    const snap = await db.collection("invitations").orderBy("updatedAt", "desc").get();
+    return reply(
+      redactModuleData(
+        {
+          invitations: snap.docs.map((d) => {
+            const item = d.data();
+            const code = item.code ?? deterministicShortCode(d.id);
+            const guestCodes = item.guestCodes ?? {};
+            const personalCodes = Object.fromEntries(
+              (item.guests ?? []).map((g: { id: string }) => [
+                g.id,
+                guestCodes[g.id] ??
+                  (item.kind === "individual" || (item.guests ?? []).length === 1
+                    ? code
+                    : deterministicShortCode(d.id + ":" + g.id)),
+              ]),
+            );
+            return {
+              sentAt: null,
+              ...item,
+              id: d.id,
+              code,
+              personalCodes,
+              personalTokens: Object.fromEntries(
+                (item.guests ?? []).map((g: { id: string }) => [
+                  g.id,
+                  personalToken(d.id, item.token, g.id),
+                ]),
+              ),
+            };
+          }),
+        },
+        resolveModules(wedding.modules, wedding.plan),
+      ),
+    );
   } catch (e) {
     return failure(e);
   }
 }
 export async function POST(request: Request) {
   try {
-    const db = await requireAdmin(request,"guestList");
-    const {email:actor,wedding} = await requireAccess(request);
+    const db = await requireAdmin(request, "guestList");
+    const { email: actor, wedding } = await requireAccess(request);
     const data = inviteSchema.parse(await body(request));
-    if(!resolveModules(wedding.modules, wedding.plan).checkIn&&data.guests.some(g=>g.checkedIn))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
-    if(data.guests.some(g=>g.tableId||g.seat))throw new HttpError(400,"Distribua os lugares na página de mesas.");
+    if (
+      !resolveModules(wedding.modules, wedding.plan).checkIn &&
+      data.guests.some((g) => g.checkedIn)
+    )
+      throw new HttpError(403, "Este recurso não está disponível para este casamento.");
+    if (data.guests.some((g) => g.tableId || g.seat))
+      throw new HttpError(400, "Distribua os lugares na página de mesas.");
     const guestLimit = getWeddingGuestLimit(wedding.plan);
     if (Number.isFinite(guestLimit)) {
       const snap = await db.collection("invitations").get();
       const currentGuestCount = snap.docs
-        .filter(d => d.data().active !== false)
+        .filter((d) => d.data().active !== false)
         .reduce((sum, d) => sum + ((d.data().guests ?? []).length as number), 0);
       if (currentGuestCount + data.guests.length > guestLimit) {
         throw new HttpError(
           403,
-          `O plano Forever Essencial permite até ${guestLimit} convidados. Faça o upgrade para o Forever PRO para ter convidados ilimitados.`
+          `O plano Forever Essencial permite até ${guestLimit} convidados. Faça o upgrade para o Forever PRO para ter convidados ilimitados.`,
         );
       }
     }
@@ -75,9 +90,10 @@ export async function POST(request: Request) {
     const code = generateShortCode();
     const guestCodes: Record<string, string> = {};
     for (const g of data.guests) {
-      guestCodes[g.id] = data.kind === "individual" || data.guests.length === 1 ? code : generateShortCode();
+      guestCodes[g.id] =
+        data.kind === "individual" || data.guests.length === 1 ? code : generateShortCode();
     }
-    await db.runTransaction(async t => {
+    await db.runTransaction(async (t) => {
       t.set(db.collection("invitations").doc(id), {
         ...data,
         token,
@@ -103,7 +119,7 @@ export async function POST(request: Request) {
           });
         }
       }
-      audit(t,db,actor,"Convite criado",data.label,data.guests.map(g=>g.name).join(", "));
+      audit(t, db, actor, "Convite criado", data.label, data.guests.map((g) => g.name).join(", "));
     });
     return reply({ success: true, id, code }, 201);
   } catch (e) {
@@ -117,42 +133,54 @@ const updateSchema = z.object({
 });
 export async function PATCH(request: Request) {
   try {
-    const db = await requireAdmin(request,"guestList");
-    const {email:actor,wedding} = await requireAccess(request);
+    const db = await requireAdmin(request, "guestList");
+    const { email: actor, wedding } = await requireAccess(request);
     const data = updateSchema.parse(await body(request));
     const ref = db.collection("invitations").doc(data.id);
     await db.runTransaction(async (t) => {
       const snap = await t.get(ref);
       if (!snap.exists) throw new HttpError(404, "Convite removido.");
       if (snap.data()?.revision !== data.revision)
-        throw new HttpError(
-          409,
-          "O convite mudou. Atualize a lista antes de editar novamente.",
-        );
+        throw new HttpError(409, "O convite mudou. Atualize a lista antes de editar novamente.");
       const previous = snap.data()!;
-      if(!resolveModules(wedding.modules, wedding.plan).checkIn&&data.invitation.guests.some(g=>g.checkedIn!==(previous.guests.find((old:{id:string})=>old.id===g.id)?.checkedIn??false)))throw new HttpError(403,"Este recurso não está disponível para este casamento.");
+      if (
+        !resolveModules(wedding.modules, wedding.plan).checkIn &&
+        data.invitation.guests.some(
+          (g) =>
+            g.checkedIn !==
+            (previous.guests.find((old: { id: string }) => old.id === g.id)?.checkedIn ?? false),
+        )
+      )
+        throw new HttpError(403, "Este recurso não está disponível para este casamento.");
       const guestLimit = getWeddingGuestLimit(wedding.plan);
       if (Number.isFinite(guestLimit) && data.invitation.active !== false) {
         const allSnap = await t.get(db.collection("invitations"));
         const otherGuestsCount = allSnap.docs
-          .filter(d => d.id !== data.id && d.data().active !== false)
+          .filter((d) => d.id !== data.id && d.data().active !== false)
           .reduce((sum, d) => sum + ((d.data().guests ?? []).length as number), 0);
         if (otherGuestsCount + data.invitation.guests.length > guestLimit) {
           throw new HttpError(
             403,
-            `O plano Forever Essencial permite até ${guestLimit} convidados. Faça o upgrade para o Forever PRO para ter convidados ilimitados.`
+            `O plano Forever Essencial permite até ${guestLimit} convidados. Faça o upgrade para o Forever PRO para ter convidados ilimitados.`,
           );
         }
       }
       for (const guest of data.invitation.guests) {
-        const old = previous.guests.find((g: {id:string}) => g.id === guest.id);
-        if ((guest.tableId ?? "") !== (old?.tableId ?? "") || (guest.seat ?? "") !== (old?.seat ?? "")) throw new HttpError(400,"Altere os lugares na página de mesas.");
+        const old = previous.guests.find((g: { id: string }) => g.id === guest.id);
+        if (
+          (guest.tableId ?? "") !== (old?.tableId ?? "") ||
+          (guest.seat ?? "") !== (old?.seat ?? "")
+        )
+          throw new HttpError(400, "Altere os lugares na página de mesas.");
       }
       const code = previous.code ?? generateShortCode();
       const guestCodes: Record<string, string> = { ...(previous.guestCodes ?? {}) };
       for (const guest of data.invitation.guests) {
         if (!guestCodes[guest.id]) {
-          guestCodes[guest.id] = data.invitation.kind === "individual" || data.invitation.guests.length === 1 ? code : generateShortCode();
+          guestCodes[guest.id] =
+            data.invitation.kind === "individual" || data.invitation.guests.length === 1
+              ? code
+              : generateShortCode();
           t.set(db.collection("codes").doc(guestCodes[guest.id]), {
             invitationId: data.id,
             guestId: guestCodes[guest.id] === code ? undefined : guest.id,
@@ -164,7 +192,30 @@ export async function PATCH(request: Request) {
         invitationId: data.id,
         createdAt: new Date().toISOString(),
       });
-      audit(t,db,actor,"Convite atualizado",data.invitation.label,data.invitation.guests.map(g=>{const old=previous.guests.find((p:{id:string})=>p.id===g.id);return !old ? g.name+": adicionado" : [old.name!==g.name?old.name+" → "+g.name:"",old.status!==g.status?g.name+": "+old.status+" → "+g.status:"",old.checkedIn!==g.checkedIn?g.name+(g.checkedIn?": chegada registrada":": chegada desfeita"):""].filter(Boolean).join("; ");}).filter(Boolean).join("; "));
+      audit(
+        t,
+        db,
+        actor,
+        "Convite atualizado",
+        data.invitation.label,
+        data.invitation.guests
+          .map((g) => {
+            const old = previous.guests.find((p: { id: string }) => p.id === g.id);
+            return !old
+              ? g.name + ": adicionado"
+              : [
+                  old.name !== g.name ? old.name + " → " + g.name : "",
+                  old.status !== g.status ? g.name + ": " + old.status + " → " + g.status : "",
+                  old.checkedIn !== g.checkedIn
+                    ? g.name + (g.checkedIn ? ": chegada registrada" : ": chegada desfeita")
+                    : "",
+                ]
+                  .filter(Boolean)
+                  .join("; ");
+          })
+          .filter(Boolean)
+          .join("; "),
+      );
       t.update(ref, {
         ...data.invitation,
         code,
@@ -180,11 +231,9 @@ export async function PATCH(request: Request) {
 }
 export async function DELETE(request: Request) {
   try {
-    const db = await requireAdmin(request,"guestList");
-    const {email:actor,wedding} = await requireAccess(request);
-    const data = updateSchema
-      .pick({ id: true, revision: true })
-      .parse(await body(request));
+    const db = await requireAdmin(request, "guestList");
+    const { email: actor, wedding } = await requireAccess(request);
+    const data = updateSchema.pick({ id: true, revision: true }).parse(await body(request));
     const ref = db.collection("invitations").doc(data.id);
     await db.runTransaction(async (t) => {
       const snap = await t.get(ref);
@@ -199,7 +248,7 @@ export async function DELETE(request: Request) {
           t.delete(db.collection("codes").doc(gCode));
         }
       }
-      audit(t,db,actor,"Convite excluído",snap.data()?.label ?? "Convite");
+      audit(t, db, actor, "Convite excluído", snap.data()?.label ?? "Convite");
       t.delete(ref);
     });
     return reply({ success: true });

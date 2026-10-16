@@ -1,8 +1,8 @@
 "use client";
-import {synchronizeWeddingSettings} from "@/lib/wedding-settings";
-import {templatePalettes,weddingThemeStyle} from "@/config/templates/theme";
-import {defaultTemplateId,type TemplateId} from "@/config/templates/registry";
-import {resolveModules,type WeddingModules} from "@/config/modules";
+import { synchronizeWeddingSettings } from "@/lib/wedding-settings";
+import { templatePalettes, weddingThemeStyle } from "@/config/templates/theme";
+import { defaultTemplateId, type TemplateId } from "@/config/templates/registry";
+import { resolveModules, type WeddingModules } from "@/config/modules";
 import {
   createContext,
   useContext,
@@ -40,9 +40,11 @@ const themes = {
 };
 const WeddingContext = createContext<{
   slug: string;
-  templateId:TemplateId;setTemplateId:(id:TemplateId)=>void;preview:boolean;
-  modules:WeddingModules;
-  setModules:(modules:Partial<WeddingModules>)=>void;
+  templateId: TemplateId;
+  setTemplateId: (id: TemplateId) => void;
+  preview: boolean;
+  modules: WeddingModules;
+  setModules: (modules: Partial<WeddingModules>) => void;
   config: WeddingConfig;
   setConfig: (config: WeddingConfig) => void;
   setTheme: (theme: WeddingTheme) => void;
@@ -53,32 +55,54 @@ export function WeddingProvider({
   slug,
   config = emptyWeddingConfig,
   theme = "botanical",
-  modules,templateId=defaultTemplateId,preview=false,
+  modules,
+  templateId = defaultTemplateId,
+  preview = false,
   children,
 }: {
   slug: string;
   config?: WeddingConfig;
   theme?: WeddingTheme;
-  modules?:Partial<WeddingModules>;templateId?:TemplateId;preview?:boolean;
+  modules?: Partial<WeddingModules>;
+  templateId?: TemplateId;
+  preview?: boolean;
   children: ReactNode;
 }) {
-  const [enabledModules,updateModules]=useState(()=>({...resolveModules(), ...modules}));
-  const setModules=useCallback((value:Partial<WeddingModules>)=>updateModules({...resolveModules(), ...value}),[]);
-  const [selectedTemplate,setTemplateId]=useState(templateId);
+  const [enabledModules, updateModules] = useState(() => ({ ...resolveModules(), ...modules }));
+  const setModules = useCallback(
+    (value: Partial<WeddingModules>) => updateModules({ ...resolveModules(), ...value }),
+    [],
+  );
+  const [selectedTemplate, setTemplateId] = useState(templateId);
   const [current, setConfig] = useState(config);
   const [currentTheme, setTheme] = useState(theme);
-  const path=useCallback((path="")=>weddingPath(slug,path),[slug]);
-  const effectiveConfig=useMemo(()=>synchronizeWeddingSettings(preview?config:current),[preview,config,current]);
-  const activeTemplate=preview?templateId:selectedTemplate;
-  const colors=activeTemplate!=="botanical-classic"?templatePalettes[activeTemplate]:{...themes[currentTheme],hover:currentTheme==="botanical"?"#4b4f30":`color-mix(in srgb, ${themes[currentTheme].primary} 80%, black)`};
-  const themeStyle=weddingThemeStyle(colors);
+  const path = useCallback((path = "") => weddingPath(slug, path), [slug]);
+  const effectiveConfig = useMemo(
+    () => synchronizeWeddingSettings(preview ? config : current),
+    [preview, config, current],
+  );
+  const activeTemplate = preview ? templateId : selectedTemplate;
+  const colors =
+    activeTemplate !== "botanical-classic"
+      ? templatePalettes[activeTemplate]
+      : {
+          ...themes[currentTheme],
+          hover:
+            currentTheme === "botanical"
+              ? "#4b4f30"
+              : `color-mix(in srgb, ${themes[currentTheme].primary} 80%, black)`,
+        };
+  const themeStyle = weddingThemeStyle(colors);
   return (
     <WeddingContext.Provider
       value={{
         slug,
-        modules:enabledModules,setModules,
+        modules: enabledModules,
+        setModules,
         config: effectiveConfig,
-        templateId:preview?templateId:selectedTemplate,setTemplateId,preview,
+        templateId: preview ? templateId : selectedTemplate,
+        setTemplateId,
+        preview,
         setConfig,
         setTheme,
         themeStyle,

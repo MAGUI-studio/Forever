@@ -15,7 +15,8 @@ export function formatCurrency(value: number): string {
 export function formatDateBR(dateString: string): string {
   const date = new Date(dateString);
   return new Intl.DateTimeFormat("pt-BR", {
-    timeZone: "America/Sao_Paulo", day: "numeric",
+    timeZone: "America/Sao_Paulo",
+    day: "numeric",
     month: "long",
     year: "numeric",
   }).format(date);

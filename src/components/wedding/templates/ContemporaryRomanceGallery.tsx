@@ -1,7 +1,7 @@
 "use client";
 
-import {Gallery} from "../Gallery";
+import { Gallery } from "../Gallery";
 
-export function ContemporaryRomanceGallery(){
+export function ContemporaryRomanceGallery() {
   return <Gallery forceTemplate="contemporary-romance" />;
 }

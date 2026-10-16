@@ -1,12 +1,8 @@
-/**
- * Utilitários para criação de eventos de calendário (.ics e Google Calendar)
- */
-
 interface CalendarEventParams {
   title: string;
   description: string;
   location: string;
-  startDateISO: string; // Data ISO com fuso horário explícito
+  startDateISO: string;
   durationHours?: number;
 }
 

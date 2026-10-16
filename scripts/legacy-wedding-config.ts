@@ -21,8 +21,8 @@ export const weddingConfig: WeddingConfig = {
     coverImage: "/casal/festa-de-casamento.png",
     story: {
       enabled: true,
-      sinceYear:2016,
-      moments:["O encontro · 2016","Uma vida construída juntos","O nosso grande sim · 2027"],
+      sinceYear: 2016,
+      moments: ["O encontro · 2016", "Uma vida construída juntos", "O nosso grande sim · 2027"],
       title: "Do primeiro encontro ao nosso grande ‘sim’.",
       text: [
         "Nossa história começou em 2016, quando a vida nos colocou no mesmo caminho. Desde então, entre encontros, desafios, conquistas e muitos momentos compartilhados, fomos construindo uma vida juntos.",
@@ -35,32 +35,73 @@ export const weddingConfig: WeddingConfig = {
 
   gallery: [
     { id: "1", url: "/detalhes/praia.jpg", caption: "Luz suave à beira-mar", aspect: "wide" },
-    { id: "2", url: "/casal/cerimonia-religiosa.png", caption: "Flores e mesa posta", aspect: "tall" },
-    { id: "3", url: "/casal/aliancas-que-selam-nossa-promessa.png", caption: "Alianças para o nosso para sempre", aspect: "tall" },
+    {
+      id: "2",
+      url: "/casal/cerimonia-religiosa.png",
+      caption: "Flores e mesa posta",
+      aspect: "tall",
+    },
+    {
+      id: "3",
+      url: "/casal/aliancas-que-selam-nossa-promessa.png",
+      caption: "Alianças para o nosso para sempre",
+      aspect: "tall",
+    },
     { id: "4", url: "/detalhes/mesa.jpg", caption: "Detalhes de uma celebração", aspect: "wide" },
     { id: "5", url: "/detalhes/flores.jpg", caption: "Flores e delicadeza", aspect: "square" },
-    { id: "6", url: "/detalhes/aliancas-florais.jpg", caption: "Símbolos do nosso amor", aspect: "square" },
-    { id: "7", url: "/casal/festa-de-casamento.png", caption: "Um jardim para celebrar", aspect: "tall" },
-    { id: "8", url: "/detalhes/paisagem.jpg", caption: "A beleza dos novos caminhos", aspect: "wide" },
+    {
+      id: "6",
+      url: "/detalhes/aliancas-florais.jpg",
+      caption: "Símbolos do nosso amor",
+      aspect: "square",
+    },
+    {
+      id: "7",
+      url: "/casal/festa-de-casamento.png",
+      caption: "Um jardim para celebrar",
+      aspect: "tall",
+    },
+    {
+      id: "8",
+      url: "/detalhes/paisagem.jpg",
+      caption: "A beleza dos novos caminhos",
+      aspect: "wide",
+    },
     { id: "9", url: "/detalhes/cafe.jpg", caption: "Pequenos prazeres a dois", aspect: "square" },
     { id: "10", url: "/detalhes/drinks.jpg", caption: "Cores para a celebração", aspect: "square" },
     { id: "11", url: "/detalhes/brinde.jpg", caption: "Um brinde ao nosso sim", aspect: "wide" },
-    { id: "12", url: "/casal/festa-de-casamento.png", caption: "Flores e luz para o grande dia", aspect: "tall" },
+    {
+      id: "12",
+      url: "/casal/festa-de-casamento.png",
+      caption: "Flores e luz para o grande dia",
+      aspect: "tall",
+    },
   ],
   ceremony: {
-    title: "Cerimônia", subtitle: "Nosso grande ‘sim’", time: "11h30",
-    placeName: "Quintal & Cia", address: "Rua dos Marceneiros, 210 - Jardim Valparaíba",
+    title: "Cerimônia",
+    subtitle: "Nosso grande ‘sim’",
+    time: "11h30",
+    placeName: "Quintal & Cia",
+    address: "Rua dos Marceneiros, 210 - Jardim Valparaíba",
     cityState: "São José dos Campos - SP",
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Quintal+e+Cia+Rua+dos+Marceneiros+210+Jardim+Valparaiba+Sao+Jose+dos+Campos",
-    wazeUrl: "https://waze.com/ul?q=Rua%20dos%20Marceneiros%20210%20Sao%20Jose%20dos%20Campos&navigate=yes",
-    websiteUrl:"https://www.instagram.com/quintal_sjc/",
-    image: "/utils/quintal-e-cia/quintal-e-cia-wp.webp", tips: "A cerimônia e a recepção acontecerão no mesmo local.",
+    googleMapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Quintal+e+Cia+Rua+dos+Marceneiros+210+Jardim+Valparaiba+Sao+Jose+dos+Campos",
+    wazeUrl:
+      "https://waze.com/ul?q=Rua%20dos%20Marceneiros%20210%20Sao%20Jose%20dos%20Campos&navigate=yes",
+    websiteUrl: "https://www.instagram.com/quintal_sjc/",
+    image: "/utils/quintal-e-cia/quintal-e-cia-wp.webp",
+    tips: "A cerimônia e a recepção acontecerão no mesmo local.",
   },
   party: {
-    image: "/casal/festa-de-casamento.png", title: "Recepção", subtitle: "Após a cerimônia", time: "Após a cerimônia",
-    placeName: "Quintal & Cia", address: "Rua dos Marceneiros, 210 - Jardim Valparaíba",
+    image: "/casal/festa-de-casamento.png",
+    title: "Recepção",
+    subtitle: "Após a cerimônia",
+    time: "Após a cerimônia",
+    placeName: "Quintal & Cia",
+    address: "Rua dos Marceneiros, 210 - Jardim Valparaíba",
     cityState: "São José dos Campos - SP",
-    googleMapsUrl: "https://www.google.com/maps/search/?api=1&query=Quintal+e+Cia+Rua+dos+Marceneiros+210",
+    googleMapsUrl:
+      "https://www.google.com/maps/search/?api=1&query=Quintal+e+Cia+Rua+dos+Marceneiros+210",
   },
 
   dressCode: {
@@ -74,13 +115,17 @@ export const weddingConfig: WeddingConfig = {
       { name: "Marfim Suave & Baunilha", hex: "#F5F5DA" },
       { name: "Alabastro / Off-White", hex: "#F1F1F1" },
     ],
-    dos: [], donts: [],
+    dos: [],
+    donts: [],
     gallery: [],
   },
 
   gifts: giftCatalog.map((item, index) => ({
-    id: String(index + 1), title: item.name, category: item.category,
-    categoryLabel: item.category, image: safeGiftImage(item.url),
+    id: String(index + 1),
+    title: item.name,
+    category: item.category,
+    categoryLabel: item.category,
+    image: safeGiftImage(item.url),
   })),
   pix: {
     key: "",
@@ -98,8 +143,7 @@ export const weddingConfig: WeddingConfig = {
   },
 
   rsvp: {
-    googleAppsScriptUrl:
-      "",
+    googleAppsScriptUrl: "",
 
     contactWhatsApp: "",
   },
