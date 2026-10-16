@@ -1,8 +1,6 @@
 import { pageMetadata } from "@/lib/seo";
-import { WeddingPreview } from "@/app/admin/WeddingPreview";
 import { redirect } from "next/navigation";
-import { AdminPanel } from "@/app/admin/panel";
-import { SitePreviewFrame } from "@/app/admin/SitePreviewFrame";
+import { AdminPanel, WeddingPreview, SitePreviewFrame } from "@/app/admin/ClientAdminViews";
 import { notFound } from "next/navigation";
 
 const REDIRECT_MAP: Record<string, string> = {
